@@ -114,6 +114,8 @@ const sampleBlogs: Blog[] = [
   }
 ];
 
+export type { Blog };
+export { sampleBlogs };
 
 
 const Card = ({ blog }: { blog: Blog }) => {
@@ -138,7 +140,7 @@ const Card = ({ blog }: { blog: Blog }) => {
                       alt={blog.author.name}
                       width={40}
                       height={40}
-                      className="rounded-lg object-cover"
+                      className="rounded-lg object-cover w-10 h-10"
                     />
                   ) : (
                     <span className="text-white font-semibold text-sm">
@@ -169,9 +171,10 @@ const Card = ({ blog }: { blog: Blog }) => {
                 <Image
                   src={blog.coverImage}
                   alt={`${blog.title} cover`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  width={400}
+                  height={200}
+                  className="object-cover w-full h-full"
+                  style={{ aspectRatio: '16/9' }}
                   priority={false}
                   onError={() => setImageError(true)}
                 />

@@ -34,19 +34,55 @@ const TestimonialSection: React.FC = () => {
   const testimonials: TestimonialItem[] = [
     {
       quote:
-        "In today's fast-paced digital world, effective marketing is about crafting compelling stories that resonate with our audience. As the Marketing Officer of our software company, my mission is to showcase how our innovative solutions empower businesses to thrive, connecting with customers through authenticity, creativity, and strategic vision.",
+        "Marketing isn't just about visibility—it's about building trust. At CodeCraft, I aim to turn every interaction into an opportunity to inspire confidence and spark action.",
       name: "Jayed Bin Islam",
       title: "CMO @codecraft",
       imageSrc: "/images/testimonial/jayed.jpeg",
     },
     {
       quote:
-        "In a world overflowing with information, our role is to curate clarity and insight. As the Editorial Head of our software company, I strive to shape narratives that not only inform but also inspire, ensuring our content reflects the innovation and excellence at the core of our brand. Our commitment to quality drives every piece we produce, making sure our audience feels connected and empowered.",
+        "Every piece of content we create should elevate the reader's understanding. I believe in thoughtful storytelling that mirrors the quality of our software.",
       name: "Tahmid Hasan Showmik",
       title: "Editorial Head @codecraft",
       imageSrc: "/images/testimonial/shoumik.jpeg",
     },
+    {
+      quote:
+        "Design isn't just how it looks—it’s how it works. At CodeCraft, I craft visual systems that make complex ideas feel simple and beautiful.",
+      name: "Raihan Hossain",
+      title: "Graphic Designer @codecraft",
+      imageSrc: "/images/testimonial/molla.jpg",
+    },
+    {
+      quote:
+        "As a developer, I see code as an invisible bridge between ideas and impact. At CodeCraft, I write not just functions, but future-ready experiences.",
+      name: "Atik Mahbub Akash",
+      title: "Senior Software Engineer @codecraft",
+      imageSrc: "/images/testimonial/atik.jpg",
+    },
+    {
+      quote:
+        "Leadership is about nurturing innovation. At CodeCraft, I focus on creating a culture where creativity meets precision—and big ideas become real products.",
+      name: "Fahad Alamgir Dhrubo",
+      title: "CEO @codecraft",
+      imageSrc: "/images/testimonial/dhrubo.jpg", 
+    },
+    {
+      quote:
+        "I transform strategy into social moments. As SMM at CodeCraft, I turn brands into communities and campaigns into conversations.",
+      name: "Juhayer Anzum Kabbo",
+      title: "SMM @codecraft",
+      imageSrc: "/images/testimonial/protibondi.jpg",
+    },
+    {
+      quote:
+        "Even the strongest systems are built by the hands that carry the foundation. I take pride in being a part of every build at CodeCraft.",
+      name: "Mohammad Siam",
+      title: "Labourer @codecraft",
+      imageSrc: "/images/testimonial/cudirvai.jpg",
+    },
   ];
+  
 
   const sliderSettings: Settings = {
     dots: true,
@@ -81,18 +117,19 @@ const TestimonialSection: React.FC = () => {
           data-wow-delay=".2s"
         >
           <span
-            className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] leading-[1] font-extrabold opacity-20"
+            className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] leading-[1] font-extrabold opacity-20 dark:opacity-80"
             style={{
               background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               color: 'transparent',
+              ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
             }}
           >
             LEADERSHIP
           </span>
-          <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-white">
+          <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100">
             The brilliant minds powering innovation
           </h2>
           <p className="text-dark-text text-base leading-relaxed">

@@ -9,12 +9,14 @@ import CoreTechSection from './_components/CoreTechSection'
 import SupportSection from './_components/SupportSection'
 import BlogSection from './_components/BlogSection'
 import CTASection from './_components/CTASection'
+import TestimonialsSlider from './_components/TestimonialsSlider'
 
 const Home = () => {
   return (
     <div>
       <HomeSection />
       <FeaturedSection />
+      <TestimonialsSlider/>
       <ServicesSection />
       <TestimonialSection/>
       <WhyUsSection/>

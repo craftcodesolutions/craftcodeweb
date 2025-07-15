@@ -145,7 +145,7 @@ const BlogSection: NextPage = () => {
             BLOGS
           </span>
 
-          <h2 className="font-heading text-gray-900 dark:text-white mb-5 text-3xl font-extrabold sm:text-4xl md:text-[44px] md:leading-[54px]">
+          <h2 className="font-heading text-gray-900 dark:text-gray-100 mb-5 text-3xl font-extrabold sm:text-4xl md:text-[44px] md:leading-[54px]">
             Discover Expert Insights <br /> Start Your Journey Today!
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">

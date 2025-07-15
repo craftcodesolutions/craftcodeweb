@@ -60,7 +60,7 @@ function HomeSection() {
                             </span>
 
                             <h1
-                                className="font-heading mb-4 sm:mb-6 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold md:leading-[56px] lg:leading-[68px] dark:text-white transition-all duration-300"
+                                className="font-heading mb-4 sm:mb-6 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold md:leading-[56px] lg:leading-[68px] dark:text-gray-100 transition-all duration-300"
                                 data-aos="fade-up"
                                 data-aos-delay="300"
                             >
@@ -103,23 +103,6 @@ function HomeSection() {
                                         </svg>
                                     </span>
                                 </a>
-
-                                <a
-                                    href="#about"
-                                    className="group bg-blue-400 hover:bg-blue-500 text-white font-heading inline-flex items-center rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                >
-                                    <span className="pr-2 sm:pr-3">
-                                        <svg
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            className="fill-current"
-                                        >
-                                            <path d="M19.376 12.416L8.777 19.482C8.70171 19.5321 8.61423 19.5608 8.52389 19.5652C8.43355 19.5695 8.34373 19.5492 8.264 19.5065C8.18427 19.4639 8.1176 19.4003 8.07111 19.3228C8.02462 19.2452 8.00005 19.1564 8 19.066V4.934C8.00005 4.84356 8.02462 4.75482 8.07111 4.67724C8.1176 4.59966 8.18427 4.53615 8.264 4.49346C8.34373 4.45077 8.43355 4.43051 8.52389 4.43483C8.61423 4.43915 8.70171 4.46789 8.777 4.518L19.376 11.584C19.4445 11.6297 19.5006 11.6915 19.5395 11.7641C19.5783 11.8367 19.5986 11.9177 19.5986 12C19.5986 12.0823 19.5783 12.1633 19.5395 12.2359C19.5006 12.3085 19.4445 12.3703 19.376 12.416Z" />
-                                        </svg>
-                                    </span>
-                                    How it Works
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -133,7 +116,7 @@ function HomeSection() {
                         >
                             <div className="absolute top-0 right-0 w-10/12 sm:w-11/12">
                                 <Image
-                                    src="/images/hero/image-2.jpg"
+                                    src="/images/hero/image-1.jpg"
                                     alt="Person sitting with tablet"
                                     width={480}
                                     height={500}
@@ -142,9 +125,9 @@ function HomeSection() {
                             </div>
                             <div className="absolute bottom-0 left-0 z-10 w-7/12 sm:w-8/12">
                                 <Image
-                                    src="/images/hero/image-1.jpg"
+                                    src="/images/hero/image-2.png"
                                     alt="Person working on laptop"
-                                    width={300}
+                                    width={380}
                                     height={700}
                                     className="object-cover w-full h-auto rounded-lg"
                                 />

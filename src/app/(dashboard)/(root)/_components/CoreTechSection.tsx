@@ -311,25 +311,26 @@ export default function CoreTechSection() {
         data-wow-delay=".2s"
       >
         <span
-          className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20"
+          className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
           style={{
             background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             color: 'transparent',
+            ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
           }}
         >
           CORE_TECH
         </span>
 
-        <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-white">
-          Our Unique & Awesome Core Features
+        <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100">
+        The Technology That Powers Us
         </h2>
         <p className="text-dark-text text-base">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. In convallis
-          tortor eros. Donec vitae tortor lacus. Phasellus aliquam ante in
-          maximus.
+          Built on a foundation of modern tools and scalable architecture, our core technologies ensure
+    speed, security, and seamless user experiences. From backend to frontend, we craft with precision
+    to deliver reliable and future-ready solutions.
         </p>
       </div>
 

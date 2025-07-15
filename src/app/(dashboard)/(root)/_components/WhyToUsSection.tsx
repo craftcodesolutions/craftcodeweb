@@ -55,7 +55,7 @@ export default function WhyToUsSection() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={path} />
                     </svg>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{title}</h3>
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
                       <p className="text-gray-600 dark:text-gray-300 mt-1">{description}</p>
                     </div>
                   </div>

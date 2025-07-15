@@ -71,19 +71,19 @@ const ServicesSection: React.FC = () => {
           data-wow-delay=".2s"
         >
           <span
-            className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] leading-[1] font-extrabold opacity-20"
+            className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] leading-[1] font-extrabold opacity-20 dark:opacity-80"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)",
+              background: "linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
               color: "transparent",
+              ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
             }}
           >
             SERVICES
           </span>
-          <h2 className="font-heading text-dark mb-3 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-white inline-block relative">
+          <h2 className="font-heading text-dark mb-3 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100 inline-block relative">
             Comprehensive Solutions for Your Business
             <span className="block h-1 w-24 mx-auto mt-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full animate-gradient-x" />
           </h2>
@@ -93,7 +93,7 @@ const ServicesSection: React.FC = () => {
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {services.map((service, index) => (
             <motion.div
               key={index}
@@ -102,20 +102,20 @@ const ServicesSection: React.FC = () => {
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
               variants={cardVariants}
-              className="relative group bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out p-6 sm:p-8 flex flex-col items-center text-center border border-transparent before:content-[''] before:absolute before:inset-0 before:rounded-2xl before:opacity-0 before:group-hover:opacity-100 before:transition-opacity before:duration-300 before:ease-in-out before:pointer-events-none overflow-hidden focus-within:ring-2 focus-within:ring-blue-400"
+              className="relative group bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out p-4 sm:p-6 md:p-8 flex flex-col items-center text-center border border-transparent before:content-[''] before:absolute before:inset-0 before:rounded-2xl before:opacity-0 before:group-hover:opacity-100 before:transition-opacity before:duration-300 before:ease-in-out before:pointer-events-none overflow-hidden focus-within:ring-2 focus-within:ring-blue-400"
               tabIndex={0}
               aria-label={service.title}
             >
               {/* Animated Gradient Border */}
               <span className="pointer-events-none absolute inset-0 z-0 rounded-2xl border-2 border-transparent group-hover:border-transparent before:transition-all before:duration-300 before:ease-in-out before:rounded-2xl before:absolute before:inset-0 before:bg-gradient-to-r before:from-blue-400 before:via-purple-400 before:to-pink-400 before:opacity-0 group-hover:before:opacity-100" />
               {/* Icon with animated gradient background */}
-              <span className="mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 shadow-lg text-white text-4xl sm:text-5xl border-4 border-white dark:border-gray-900 transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl animate-pulse-gradient relative z-10">
+              <span className="mb-3 sm:mb-4 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 shadow-lg text-white text-3xl sm:text-4xl md:text-5xl border-4 border-white dark:border-gray-900 transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-xl animate-pulse-gradient relative z-10">
                 {service.icon}
               </span>
-              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-3 relative z-10">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 relative z-10">
                 {service.title}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed relative z-10">
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base leading-relaxed relative z-10">
                 {service.description}
               </p>
             </motion.div>
@@ -123,10 +123,10 @@ const ServicesSection: React.FC = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-8 sm:mt-12">
           <Link
             href="/contact"
-            className="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-purple-600 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg text-base sm:text-lg font-medium ring-2 ring-blue-400/30 hover:ring-pink-400/40 focus:outline-none focus:ring-4 focus:ring-blue-400/40 animate-gradient-x"
+            className="inline-block w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-purple-600 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg text-base sm:text-lg font-medium ring-2 ring-blue-400/30 hover:ring-pink-400/40 focus:outline-none focus:ring-4 focus:ring-blue-400/40 animate-gradient-x"
           >
             Get Started Today
           </Link>

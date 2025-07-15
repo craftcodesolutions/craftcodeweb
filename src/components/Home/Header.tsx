@@ -55,7 +55,7 @@ function Header() {
           {/* Controls: ModeToggle, Login/Sidebar for mobile */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             <ModeToggle />
-            <span className="text-xs md:hidden">Login</span>
+            {/* <span className="text-xs md:hidden">Login</span> */}
             <div className="md:hidden">
               <RightSidebar />
             </div>

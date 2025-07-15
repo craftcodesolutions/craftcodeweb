@@ -175,19 +175,20 @@ const SupportSection: FC = () => {
             data-wow-delay=".2s"
           >
             <span
-              className="absolute top-0 left-1/2 -translate-x-1/2 text-[32px] sm:text-[40px] md:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20"
+              className="absolute top-0 left-1/2 -translate-x-1/2 text-[32px] sm:text-[40px] md:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
               style={{
                 background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
                 color: 'transparent',
+                ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
               }}
             >
               SUPPORT
             </span>
 
-            <h2 className="font-heading text-dark mb-3 sm:mb-5 text-2xl sm:text-3xl md:text-4xl font-semibold md:text-[40px] md:leading-[48px] lg:text-[50px] lg:leading-[60px] dark:text-white">
+            <h2 className="font-heading text-dark mb-3 sm:mb-5 text-2xl sm:text-3xl md:text-4xl font-semibold md:text-[40px] md:leading-[48px] lg:text-[50px] lg:leading-[60px] dark:text-gray-100">
               Let&apos;s Connect
             </h2>
             <p className="text-dark-text text-sm sm:text-base">

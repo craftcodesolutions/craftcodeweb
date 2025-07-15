@@ -71,54 +71,53 @@ const FeaturedSection = () => {
   ];
 
   return (
-    <section id="features" className="py-10 sm:py-14 md:py-20 lg:py-28">
-      <div className="px-4 sm:px-6 md:px-8 xl:container mx-auto max-w-screen-xl">
+    <section id="features" className="py-8 sm:py-10 md:py-16 lg:py-28">
+      <div className="px-2 sm:px-4 md:px-8 xl:container mx-auto max-w-screen-xl">
         {/* Section Title */}
         <div
-          className="relative mx-auto mb-8 sm:mb-12 md:mb-20 max-w-[95vw] sm:max-w-[620px] pt-4 sm:pt-6 lg:pt-16 text-center"
+          className="relative mx-auto mb-6 sm:mb-10 md:mb-20 max-w-[98vw] sm:max-w-[620px] pt-2 sm:pt-6 lg:pt-16 text-center"
           data-wow-delay=".2s"
         >
           <span
-            className="absolute top-0 left-1/2 -translate-x-1/2 text-[32px] sm:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20"
+            className="absolute top-0 left-1/2 -translate-x-1/2 text-[24px] sm:text-[40px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
             style={{
               background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               color: 'transparent',
+              ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
             }}
           >
             FEATURES
           </span>
 
-          <h2 className="font-heading text-dark mb-3 sm:mb-5 text-2xl sm:text-3xl md:text-4xl lg:text-[50px] md:leading-[60px] dark:text-white">
+          <h2 className="font-heading text-dark mb-2 sm:mb-4 text-xl sm:text-2xl md:text-4xl lg:text-[50px] md:leading-[60px] dark:text-gray-100">
             Our Unique & Awesome Core Features
           </h2>
-          <p className="text-dark-text text-sm sm:text-base md:text-lg">
+          <p className="text-dark-text text-xs sm:text-base md:text-lg">
             Discover powerful features: intuitive design, seamless integration, robust security, and scalable solutions to elevate your business with cutting-edge technology.
           </p>
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-3 gap-y-8 sm:gap-y-12 gap-x-4 md:gap-x-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 sm:gap-y-10 gap-x-2 md:gap-x-8">
           {features.map((feature, index) => (
             <div
               key={index}
               className="flex flex-col items-center w-full animate-fade-in"
               style={{ animationDelay: feature.delay }}
             >
-              <div className="group mx-auto mb-8 sm:mb-10 md:mb-16 max-w-[95vw] sm:max-w-[380px] text-center">
-                <div className="bg-primary/5 text-primary mx-auto mb-4 sm:mb-6 flex h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] md:h-[90px] md:w-[90px] items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-blue-200 dark:bg-white/5 dark:text-white dark:group-hover:bg-blue-700">
+              <div className="group mx-auto mb-6 sm:mb-8 md:mb-16 max-w-[98vw] sm:max-w-[380px] text-center">
+                <div className="bg-primary/5 text-primary mx-auto mb-3 sm:mb-6 flex h-[48px] w-[48px] sm:h-[70px] sm:w-[70px] md:h-[90px] md:w-[90px] items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-blue-200 dark:bg-white/5 dark:text-white dark:group-hover:bg-blue-700">
                   {feature.icon}
                 </div>
-                <div>
-                  <h3 className="font-heading text-dark mb-2 sm:mb-3 md:mb-5 text-lg sm:text-xl md:text-2xl font-medium dark:text-white">
-                    {feature.title}
-                  </h3>
-                  <p className="text-dark-text text-sm sm:text-base md:text-lg">
-                    {feature.description}
-                  </p>
-                </div>
+                <h3 className="font-heading text-dark mb-1 sm:mb-2 md:mb-5 text-base sm:text-xl md:text-2xl font-medium dark:text-white">
+                  {feature.title}
+                </h3>
+                <p className="text-dark-text text-xs sm:text-base md:text-lg">
+                  {feature.description}
+                </p>
               </div>
             </div>
           ))}
