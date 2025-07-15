@@ -325,12 +325,12 @@ export default function CoreTechSection() {
         </span>
 
         <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100">
-        The Technology That Powers Us
+          The Technology That Powers Us
         </h2>
         <p className="text-dark-text text-base">
           Built on a foundation of modern tools and scalable architecture, our core technologies ensure
-    speed, security, and seamless user experiences. From backend to frontend, we craft with precision
-    to deliver reliable and future-ready solutions.
+          speed, security, and seamless user experiences. From backend to frontend, we craft with precision
+          to deliver reliable and future-ready solutions.
         </p>
       </div>
 
@@ -351,8 +351,8 @@ export default function CoreTechSection() {
             aria-selected={filter === category}
             aria-label={`Show ${category} technologies (${categoryCounts[category]})`}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-500 ease-out outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${filter === category
-                ? "bg-blue-600 text-white shadow-lg transform scale-105"
-                : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105 hover:shadow-md"
+              ? "bg-blue-600 text-white shadow-lg transform scale-105"
+              : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105 hover:shadow-md"
               }`}
             role="tab"
             tabIndex={0}
@@ -368,7 +368,7 @@ export default function CoreTechSection() {
           <div
             key={index}
             className={`relative bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center shadow-lg transition-all duration-700 ease-out transform hover:scale-105 hover:shadow-2xl hover:border-gray-600 group ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} animate-fade-in`}
-            style={{ 
+            style={{
               transitionDelay: `${index * 100}ms`,
               transitionProperty: 'all',
               transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
@@ -380,7 +380,7 @@ export default function CoreTechSection() {
             <h3 className="text-lg font-semibold text-white transition-colors duration-300 ease-out group-hover:text-blue-300">{tech.title}</h3>
             <p
               className="text-sm text-gray-400 mt-2 truncate max-w-[180px] group-hover:whitespace-normal group-hover:max-w-none relative transition-all duration-500 ease-out group-hover:text-gray-300 overflow-hidden"
-              style={{ 
+              style={{
                 cursor: tech.description.length > 60 ? 'pointer' : 'default',
                 maxHeight: '1.5rem',
                 transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
