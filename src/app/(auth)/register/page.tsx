@@ -3,7 +3,7 @@ import Register from './Register'
 
 const RegisterPage = () => {
   return (
-    <div>
+    <div className="bg-white dark:bg-gray-900 pb-8">
       <Register />
     </div>
   )

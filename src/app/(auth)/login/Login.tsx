@@ -4,9 +4,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+// import ModeToggle from "@/components/ModeToggle";
 
 export default function Login() {
-  const [darkMode, setDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [checkboxToggle, setCheckboxToggle] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,16 +15,24 @@ export default function Login() {
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const router = useRouter();
+
+  // Email validation helper
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
 
   return (
-    <div className={`relative p-6 bg-white z-1 sm:p-0 ${darkMode ? 'dark bg-gray-900' : ''}`}>
-      <div className="relative flex flex-col justify-center w-full h-screen sm:p-0 lg:flex-row">
+    <div className="relative p-4 sm:p-8 md:p-12 pb-2 sm:pb-2 md:pb-2 bg-white dark:bg-gray-900 z-1 min-h-screen">
+      <div className="relative flex flex-col justify-center w-full min-h-[80vh] sm:p-0 lg:flex-row gap-8">
         {/* Form */}
-        <div className="flex flex-col flex-1 w-full lg:w-1/2">
-          <div className="w-full max-w-md pt-10 mx-auto">
+        <div className="flex flex-col flex-1 w-full lg:w-1/2 bg-white dark:bg-gray-900 px-4 sm:px-8 md:px-12 py-4 sm:py-6 justify-center">
+          <div className="w-full max-w-md pt-2 mx-auto">
             <Link
               href="/"
-              className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 mb-8"
             >
               <svg
                 className="stroke-current"
@@ -46,8 +55,8 @@ export default function Login() {
           </div>
           <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
             <div>
-              <div className="mb-5 sm:mb-8">
-                <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+              <div className="mb-4 sm:mb-6">
+                <h1 className="mb-2 font-semibold text-gray-800 dark:text-white/90 text-title-sm sm:text-title-md">
                   Sign In
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -55,8 +64,8 @@ export default function Login() {
                 </p>
               </div>
               <div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-                  <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 mb-4">
+                  <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 dark:text-white/90 transition-colors bg-gray-100 dark:bg-gray-800 rounded-lg px-7 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white">
                     <svg
                       width="20"
                       height="20"
@@ -83,7 +92,7 @@ export default function Login() {
                     </svg>
                     Sign in with Google
                   </button>
-                  <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+                  <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 dark:text-white/90 transition-colors bg-gray-100 dark:bg-gray-800 rounded-lg px-7 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white">
                     <svg
                       width="21"
                       className="fill-current"
@@ -97,26 +106,48 @@ export default function Login() {
                     Sign in with X
                   </button>
                 </div>
-                <div className="relative py-3 sm:py-5">
+                <div className="relative py-2 sm:py-3 mb-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+                    <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
+                    <span className="p-2 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
                       Or
                     </span>
                   </div>
                 </div>
-                <form onSubmit={(e) => {
+                <form onSubmit={async (e) => {
                   e.preventDefault();
+                  setError('');
+                  setSuccess('');
+                  // Client-side validation
+                  if (!formData.email || !formData.password) {
+                    setError('Please fill in both email and password.');
+                    return;
+                  }
+                  if (!isValidEmail(formData.email)) {
+                    setError('Please enter a valid email address.');
+                    return;
+                  }
                   setIsLoading(true);
-                  // Simulate login process
-                  setTimeout(() => {
+                  // Simulate async login (replace with real API call)
+                  await new Promise((resolve) => setTimeout(resolve, 1500));
+                  // Mocked login logic
+                  if (
+                    formData.email === 'user@example.com' &&
+                    formData.password === 'password123'
+                  ) {
+                    setSuccess('Login successful! Redirecting...');
                     setIsLoading(false);
-                    console.log('Login attempt:', formData);
-                  }, 2000);
+                    setTimeout(() => {
+                      router.push('/profile');
+                    }, 1200);
+                  } else {
+                    setError('Invalid email or password.');
+                    setIsLoading(false);
+                  }
                 }}>
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {/* Email */}
                     <div>
                       <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -129,7 +160,7 @@ export default function Login() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="info@gmail.com"
-                        className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                        className="h-11 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 text-sm text-gray-800 dark:text-white/90 shadow-theme-xs placeholder:text-gray-400 dark:placeholder:text-white/30 focus:border-brand-300 dark:focus:border-brand-800 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10"
                         required
                       />
                     </div>
@@ -144,12 +175,12 @@ export default function Login() {
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           placeholder="Enter your password"
-                          className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                          className="h-11 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 text-sm text-gray-800 dark:text-white/90 shadow-theme-xs placeholder:text-gray-400 dark:placeholder:text-white/30 focus:border-brand-300 dark:focus:border-brand-800 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 py-2.5 pl-4 pr-11"
                           required
                         />
                         <span
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute z-30 text-gray-500 -translate-y-1/2 cursor-pointer right-4 top-1/2 dark:text-gray-400"
+                          className="absolute z-30 text-gray-500 dark:text-gray-400 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                         >
                           {!showPassword ? (
                             <svg
@@ -188,11 +219,11 @@ export default function Login() {
                       </div>
                     </div>
                     {/* Checkbox */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
                         <label
                           htmlFor="checkboxLabelOne"
-                          className="flex items-center text-sm font-normal text-gray-700 cursor-pointer select-none dark:text-gray-400"
+                          className="flex items-center text-sm font-normal text-gray-700 dark:text-gray-400 cursor-pointer select-none"
                         >
                           <div className="relative">
                             <input
@@ -202,11 +233,7 @@ export default function Login() {
                               onChange={() => setCheckboxToggle(!checkboxToggle)}
                             />
                             <div
-                              className={`mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] ${
-                                checkboxToggle
-                                  ? 'border-brand-500 bg-brand-500'
-                                  : 'bg-transparent border-gray-300 dark:border-gray-700'
-                              }`}
+                              className={`mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] ${checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'}`}
                             >
                               <span className={checkboxToggle ? '' : 'opacity-0'}>
                                 <svg
@@ -231,7 +258,7 @@ export default function Login() {
                         </label>
                       </div>
                       <Link
-                        href="/reset-password"
+                        href="/forget-password"
                         className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                       >
                         Forgot password?
@@ -242,7 +269,7 @@ export default function Login() {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 shadow-lg hover:from-brand-600 hover:to-brand-800 hover:shadow-xl active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isLoading ? (
                           <>
@@ -257,14 +284,18 @@ export default function Login() {
                         )}
                       </button>
                     </div>
+                    {/* Error/Success Messages */}
+                    {(error || success) && (
+                      <div className={`mt-3 text-sm ${error ? 'text-red-500' : 'text-green-600'}`}>{error || success}</div>
+                    )}
                   </div>
                 </form>
-                <div className="mt-5">
+                <div className="mt-4">
                   <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                     Don't have an account?
                     <Link
                       href="/register"
-                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400 ml-1"
                     >
                       Sign Up
                     </Link>
@@ -275,56 +306,20 @@ export default function Login() {
           </div>
         </div>
 
-        <div className="relative items-center hidden w-full h-full bg-brand-950 dark:bg-white/5 lg:grid lg:w-1/2">
-          <div className="flex items-center justify-center z-1 w-full h-full">
-            <div className="flex flex-col items-center justify-center max-w-xs text-center transform translate-y-28 pb-8">
-              <Link href="/" className="block mb-6">
-                <img src="/logo.png" alt="Logo" className="mx-auto" />
+        {/* Right Section */}
+        <div className="relative items-center hidden w-full h-full bg-gradient-to-br from-brand-950/80 to-brand-800/60 dark:from-white/10 dark:to-white/0 lg:grid lg:w-1/2 p-6 sm:p-10">
+          <div className="flex items-center justify-center w-full h-full">
+            <div className="flex flex-col items-center justify-center max-w-md w-full text-center px-10 py-16 sm:px-14 sm:py-20 bg-white/70 dark:bg-gray-900/70 rounded-2xl shadow-2xl backdrop-blur-md border border-white/30 dark:border-gray-700/30">
+              <Link href="/" className="block mb-10">
+                <img src="/logo.png" alt="Logo" className="mx-auto w-20 h-20 object-contain" />
               </Link>
-              <p className="text-center text-gray-400 dark:text-white/60">
-                Free and Open-Source Tailwind CSS Admin Dashboard Template
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-5">Welcome Back!</h2>
+              <p className="text-base text-gray-600 dark:text-gray-300 mb-6">
+                Log in to access your dashboard and continue where you left off.
               </p>
+              <span className="inline-block mt-2 text-brand-500 dark:text-brand-400 text-3xl">👋</span>
             </div>
           </div>
-        </div>
-        {/* Toggler */}
-        <div className="fixed z-50 hidden bottom-6 right-6 sm:block">
-          <button
-            className="inline-flex items-center justify-center text-white transition-colors rounded-full size-14 bg-brand-500 hover:bg-brand-600"
-            onClick={() => setDarkMode(!darkMode)}
-          >
-            {darkMode ? (
-              <svg
-                className="fill-current"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M9.99998 1.5415C10.4142 1.5415 10.75 1.87729 10.75 2.2915V3.5415C10.75 3.95572 10.4142 4.2915 9.99998 4.2915C9.58577 4.2915 9.24998 3.95572 9.24998 3.5415V2.2915C9.24998 1.87729 9.58577 1.5415 9.99998 1.5415ZM10.0009 6.79327C8.22978 6.79327 6.79402 8.22904 6.79402 10.0001C6.79402 11.7712 8.22978 13.207 10.0009 13.207C11.772 13.207 13.2078 11.7712 13.2078 10.0001C13.2078 8.22904 11.772 6.79327 10.0009 6.79327ZM5.29402 10.0001C5.29402 7.40061 7.40135 5.29327 10.0009 5.29327C12.6004 5.29327 14.7078 7.40061 14.7078 10.0001C14.7078 12.5997 12.6004 14.707 10.0009 14.707C7.40135 14.707 5.29402 12.5997 5.29402 10.0001ZM15.9813 5.08035C16.2742 4.78746 16.2742 4.31258 15.9813 4.01969C15.6884 3.7268 15.2135 3.7268 14.9207 4.01969L14.0368 4.90357C13.7439 5.19647 13.7439 5.67134 14.0368 5.96423C14.3297 6.25713 14.8045 6.25713 15.0974 5.96423L15.9813 5.08035ZM18.4577 10.0001C18.4577 10.4143 18.1219 10.7501 17.7077 10.7501H16.4577C16.0435 10.7501 15.7077 10.4143 15.7077 10.0001C15.7077 9.58592 16.0435 9.25013 16.4577 9.25013H17.7077C18.1219 9.25013 18.4577 9.58592 18.4577 10.0001ZM14.9207 15.9806C15.2135 16.2735 15.6884 16.2735 15.9813 15.9806C16.2742 15.6877 16.2742 15.2128 15.9813 14.9199L15.0974 14.036C14.8045 13.7431 14.3297 13.7431 14.0368 14.036C13.7439 14.3289 13.7439 14.8038 14.0368 15.0967L14.9207 15.9806ZM9.99998 15.7088C10.4142 15.7088 10.75 16.0445 10.75 16.4588V17.7088C10.75 18.123 10.4142 18.4588 9.99998 18.4588C9.58577 18.4588 9.24998 18.123 9.24998 17.7088V16.4588C9.24998 16.0445 9.58577 15.7088 9.99998 15.7088ZM5.96356 15.0972C6.25646 14.8043 6.25646 14.3295 5.96356 14.0366C5.67067 13.7437 5.1958 13.7437 4.9029 14.0366L4.01902 14.9204C3.72613 15.2133 3.72613 15.6882 4.01902 15.9811C4.31191 16.274 4.78679 16.274 5.07968 15.9811L5.96356 15.0972ZM4.29224 10.0001C4.29224 10.4143 3.95645 10.7501 3.54224 10.7501H2.29224C1.87802 10.7501 1.54224 10.4143 1.54224 10.0001C1.54224 9.58592 1.87802 9.25013 2.29224 9.25013H3.54224C3.95645 9.25013 4.29224 9.58592 4.29224 10.0001ZM4.9029 5.9637C5.1958 6.25659 5.67067 6.25659 5.96356 5.9637C6.25646 5.6708 6.25646 5.19593 5.96356 4.90303L5.07968 4.01915C4.78679 3.72626 4.31191 3.72626 4.01902 4.01915C3.72613 4.31204 3.72613 4.78692 4.01902 5.07981L4.9029 5.9637Z"
-                  fill=""
-                />
-              </svg>
-            ) : (
-              <svg
-                className="fill-current"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M17.4547 11.97L18.1799 12.1611C18.265 11.8383 18.1265 11.4982 17.8401 11.3266C17.5538 11.1551 17.1885 11.1934 16.944 11.4207L17.4547 11.97ZM8.0306 2.5459L8.57989 3.05657C8.80718 2.81209 8.84554 2.44682 8.67398 2.16046C8.50243 1.8741 8.16227 1.73559 7.83948 1.82066L8.0306 2.5459ZM12.9154 13.0035C9.64678 13.0035 6.99707 10.3538 6.99707 7.08524H5.49707C5.49707 11.1823 8.81835 14.5035 12.9154 14.5035V13.0035ZM16.944 11.4207C15.8869 12.4035 14.4721 13.0035 12.9154 13.0035V14.5035C14.8657 14.5035 16.6418 13.7499 17.9654 12.5193L16.944 11.4207ZM16.7295 11.7789C15.9437 14.7607 13.2277 16.9586 10.0003 16.9586V18.4586C13.9257 18.4586 17.2249 15.7853 18.1799 12.1611L16.7295 11.7789ZM10.0003 16.9586C6.15734 16.9586 3.04199 13.8433 3.04199 10.0003H1.54199C1.54199 14.6717 5.32892 18.4586 10.0003 18.4586V16.9586ZM3.04199 10.0003C3.04199 6.77289 5.23988 4.05695 8.22173 3.27114L7.83948 1.82066C4.21532 2.77574 1.54199 6.07486 1.54199 10.0003H3.04199ZM6.99707 7.08524C6.99707 5.52854 7.5971 4.11366 8.57989 3.05657L7.48132 2.03522C6.25073 3.35885 5.49707 5.13487 5.49707 7.08524H6.99707Z"
-                  fill=""
-                />
-              </svg>
-            )}
-          </button>
         </div>
       </div>
     </div>

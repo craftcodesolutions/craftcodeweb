@@ -76,8 +76,9 @@ const TeamTimeline: React.FC = () => {
         <div className="relative">
           {/* Central Timeline Line */}
           <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-blue-600 via-purple-600 to-pink-600 shadow-lg"></div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Mobile Timeline Line (left border) */}
+          <div className="block lg:hidden absolute left-4 top-0 h-full w-0.5 bg-gradient-to-b from-blue-600 via-purple-600 to-pink-600 opacity-40"></div>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
             {milestones.map((milestone, index) => (
               <div
                 key={index}
@@ -87,34 +88,36 @@ const TeamTimeline: React.FC = () => {
               >
                 {/* Timeline Dot */}
                 <div className="hidden lg:block absolute top-8 w-4 h-4 bg-white dark:bg-gray-800 border-4 border-blue-600 rounded-full shadow-lg z-10 transform -translate-x-2 group-hover:scale-125 transition-transform duration-300"></div>
-                
+                {/* Mobile Dot/Icon */}
+                <div className="block lg:hidden absolute left-0 top-8 w-8 h-8 items-center justify-center z-10">
+                  <span className="text-2xl bg-white dark:bg-gray-800 rounded-full border-2 border-blue-500 shadow-md p-1">{milestone.icon}</span>
+                </div>
                 {/* Card */}
                 <div
-                  className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 transform hover:-translate-y-2 group-hover:scale-[1.02] border border-gray-100 dark:border-gray-700 overflow-hidden`}
+                  className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 p-5 sm:p-6 md:p-8 pl-14 lg:pl-8 lg:pr-8 transform hover:-translate-y-2 group-hover:scale-[1.02] border border-gray-100 dark:border-gray-700 overflow-hidden`}
+                  style={{ minHeight: '120px' }}
                 >
                   {/* Background Gradient */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${milestone.color} opacity-5 group-hover:opacity-10 transition-opacity duration-500`}></div>
-                  
                   {/* Content */}
                   <div className="relative z-10">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className={`text-3xl sm:text-4xl transform group-hover:scale-110 transition-transform duration-300`}>
+                    <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                      <div className="hidden lg:block text-3xl sm:text-4xl transform group-hover:scale-110 transition-transform duration-300">
                         {milestone.icon}
                       </div>
                       <div className="flex-1">
-                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${milestone.color} text-white mb-3 shadow-md`}>
+                        <div className={`inline-block px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${milestone.color} text-white mb-2 sm:mb-3 shadow-md`}>
                           {milestone.date}
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                           {milestone.title}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed">
                           {milestone.description}
                         </p>
                       </div>
                     </div>
                   </div>
-                  
                   {/* Hover Effect Border */}
                   <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${milestone.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500 -z-10`}></div>
                 </div>
@@ -122,11 +125,10 @@ const TeamTimeline: React.FC = () => {
             ))}
           </div>
         </div>
-
         {/* Bottom CTA */}
-        <div className="mt-16 text-center">
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 cursor-pointer">
-            <span>Join Our Journey</span>
+        <div className="mt-12 sm:mt-16 text-center">
+          <div className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 cursor-pointer max-w-full">
+            <span className="truncate">Join Our Journey</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>

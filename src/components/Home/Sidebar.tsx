@@ -26,6 +26,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
     { path: '/blog', label: 'Blog', icon: FileText },
     { path: '/projects', label: 'Projects', icon: Archive },
     { path: '/faqs', label: 'FAQs', icon: MessageSquare },
+    { path: '/contact', label: 'Contacts', icon: MessageSquare },
   ];
 
   const storedSidebarExpanded = typeof window !== 'undefined' ? localStorage.getItem('right-sidebar-expanded') : null;
@@ -125,10 +126,8 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
         ref={trigger}
         role="button"
         tabIndex={0}
-        className={`relative group inline-flex items-center justify-center gap-2 px-2 py-2 sm:px-6 sm:py-6 mr-2 aspect-square rounded-sm
-          bg-gradient-to-r from-[#0f0f1a]/80 to-[#1a1a2e]/80 hover:from-blue-500/30 hover:to-purple-500/30
-          hover:ring-2 hover:ring-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20
-          transform hover:scale-102 focus:scale-102 focus:outline-none focus:ring-2 focus:ring-blue-400/50
+        className={`relative group inline-flex items-center justify-center gap-2 px-2 py-2 sm:px-6 sm:py-6 mr-2 aspect-square rounded-lg
+          bg-amber-500 border border-amber-400 dark:border-amber-600 text-white shadow-md hover:bg-amber-600 dark:hover:bg-amber-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-400/50
           text-base font-semibold transition-all duration-200
           ${isMobileScreen ? 'block' : 'hidden'}`}
         onClick={toggleSidebar}
@@ -142,18 +141,9 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
         aria-expanded={sidebarOpen}
         aria-label="Toggle navigation menu"
       >
-        <span
-          className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0
-            group-hover:opacity-100 blur-sm transition-all duration-300"
-        />
-        <span
-          className="relative z-10 hidden sm:block bg-gradient-to-r from-blue-400 via-blue-300 to-purple-400
-            text-transparent bg-clip-text group-hover:brightness-110"
-        >
-          Menu
-        </span>
+        <span className="relative z-10 hidden sm:block text-white font-bold">Menu</span>
         <svg
-          className="w-5 h-5 sm:w-6 sm:h-6 relative z-10 stroke-[2] text-blue-400 group-hover:text-white"
+          className="w-5 h-5 sm:w-6 sm:h-6 relative z-10 stroke-[2] text-white"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -191,7 +181,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
             />
           </Link>
           <button
-            className="text-blue-400 hover:text-purple-400 transition-colors duration-200"
+            className="text-white bg-amber-500 border border-amber-400 dark:border-amber-600 rounded-lg px-2 py-1 hover:bg-amber-600 dark:hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-colors duration-200"
             onClick={toggleSidebar}
             aria-controls="sidebar"
             aria-expanded={sidebarOpen}
@@ -208,19 +198,25 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
             {navLinks.map((item, index) => (
               <li
                 key={item.path}
-                className={`pl-3 pr-2 py-1.5 rounded-lg mb-0.5 last:mb-0 bg-gradient-to-r
-                  ${isActive(item.path) ? 'from-blue-500/20 to-purple-500/20' : 'from-transparent to-transparent'}
-                  transition-all duration-200 animate-slide-in`}
+                className={`pl-3 pr-2 py-1.5 rounded-lg mb-0.5 last:mb-0
+                  border border-amber-400 dark:border-amber-600 transition-all duration-200 animate-slide-in
+                  ${isActive(item.path)
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-transparent text-neutral-900 dark:text-white hover:bg-amber-600 dark:hover:bg-amber-700 hover:text-white'}
+                `}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Link
                   href={item.path}
-                  className={`block bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-300 to-purple-400
-                    truncate transition duration-200 ${isActive(item.path) ? '' : 'hover:brightness-125'}`}
+                  className={`block truncate transition duration-200 w-full h-full
+                   ${isActive(item.path)
+                     ? 'text-white'
+                     : 'text-neutral-900 dark:text-white hover:text-white'}
+                 `}
                   aria-label={`Navigate to ${item.label}`}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <item.icon className="w-4 h-4" />
+                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-white' : 'text-amber-500 dark:text-amber-400'}`} />
                     {item.label}
                   </span>
                 </Link>

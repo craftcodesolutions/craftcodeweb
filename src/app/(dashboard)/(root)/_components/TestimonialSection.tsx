@@ -34,51 +34,51 @@ const TestimonialSection: React.FC = () => {
   const testimonials: TestimonialItem[] = [
     {
       quote:
-        "Marketing isn't just about visibility—it's about building trust. At CodeCraft, I aim to turn every interaction into an opportunity to inspire confidence and spark action.",
+        "Marketing isn't just about visibility—it's about building trust. At CraftCode Solutions, I aim to turn every interaction into an opportunity to inspire confidence and spark action.",
       name: "Jayed Bin Islam",
-      title: "CMO @codecraft",
+      title: "CMO @CraftCode Solutions",
       imageSrc: "/images/testimonial/jayed.jpeg",
     },
     {
       quote:
         "Every piece of content we create should elevate the reader's understanding. I believe in thoughtful storytelling that mirrors the quality of our software.",
       name: "Tahmid Hasan Showmik",
-      title: "Editorial Head @codecraft",
+      title: "Editorial Head @CraftCode Solutions",
       imageSrc: "/images/testimonial/shoumik.jpeg",
     },
     {
       quote:
-        "Design isn't just how it looks—it’s how it works. At CodeCraft, I craft visual systems that make complex ideas feel simple and beautiful.",
+        "Design isn't just how it looks—it’s how it works. At CraftCode Solutions, I craft visual systems that make complex ideas feel simple and beautiful.",
       name: "Raihan Hossain",
-      title: "Graphic Designer @codecraft",
+      title: "Graphic Designer @CraftCode Solutions",
       imageSrc: "/images/testimonial/molla.jpg",
     },
     {
       quote:
-        "As a developer, I see code as an invisible bridge between ideas and impact. At CodeCraft, I write not just functions, but future-ready experiences.",
+        "As a developer, I see code as an invisible bridge between ideas and impact. At CraftCode Solutions, I write not just functions, but future-ready experiences.",
       name: "Atik Mahbub Akash",
-      title: "Senior Software Engineer @codecraft",
+      title: "Senior Software Engineer @CraftCode Solutions",
       imageSrc: "/images/testimonial/atik.jpg",
     },
     {
       quote:
-        "Leadership is about nurturing innovation. At CodeCraft, I focus on creating a culture where creativity meets precision—and big ideas become real products.",
+        "Leadership is about nurturing innovation. At CraftCode Solutions, I focus on creating a culture where creativity meets precision—and big ideas become real products.",
       name: "Fahad Alamgir Dhrubo",
-      title: "CEO @codecraft",
+      title: "CEO @CraftCode Solutions",
       imageSrc: "/images/testimonial/dhrubo.jpg", 
     },
     {
       quote:
-        "I transform strategy into social moments. As SMM at CodeCraft, I turn brands into communities and campaigns into conversations.",
+        "I transform strategy into social moments. As SMM at CraftCode Solutions, I turn brands into communities and campaigns into conversations.",
       name: "Juhayer Anzum Kabbo",
-      title: "SMM @codecraft",
+      title: "SMM @CraftCode Solutions",
       imageSrc: "/images/testimonial/protibondi.jpg",
     },
     {
       quote:
-        "Even the strongest systems are built by the hands that carry the foundation. I take pride in being a part of every build at CodeCraft.",
+        "Even the strongest systems are built by the hands that carry the foundation. I take pride in being a part of every build at CraftCode Solutions.",
       name: "Mohammad Siam",
-      title: "Labourer @codecraft",
+      title: "Operations Assistant @CraftCode Solutions",
       imageSrc: "/images/testimonial/cudirvai.jpg",
     },
   ];

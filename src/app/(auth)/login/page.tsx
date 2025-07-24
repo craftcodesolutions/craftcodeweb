@@ -3,7 +3,7 @@ import Login from './Login'
 
 const LoginPage = () => {
   return (
-    <div>
+    <div className="bg-white dark:bg-gray-900 pb-8">
       <Login/>
     </div>
   )
