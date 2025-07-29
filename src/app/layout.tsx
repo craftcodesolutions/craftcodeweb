@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/context/AuthContext";
+
 // import ModeToggle from "@/components/ModeToggle"; // Remove this import
 
 const roboto = Roboto({
@@ -26,10 +28,9 @@ export default function RootLayout({
         className={`${roboto.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {/* <div className="fixed top-4 right-4 z-[1000]">
-            <ModeToggle />
-          </div> */}
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
