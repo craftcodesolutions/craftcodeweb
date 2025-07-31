@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
     );
 
     // 7. Redirect
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.craftcodesolutions.com';
     const res = NextResponse.redirect(`${baseUrl}/`);
 
     res.cookies.set('authToken', token, {
