@@ -1,5 +1,11 @@
+import { Suspense } from 'react';
 import Login from './Login';
+import { LoginSkeleton } from './LoginSkeleton';
 
 export default function Page() {
-  return <Login />;
+  return (
+    <Suspense fallback={<LoginSkeleton />}>
+      <Login />
+    </Suspense>
+  );
 }

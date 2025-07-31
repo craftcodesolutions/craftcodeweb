@@ -1,340 +1,190 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import jwt from 'jsonwebtoken';
+import * as React from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Types
-type UserType = {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  isAdmin: boolean;
-  profileImage?: string;
-  bio?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type LoadingState = 'idle' | 'loading' | 'success' | 'error';
-
-type DecodedToken = {
+interface User {
   userId: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   isAdmin: boolean;
-  exp: number;
-} | null;
+  profileImage?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  bio?: string;
+}
 
-type AuthContextType = {
-  user: UserType | null;
-  loading: LoadingState;
-  isInitialized: boolean;
+interface AuthContextType {
   isAuthenticated: boolean;
+  user: User | null;
+  isLoading: boolean;
   error: string | null;
-  decodedToken: DecodedToken;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  updateProfile: (data: Partial<UserType>) => Promise<{ success: boolean; error?: string }>;
   refreshUser: () => Promise<void>;
-  clearError: () => void;
-};
+  updateProfile: (updateData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+}
 
-// Context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-// Hook
-export const useAuth = () => {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
-};
+}
 
-// Provider
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState<LoadingState>('idle');
-  const [isInitialized, setIsInitialized] = useState(false);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [decodedToken, setDecodedToken] = useState<DecodedToken>(null);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
 
-  const isAuthenticated = useMemo(() => !!user, [user]);
-
-  const clearError = useCallback(() => setError(null), []);
-
-  const decodeToken = useCallback((token: string) => {
+  /**
+   * Fetch user info from backend using the /api/auth/me endpoint.
+   * This endpoint reads the httpOnly authToken cookie on the server.
+   */
+  const fetchUserFromBackend = async () => {
     try {
-      const decoded = jwt.decode(token) as DecodedToken;
-      console.log('[DEBUG] Decoded token:', decoded);
-      if (!decoded || !decoded.userId) {
-        console.warn('[DEBUG] Invalid token structure');
-        setDecodedToken(null);
-        return null;
-      }
-      if (decoded.exp * 1000 < Date.now()) {
-        console.warn('[DEBUG] Token is expired');
-        setDecodedToken(null);
-        return null;
-      }
-      setDecodedToken(decoded);
-      return decoded;
-    } catch (error) {
-      console.error('[DEBUG] Token decode error:', error);
-      setDecodedToken(null);
-      return null;
-    }
-  }, []);
-
-  const getAuthToken = useCallback(() => {
-    if (typeof document === 'undefined') return null;
-    const cookies = document.cookie.split('; ').reduce((acc, cookie) => {
-      const [name, value] = cookie.split('=');
-      acc[name] = value;
-      return acc;
-    }, {} as Record<string, string>);
-    const token = cookies['authToken'] || null;
-    console.log('[DEBUG] Retrieved authToken:', token);
-    return token;
-  }, []);
-
-  const fetchUser = useCallback(async () => {
-    try {
-      setLoading('loading');
-      setError(null);
-
-      const token = getAuthToken();
-      if (!token) {
-        setUser(null);
-        setLoading('error');
-        setError('No authentication token found');
-        return;
-      }
-
-      const decoded = decodeToken(token);
-      if (!decoded || !decoded.userId) {
-        setUser(null);
-        setLoading('error');
-        setError('Invalid or expired token');
-        return;
-      }
-
-      const res = await fetch(`/api/users/${decoded.userId}`, {
-        method: 'GET',
+      const response = await fetch(`/api/auth/me`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
-
-      if (res.ok && data && data._id) {
-        setUser({
-          _id: data._id,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          isAdmin: data.isAdmin,
-          profileImage: data.profileImage || undefined,
-          bio: data.bio || undefined,
-          createdAt: new Date(data.createdAt).toISOString(),
-          updatedAt: new Date(data.updatedAt).toISOString(),
-        });
-        setLoading('success');
-      } else {
-        setUser(null);
-        setLoading('error');
-        setError(data.error || 'Invalid user data received');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data or token expired/invalid');
       }
-    } catch (error) {
+
+      const data = await response.json();
+      console.log('Fetched user data from /api/auth/me:', data); // Debug log
+
+      const updatedUser: User = {
+        userId: data.userId,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        isAdmin: data.isAdmin,
+        profileImage: data.profileImage,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        bio: data.bio, // Ensure bio is always a string, even if undefined
+      };
+
+      setUser(updatedUser);
+      setIsAuthenticated(true);
+      setError(null);
+    } catch (err) {
+      console.error('Auth error:', err);
+      setIsAuthenticated(false);
       setUser(null);
-      setError('Network error occurred');
-      setLoading('error');
-    } finally {
-      setIsInitialized(true);
+      setError('Authentication failed. Please log in again.');
     }
-  }, [getAuthToken, decodeToken]);
+  };
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setLoading('loading');
-      setError(null);
+  /**
+   * Refresh user data to reflect session updates (e.g., after profile changes).
+   */
+  const refreshUser = async () => {
+    setIsLoading(true);
+    await fetchUserFromBackend();
+    setIsLoading(false);
+  };
 
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        await fetchUser();
-        return { success: true };
-      } else {
-        const errorMsg = result.error || 'Login failed';
-        setError(errorMsg);
-        setLoading('error');
-        return { success: false, error: errorMsg };
-      }
-    } catch (error) {
-      const errorMsg = 'Network error occurred';
-      setError(errorMsg);
-      setLoading('error');
-      return { success: false, error: errorMsg };
-    }
-  }, [fetchUser]);
-
-  const register = useCallback(async (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }) => {
-    try {
-      setLoading('loading');
-      setError(null);
-
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        await fetchUser();
-        return { success: true };
-      } else {
-        const errorMsg = result.error || 'Registration failed';
-        setError(errorMsg);
-        setLoading('error');
-        return { success: false, error: errorMsg };
-      }
-    } catch (error) {
-      const errorMsg = 'Network error occurred';
-      setError(errorMsg);
-      setLoading('error');
-      return { success: false, error: errorMsg };
-    }
-  }, [fetchUser]);
-
-  const logout = useCallback(async () => {
-    try {
-      setLoading('loading');
-      setError(null);
-
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        setUser(null);
-        setDecodedToken(null);
-        setLoading('success');
-        document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'userEmail=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      } else {
-        setError('Logout failed');
-        setLoading('error');
-      }
-    } catch (error) {
-      setError('Network error during logout');
-      setLoading('error');
-    }
+  // Initial user fetch on mount
+  useEffect(() => {
+    refreshUser();
   }, []);
 
-  const updateProfile = useCallback(async (data: Partial<UserType>) => {
+  // Periodic polling to check for session updates, only if authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(async () => {
+      await fetchUserFromBackend();
+    }, 300000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      if (!user?._id) {
-        return { success: false, error: 'User not authenticated' };
-      }
-
-      setLoading('loading');
-      setError(null);
-
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && key !== '_id') {
-          formData.append(key, value as string);
-        }
-      });
-
-      const res = await fetch('/api/users/profile', {
-        method: 'PUT',
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
         credentials: 'include',
-        body: formData,
       });
 
-      const result = await res.json();
+      const data = await response.json();
 
-      if (res.ok) {
-        await fetchUser();
+      if (response.ok) {
+        await fetchUserFromBackend();
         return { success: true };
       } else {
-        const errorMsg = result.error || 'Failed to update profile';
-        setError(errorMsg);
-        setLoading('error');
-        return { success: false, error: errorMsg };
+        return { success: false, error: data.error || 'Login failed' };
       }
-    } catch (error) {
-      const errorMsg = 'Network error occurred';
-      setError(errorMsg);
-      setLoading('error');
-      return { success: false, error: errorMsg };
+    } catch (err) {
+      console.error('Login failed:', err);
+      return { success: false, error: 'Unexpected error during login' };
+    } finally {
+      setIsLoading(false);
     }
-  }, [user?._id, fetchUser]);
+  };
 
-  const refreshUser = useCallback(async () => {
-    await fetchUser();
-  }, [fetchUser]);
-
-  // 🔽 Add this useEffect to log the decoded token
-  useEffect(() => {
-    console.log('[DEBUG] Decoded Token (from context):', decodedToken);
-    if (decodedToken) {
-      console.log('User ID:', decodedToken.userId);
-      console.log('Email:', decodedToken.email);
-      console.log('Is Admin:', decodedToken.isAdmin);
-      console.log('Expires At:', new Date(decodedToken.exp * 1000).toLocaleString());
-    } else {
-      console.log('[DEBUG] No valid decoded token or token expired.');
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch (err) {
+      console.error('Logout failed:', err);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      setError(null);
+      setIsLoading(false);
     }
-  }, [decodedToken]);
+  };
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser, reloadTrigger]);
+  /**
+   * Update user profile and refresh session
+   */
+  const updateProfile = async (updateData: Partial<User>) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/users/${user?.userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+        credentials: 'include',
+      });
 
-  const contextValue = useMemo(() => ({
-    user,
-    loading,
-    isInitialized,
-    isAuthenticated,
-    error,
-    decodedToken,
-    login,
-    register,
-    logout,
-    updateProfile,
-    refreshUser,
-    clearError,
-  }), [user, loading, isInitialized, isAuthenticated, error, decodedToken, login, register, logout, updateProfile, refreshUser, clearError]);
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const updatedData = await response.json();
+      console.log('Updated user data from /api/users/[id]:', updatedData); // Debug log
+
+      // Refresh user data after profile update to sync with new session cookies
+      await refreshUser();
+      return { success: true };
+    } catch (err) {
+      console.error('Profile update failed:', err);
+      setError('Failed to update profile');
+      return { success: false, error: 'Failed to update profile' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, user, isLoading, error, login, logout, refreshUser, updateProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
+}

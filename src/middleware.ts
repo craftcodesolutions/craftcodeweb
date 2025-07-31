@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  /* const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl;
   
   // Get auth token from cookies or headers
   const authToken = request.cookies.get('authToken')?.value || 
@@ -40,7 +40,7 @@ export function middleware(request: NextRequest) {
   if (isAuthRoute && authToken && userEmail) {
     return NextResponse.redirect(new URL('/', request.url));
   }
- */
+
   // Continue with the request
   return NextResponse.next();
 }

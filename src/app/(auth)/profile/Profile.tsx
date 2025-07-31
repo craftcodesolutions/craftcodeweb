@@ -1,16 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from 'next/link';
 import { useState, useEffect, JSX } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Define interfaces for type safety
 interface UserProfile {
   firstName: string;
   lastName: string;
   email: string;
   bio: string;
   profileImage: string;
+  publicId?: string;
 }
 
 interface FormErrors {
@@ -22,21 +26,20 @@ interface FormErrors {
 }
 
 export default function ProfileDynamic(): JSX.Element {
+  const { user, isAuthenticated, isLoading: authLoading, error: authError, logout, updateProfile } = useAuth();
+  const router = useRouter();
+
   const initialUser: UserProfile = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    profileImage: 'https://placehold.co/128x128/000000/FFFFFF?text=Profile',
+    firstName: user?.firstName || 'John',
+    lastName: user?.lastName || 'Doe',
+    email: user?.email || 'john.doe@example.com',
+    bio: user?.bio || '',
+    profileImage: user?.profileImage || 'https://placehold.co/128x128/000000/FFFFFF?text=Profile',
+
   };
 
-  const [user, setUser] = useState<UserProfile>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('userProfile');
-      return saved ? JSON.parse(saved) : initialUser;
-    }
-    return initialUser;
-  });
+  const [userProfile, setUserProfile] = useState<UserProfile>(initialUser);
+  const [bio, setBio] = useState<string>(initialUser.bio);
   const [errors, setErrors] = useState<FormErrors>({
     firstName: '',
     lastName: '',
@@ -49,10 +52,32 @@ export default function ProfileDynamic(): JSX.Element {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [cloudinaryUrl, setCloudinaryUrl] = useState<string>(initialUser.profileImage);
+  const [cloudinaryPublicId, setCloudinaryPublicId] = useState<string>(initialUser.publicId || '');
 
   useEffect(() => {
-    localStorage.setItem('userProfile', JSON.stringify(user));
+    if (user) {
+      console.log('User data from AuthContext:', user);
+      const newUserProfile: UserProfile = {
+        firstName: user.firstName || 'John',
+        lastName: user.lastName || 'Doe',
+        email: user.email || 'john.doe@example.com',
+        bio: user.bio || '',
+        profileImage: user.profileImage || 'https://placehold.co/128x128/000000/FFFFFF?text=Profile',
+      };
+      setUserProfile(newUserProfile);
+      setBio(newUserProfile.bio);
+      setCloudinaryUrl(newUserProfile.profileImage);
+      setCloudinaryPublicId(newUserProfile.publicId || '');
+    }
   }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {
@@ -64,22 +89,22 @@ export default function ProfileDynamic(): JSX.Element {
     };
     let isValid: boolean = true;
 
-    if (!user.firstName.trim()) {
+    if (!userProfile.firstName.trim()) {
       newErrors.firstName = 'First name is required';
       isValid = false;
     }
-    if (!user.lastName.trim()) {
+    if (!userProfile.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
       isValid = false;
     }
-    if (!user.email.trim()) {
+    if (!userProfile.email.trim()) {
       newErrors.email = 'Email is required';
       isValid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userProfile.email)) {
       newErrors.email = 'Invalid email format';
       isValid = false;
     }
-    if (user.bio.length > 500) {
+    if (userProfile.bio.length > 500) {
       newErrors.bio = 'Bio cannot exceed 500 characters';
       isValid = false;
     }
@@ -90,11 +115,16 @@ export default function ProfileDynamic(): JSX.Element {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
-    setUser((prev: UserProfile) => ({ ...prev, [name]: value }));
+    if (name === 'bio') {
+      setBio(value);
+      setUserProfile((prev: UserProfile) => ({ ...prev, bio: value }));
+    } else {
+      setUserProfile((prev: UserProfile) => ({ ...prev, [name]: value }));
+    }
     setErrors((prev: FormErrors) => ({ ...prev, [name]: '' }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
@@ -106,44 +136,202 @@ export default function ProfileDynamic(): JSX.Element {
         return;
       }
       setIsUploading(true);
-      setTimeout(() => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setUser((prev: UserProfile) => ({ ...prev, profileImage: reader.result as string }));
-          setIsUploading(false);
-          setShowImageModal(true);
-        };
-        reader.readAsDataURL(file);
-      }, 1000);
+
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('/api/upload/cloudinary', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to upload image');
+        }
+
+        setCloudinaryUrl(data.imageUrl);
+        setCloudinaryPublicId(data.publicId);
+        setTempImage(data.imageUrl);
+        setUserProfile((prev: UserProfile) => ({
+          ...prev,
+          profileImage: data.imageUrl,
+          publicId: data.publicId,
+        }));
+        setShowImageModal(true);
+      } catch (error) {
+        console.error('Image upload error:', error);
+        setErrors((prev: FormErrors) => ({
+          ...prev,
+          image: error instanceof Error ? error.message : 'Failed to upload image',
+        }));
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm() || !user?.userId) return;
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const updateData: Partial<UserProfile> = {
+        firstName: userProfile.firstName,
+        lastName: userProfile.lastName,
+        email: userProfile.email,
+        bio: userProfile.bio,
+        profileImage: cloudinaryUrl,
+        publicId: cloudinaryPublicId,
+      };
+
+      Object.keys(updateData).forEach((key) => {
+        if (updateData[key as keyof typeof updateData] === initialUser[key as keyof typeof initialUser]) {
+          delete updateData[key as keyof typeof updateData];
+        }
+      });
+
+      console.log('Sending update data:', updateData);
+      const result = await updateProfile(updateData);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update profile');
+      }
+
       setIsSuccess(true);
-      setIsLoading(false);
+      setTempImage(null);
       setTimeout(() => setIsSuccess(false), 3000);
-    }, 1000);
+    } catch (error) {
+      console.error('Profile update error:', error);
+      setErrors((prev) => ({
+        ...prev,
+        image: error instanceof Error ? error.message : 'Failed to update profile. Please try again.',
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLogout = (): void => {
+  const handleLogout = async (): Promise<void> => {
     setShowLogoutConfirm(true);
   };
 
-  const confirmLogout = (): void => {
-    localStorage.removeItem('userProfile');
-    setUser(initialUser);
-    setShowLogoutConfirm(false);
-    alert('Logged out successfully!');
+  const confirmLogout = async (): Promise<void> => {
+    try {
+      await logout();
+      setShowLogoutConfirm(false);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setErrors((prev) => ({ ...prev, image: 'Failed to sign out. Please try again.' }));
+      setShowLogoutConfirm(false);
+    }
   };
+
+  const handleReset = (): void => {
+    setUserProfile(initialUser);
+    setBio(initialUser.bio);
+    setCloudinaryUrl(initialUser.profileImage);
+    setCloudinaryPublicId(initialUser.publicId || '');
+    setTempImage(null);
+    setErrors({ firstName: '', lastName: '', email: '', bio: '', image: '' });
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900 font-sans antialiased">
+        <div className="flex min-h-screen">
+          <div className="flex w-full lg:w-1/2 items-center justify-center p-4 sm:p-6">
+            <div className="w-full max-w-lg rounded-2xl shadow-xl p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md sm:p-8 space-y-5">
+              <div className="mb-6 space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+              <div className="flex flex-col items-center space-y-3">
+                <Skeleton className="h-24 w-24 rounded-full" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  <Skeleton className="h-4 w-16 mb-1" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div>
+                  <Skeleton className="h-4 w-16 mb-1" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+              <div>
+                <Skeleton className="h-4 w-16 mb-1" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-16 mb-1" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-3 w-20 mt-1" />
+              </div>
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-6">
+                <Skeleton className="h-10 w-full sm:w-1/2" />
+                <Skeleton className="h-10 w-full sm:w-1/2" />
+              </div>
+              <div className="mt-6 text-center">
+                <Skeleton className="h-10 w-full max-w-xs" />
+              </div>
+            </div>
+          </div>
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-500 to-blue-700 relative overflow-hidden">
+            <div className="flex items-center justify-center w-full relative z-10">
+              <div className="max-w-md text-center px-6 py-8 space-y-6">
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-20 rounded-full mx-auto bg-white/10" />
+                  <Skeleton className="h-8 w-3/4 mx-auto" />
+                  <Skeleton className="h-4 w-1/2 mx-auto" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <Skeleton className="h-8 w-8 rounded-full mr-2 bg-white/10" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                  <div className="flex items-center">
+                    <Skeleton className="h-8 w-8 rounded-full mr-2 bg-white/10" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                  <div className="flex items-center">
+                    <Skeleton className="h-8 w-8 rounded-full mr-2 bg-white/10" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900">
+        <div className="p-4 bg-red-100/80 dark:bg-red-900/40 border border-red-300 dark:border-red-700 rounded-lg text-center">
+          <p className="text-sm text-red-700 dark:text-red-300">{authError}</p>
+          <Link
+            href="/login"
+            className="mt-2 inline-block text-sm font-medium text-blue-500 dark:text-blue-400 hover:underline"
+            aria-label="Go to login page"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900 font-sans antialiased">
       <div className="flex min-h-screen">
-        {/* Left Side - Form */}
         <div className="flex w-full lg:w-1/2 items-center justify-center p-4 sm:p-6">
           <div className="w-full max-w-lg rounded-2xl shadow-xl p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md sm:p-8">
             <div className="mb-6">
@@ -174,6 +362,12 @@ export default function ProfileDynamic(): JSX.Element {
               </div>
             )}
 
+            {errors.image && (
+              <div className="mb-4 p-3 bg-red-100/80 dark:bg-red-900/40 border border-red-300 dark:border-red-700 rounded-lg flex items-center backdrop-blur-sm" role="alert">
+                <p className="text-sm text-red-700 dark:text-red-300">{errors.image}</p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5" htmlFor="profileImage">
@@ -182,7 +376,7 @@ export default function ProfileDynamic(): JSX.Element {
                 <div className="flex flex-col items-center space-y-3">
                   <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-md group cursor-pointer hover:shadow-lg transition-shadow duration-200">
                     <img
-                      src={user.profileImage}
+                      src={tempImage || userProfile.profileImage}
                       alt="Profile"
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       onClick={() => setShowImageModal(true)}
@@ -207,7 +401,7 @@ export default function ProfileDynamic(): JSX.Element {
                     )}
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-osi0-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <input
@@ -222,7 +416,7 @@ export default function ProfileDynamic(): JSX.Element {
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Click to upload or preview</p>
                 </div>
-                {errors.image && (
+                {errors.image && !errors.image.includes('Failed to update') && (
                   <p className="mt-2 text-xs text-red-500 dark:text-red-400 text-center" role="alert">{errors.image}</p>
                 )}
               </div>
@@ -236,7 +430,7 @@ export default function ProfileDynamic(): JSX.Element {
                     type="text"
                     id="firstName"
                     name="firstName"
-                    value={user.firstName}
+                    value={userProfile.firstName}
                     onChange={handleInputChange}
                     className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.firstName ? 'border-red-400 dark:border-red-500' : ''}`}
                     placeholder="Enter your first name"
@@ -255,7 +449,7 @@ export default function ProfileDynamic(): JSX.Element {
                     type="text"
                     id="lastName"
                     name="lastName"
-                    value={user.lastName}
+                    value={userProfile.lastName}
                     onChange={handleInputChange}
                     className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.lastName ? 'border-red-400 dark:border-red-500' : ''}`}
                     placeholder="Enter your last name"
@@ -275,7 +469,7 @@ export default function ProfileDynamic(): JSX.Element {
                   type="email"
                   id="email"
                   name="email"
-                  value={user.email}
+                  value={userProfile.email}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-400 dark:border-red-500' : ''}`}
                   placeholder="Enter your email"
@@ -292,7 +486,7 @@ export default function ProfileDynamic(): JSX.Element {
                   id="bio"
                   name="bio"
                   rows={4}
-                  value={user.bio}
+                  value={userProfile.bio}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.bio ? 'border-red-400 dark:border-red-500' : ''}`}
                   placeholder="Tell us about yourself..."
@@ -300,16 +494,13 @@ export default function ProfileDynamic(): JSX.Element {
                   aria-describedby={errors.bio ? 'bio-error' : undefined}
                 />
                 {errors.bio && <p className="mt-1 text-xs text-red-500 dark:text-red-400" id="bio-error" role="alert">{errors.bio}</p>}
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{user.bio.length}/500 characters</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{userProfile.bio.length}/500 characters</p>
               </div>
 
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-6">
                 <button
                   type="button"
-                  onClick={() => {
-                    setUser(initialUser);
-                    setErrors({ firstName: '', lastName: '', email: '', bio: '', image: '' });
-                  }}
+                  onClick={handleReset}
                   className="relative cursor-pointer flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                   aria-label="Reset form to default values"
                 >
@@ -317,7 +508,7 @@ export default function ProfileDynamic(): JSX.Element {
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || authLoading}
                   className="relative cursor-pointer flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-500 dark:bg-blue-600 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                   aria-label="Save profile changes"
                 >
@@ -358,7 +549,6 @@ export default function ProfileDynamic(): JSX.Element {
           </div>
         </div>
 
-        {/* Right Side - Hero */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-500 to-blue-700 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div
@@ -415,13 +605,12 @@ export default function ProfileDynamic(): JSX.Element {
         </div>
       </div>
 
-      {/* Image Preview Modal */}
       {showImageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md transition-all duration-300">
           <div className="bg-white/90 dark:bg-gray-800/90 rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all duration-300 scale-100 backdrop-blur-md sm:p-8" role="dialog" aria-labelledby="image-preview-title">
             <h3 id="image-preview-title" className="text-lg font-medium text-gray-900 dark:text-white mb-3">Image Preview</h3>
             <img
-              src={user.profileImage}
+              src={tempImage || userProfile.profileImage}
               alt="Profile preview"
               className="max-w-full max-h-64 object-contain rounded-lg mb-4 shadow-md"
             />
@@ -450,7 +639,6 @@ export default function ProfileDynamic(): JSX.Element {
         </div>
       )}
 
-      {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md transition-all duration-300">
           <div className="bg-white/90 dark:bg-gray-800/90 rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all duration-300 scale-100 backdrop-blur-md sm:p-8" role="dialog" aria-labelledby="logout-confirm-title">

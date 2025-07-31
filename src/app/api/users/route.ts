@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
 import { sendWelcomeEmail, sendAdminNotification } from '@/lib/emailService';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const DB_NAME = 'CraftCode';
 const COLLECTION = 'users';
 
@@ -61,23 +59,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        userId: result.insertedId.toString(),
-        email: userData.email,
-        isAdmin: userData.isAdmin,
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
     // Send welcome email
     try {
       await sendWelcomeEmail(email, firstName);
     } catch (emailError) {
       console.error('Failed to send welcome email:', emailError);
-      // Don't fail the registration if email fails
     }
 
     // Send admin notification
@@ -85,30 +71,10 @@ export async function POST(req: NextRequest) {
       await sendAdminNotification(email, firstName);
     } catch (adminEmailError) {
       console.error('Failed to send admin notification:', adminEmailError);
-      // Don't fail the registration if admin email fails
     }
 
-    // Set cookies for session management
-    const response = NextResponse.json({ success: true, message: 'User created successfully' }, { status: 201 });
-
-    // Set HTTP-only cookies
-    response.cookies.set('authToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/',
-    });
-
-    response.cookies.set('userEmail', userData.email, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/',
-    });
-
-    return response;
+    // Response without setting token
+    return NextResponse.json({ success: true, message: 'User created successfully' }, { status: 201 });
   } catch (error) {
     console.error('User creation error:', error);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });

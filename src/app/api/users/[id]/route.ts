@@ -1,82 +1,166 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import clientPromise from '@/config/mongodb';
+import { getUserById, updateUserProfile, deleteUser } from '@/controllers/userService';
+import { verifyAuth } from '@/lib/auth';
+import { User } from '@/types/User';
 import { ObjectId } from 'mongodb';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const DB_NAME = 'CraftCode';
-const COLLECTION = 'users';
 
-interface Params {
-  params: { id: string };
-}
+// Define the context type explicitly
+type RouteContext = { params: { id: string } };
 
-export async function GET(req: NextRequest, { params }: Params) {
+// GET /api/users/[id]
+export async function GET(req: NextRequest, context: any) {
+  const { params } = context as RouteContext; // Type assertion to enforce correct type
   try {
-    // Verify authentication
-    const cookieStore = cookies();
-    const token = (await cookieStore).get('authToken')?.value;
+    const { id } = params;
 
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string; isAdmin: boolean };
-    } catch (error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // Ensure the requesting user is accessing their own data or is an admin
-    if (decoded.userId !== params.id && !decoded.isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    if (!ObjectId.isValid(params.id)) {
+    if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db(DB_NAME);
-    const usersCollection = db.collection(COLLECTION);
+    const authResult = await verifyAuth(req);
+    if (!authResult.isAuthenticated || authResult.userId !== id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const user = await usersCollection.findOne(
-      { _id: new ObjectId(params.id) },
-      {
-        projection: {
-          _id: 1,
-          firstName: 1,
-          lastName: 1,
-          email: 1,
-          isAdmin: 1,
-          profileImage: 1,
-          bio: 1,
-          createdAt: 1,
-          updatedAt: 1,
-        },
-      }
-    );
-
+    const user = await getUserById(id);
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      _id: user._id.toString(),
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      profileImage: user.profileImage || undefined,
-      bio: user.bio || undefined,
-      createdAt: new Date(user.createdAt).toISOString(),
-      updatedAt: new Date(user.updatedAt).toISOString(),
-    }, { status: 200 });
+    const { password, ...userData } = user;
+    return NextResponse.json(userData, { status: 200 });
   } catch (error) {
-    console.error('Error getting user:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('GET /api/users/[id] error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/users/[id]
+export async function PUT(req: NextRequest, context: any) {
+  const { params } = context as RouteContext; // Type assertion
+  try {
+    const { id } = params;
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+
+    const authResult = await verifyAuth(req);
+    if (!authResult.isAuthenticated || authResult.userId !== id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { firstName, lastName, email, bio, profileImage } = body;
+
+    if (!firstName && !lastName && !email && !bio && !profileImage) {
+      return NextResponse.json({ error: 'At least one field must be provided' }, { status: 400 });
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
+    if (bio && bio.length > 500) {
+      return NextResponse.json({ error: 'Bio cannot exceed 500 characters' }, { status: 400 });
+    }
+
+    const updateData: Partial<User> = {
+      firstName,
+      lastName,
+      email,
+      bio,
+      profileImage,
+    };
+
+    Object.keys(updateData).forEach((key) => {
+      if (updateData[key as keyof typeof updateData] === undefined) {
+        delete updateData[key as keyof typeof updateData];
+      }
+    });
+
+    const updatedUser = await updateUserProfile(id, updateData);
+    if (!updatedUser) {
+      return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: updatedUser?._id?.toString?.() ?? '',
+        email: updatedUser?.email ?? '',
+        isAdmin: updatedUser?.isAdmin ?? false,
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const response = NextResponse.json(
+      { ...updatedUser, password: undefined },
+      { status: 200 }
+    );
+
+    response.cookies.set('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/',
+    });
+
+    if (updatedUser.email) {
+      response.cookies.set('userEmail', updatedUser.email, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60,
+        path: '/',
+      });
+    }
+
+    return response;
+  } catch (error) {
+    console.error('PUT /api/users/[id] error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/users/[id]
+export async function DELETE(req: NextRequest, context: any) {
+  const { params } = context as RouteContext; // Type assertion
+  try {
+    const { id } = params;
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+
+    const authResult = await verifyAuth(req);
+    if (!authResult.isAuthenticated || authResult.userId !== id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await deleteUser(id);
+
+    const response = NextResponse.json({ message: 'User deleted successfully' }, { status: 200 });
+    response.cookies.delete('authToken');
+    response.cookies.delete('userEmail');
+    return response;
+  } catch (error) {
+    console.error('DELETE /api/users/[id] error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
