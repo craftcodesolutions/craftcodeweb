@@ -25,15 +25,6 @@ const STATIC_TESTIMONIALS = [
     review:
       "There support and dedication is impressive. I have made my app with them. They are still helping me to make my product best fitted in the market. I love them because they treat me like a part of there family.",
     rating: 5,
-  },
-  {
-    _id: "5",
-    name: "Foysal & Nayma",
-    title: "Founders of Bonedi Multipurpose Brand",
-    image: "/images/testimonial/bal.jpg",
-    review:
-      "Me and my wife, we both were thinking to launch our own brand. But we couldn't do that because of our 9 to 5 job. Alhamdulillah it's gonna be possible with CraftCode Solutions. Especially thanks to Jayed who inspired us to go ahead and make a great impact.",
-    rating: 5,
   }
 ];
 

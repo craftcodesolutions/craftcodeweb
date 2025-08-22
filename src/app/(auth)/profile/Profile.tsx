@@ -231,10 +231,17 @@ export default function ProfileDynamic(): JSX.Element {
   };
 
   const handleReset = (): void => {
-    setUserProfile(initialUser);
-    setBio(initialUser.bio);
-    setCloudinaryUrl(initialUser.profileImage);
-    setCloudinaryPublicId(initialUser.publicId || '');
+    // Clear the form fields only. On browser reload, user data will be restored from context/auth.
+    setUserProfile((prev) => ({
+      ...prev,
+      firstName: '',
+      lastName: '',
+      email: '',
+      bio: '',
+      // profileImage and publicId remain unchanged
+    }));
+    setBio('');
+    // Do not clear cloudinaryUrl or cloudinaryPublicId so the image stays
     setTempImage(null);
     setErrors({ firstName: '', lastName: '', email: '', bio: '', image: '' });
   };

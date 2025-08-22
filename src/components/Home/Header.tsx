@@ -181,7 +181,7 @@ function Header() {
       <div className="px-3 py-3 space-y-1">
         {user?.isAdmin && (
           <button
-            onClick={() => handleNavigation('/admin')}
+            onClick={() => handleNavigation('/dashboard')}
             onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/admin'))}
             className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
             aria-label="Navigate to Admin Dashboard"
@@ -211,7 +211,7 @@ function Header() {
           <span>My Profile</span>
         </button>
         <button
-          onClick={() => handleNavigation('/settings')}
+          onClick={() => handleNavigation('/account-settings')}
           onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/settings'))}
           className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
           aria-label="Navigate to Account Settings"
@@ -408,7 +408,7 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 group cursor-pointer" aria-label="Homepage">
-            <div className="relative w-10 h-10 rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <div className="relative w-10 h-10 rounded-sm flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
               {imageError.logo ? (
                 <span className="text-white font-semibold">CC</span>
               ) : (
@@ -423,8 +423,9 @@ function Header() {
                 />
               )}
             </div>
-            <span className="text-xl font-bold text-gray-800 dark:text-white font-sans tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors duration-300">
-              CraftCode
+            <span className="flex flex-col text-base font-bold text-gray-800 dark:text-white font-sans tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors duration-300">
+              <span className="text-base">CraftCode</span>
+              <span className="-mt-1 text-sm font-cursive text-amber-600 dark:text-amber-400" style={{ fontFamily: 'Pacifico, cursive' }}>Solutions</span>
             </span>
           </Link>
         </div>

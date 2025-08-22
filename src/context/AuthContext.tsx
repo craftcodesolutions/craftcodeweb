@@ -25,6 +25,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateProfile: (updateData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  updateEmail: (currentEmail: string, newEmail: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  changePassword: (email: string, currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -43,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * Fetch user info from backend using the /api/auth/me endpoint.
-   * This endpoint reads the httpOnly authToken cookie on the server.
    */
   const fetchUserFromBackend = async () => {
     try {
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profileImage: data.profileImage,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
-        bio: data.bio, // Ensure bio is always a string, even if undefined
+        bio: data.bio || '',
       };
 
       setUser(updatedUser);
@@ -84,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Refresh user data to reflect session updates (e.g., after profile changes).
+   * Refresh user data to reflect session updates.
    */
   const refreshUser = async () => {
     setIsLoading(true);
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUser();
   }, []);
 
-  // Periodic polling to check for session updates, only if authenticated
+  // Periodic polling to check for session updates
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -168,7 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatedData = await response.json();
       console.log('Updated user data from /api/users/[id]:', updatedData); // Debug log
 
-      // Refresh user data after profile update to sync with new session cookies
       await refreshUser();
       return { success: true };
     } catch (err) {
@@ -180,9 +180,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Update user email
+   */
+  const updateEmail = async (currentEmail: string, newEmail: string, password: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/auth/update-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentEmail, newEmail, password }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update email');
+      }
+
+      await fetchUserFromBackend();
+      return { success: true };
+    } catch (err) {
+      console.error('Email update failed:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update email');
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update email' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Change user password
+   */
+  const changePassword = async (email: string, currentPassword: string, newPassword: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, currentPassword, newPassword }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to change password');
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error('Password change failed:', err);
+      setError(err instanceof Error ? err.message : 'Failed to change password');
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to change password' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, isLoading, error, login, logout, refreshUser, updateProfile }}
+      value={{ isAuthenticated, user, isLoading, error, login, logout, refreshUser, updateProfile, updateEmail, changePassword }}
     >
       {children}
     </AuthContext.Provider>

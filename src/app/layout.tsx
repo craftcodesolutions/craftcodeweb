@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+// import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
@@ -12,10 +12,7 @@ const roboto = Roboto({
   weight: ["400", "700"], // You can adjust weights as needed
 });
 
-export const metadata: Metadata = {
-  title: "CraftCode Solutions",
-  description: "CraftCode Solutions is a software development company that provides software development services to businesses and individuals.",
-};
+
 
 export default function RootLayout({
   children,

@@ -81,7 +81,11 @@ export async function GET(req: NextRequest) {
 
     // 6. JWT
     const token = jwt.sign(
-      { userId: user._id.toString(), email: user.email },
+      {
+        userId: user._id.toString(),
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
