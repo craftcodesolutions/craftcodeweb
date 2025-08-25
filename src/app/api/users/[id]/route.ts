@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserById, updateUserProfile, deleteUser } from '@/controllers/userService';
 import { verifyAuth } from '@/lib/auth';
@@ -9,22 +8,16 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Define the context type explicitly
-type RouteContext = { params: { id: string } };
+// Context type — note `Promise`
+type RouteContext = { params: Promise<{ id: string }> };
 
 // GET /api/users/[id]
-export async function GET(req: NextRequest, context: any) {
-  const { params } = context as RouteContext; // Type assertion to enforce correct type
+export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
-    }
-
-    const authResult = await verifyAuth(req);
-    if (!authResult.isAuthenticated || authResult.userId !== id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await getUserById(id);
@@ -32,7 +25,16 @@ export async function GET(req: NextRequest, context: any) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { password, ...userData } = user;
+    const userData = {
+      userId: user.userId || user._id.toString(),
+      firstName: user.firstName || 'Unknown',
+      lastName: user.lastName || 'User',
+      avatar:
+        user.profileImage && typeof user.profileImage === 'string' && user.profileImage.trim() !== ''
+          ? user.profileImage
+          : null,
+    };
+
     return NextResponse.json(userData, { status: 200 });
   } catch (error) {
     console.error('GET /api/users/[id] error:', error);
@@ -44,10 +46,9 @@ export async function GET(req: NextRequest, context: any) {
 }
 
 // PUT /api/users/[id]
-export async function PUT(req: NextRequest, context: any) {
-  const { params } = context as RouteContext; // Type assertion
+export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
@@ -73,14 +74,9 @@ export async function PUT(req: NextRequest, context: any) {
       return NextResponse.json({ error: 'Bio cannot exceed 500 characters' }, { status: 400 });
     }
 
-    const updateData: Partial<User> = {
-      firstName,
-      lastName,
-      email,
-      bio,
-      profileImage,
-    };
+    const updateData: Partial<User> = { firstName, lastName, email, bio, profileImage };
 
+    // remove undefined keys
     Object.keys(updateData).forEach((key) => {
       if (updateData[key as keyof typeof updateData] === undefined) {
         delete updateData[key as keyof typeof updateData];
@@ -102,10 +98,7 @@ export async function PUT(req: NextRequest, context: any) {
       { expiresIn: '7d' }
     );
 
-    const response = NextResponse.json(
-      { ...updatedUser, password: undefined },
-      { status: 200 }
-    );
+    const response = NextResponse.json({ ...updatedUser, password: undefined }, { status: 200 });
 
     response.cookies.set('authToken', token, {
       httpOnly: true,
@@ -136,10 +129,9 @@ export async function PUT(req: NextRequest, context: any) {
 }
 
 // DELETE /api/users/[id]
-export async function DELETE(req: NextRequest, context: any) {
-  const { params } = context as RouteContext; // Type assertion
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
