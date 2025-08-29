@@ -499,7 +499,7 @@ const Blogs: React.FC = () => {
                         </button>
                     )}
                 </div>
-                <div className="border-t border-gray-200 dark:border-gray-700 p-6 md:p-10">
+                <div className="border-t border-gray-600 dark:border-gray-700 p-6 md:p-10">
                     <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
                         <h3 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                             All Blogs
@@ -548,7 +548,7 @@ const Blogs: React.FC = () => {
                                 {blogs.map((blog) => (
                                     <div
                                         key={blog._id}
-                                        className="group rounded-xl border border-[#bfa77a] bg-[#f5e6d3] p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                        className="group rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                                     >
                                         {blog.image && (
                                             <div className="relative w-full h-52 rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg">

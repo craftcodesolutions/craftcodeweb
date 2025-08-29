@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
         cloudinary.uploader.upload_stream(
           {
-            folder: 'craftcode-blogs',
+            folder: 'craftcode-projects',
             transformation: [
               { width: 400, height: 400, crop: 'fill', gravity: 'face' },
               { quality: 'auto', fetch_format: 'auto' }

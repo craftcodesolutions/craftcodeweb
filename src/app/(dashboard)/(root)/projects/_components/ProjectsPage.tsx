@@ -1,103 +1,217 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProjectCard from './ProjectCard';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Project {
-  id: string;
-  name: string;
-  url: string;
-  coverImage?: string;
-  description?: string;
-  technologies?: string[];
-  status?: 'active' | 'completed' | 'in-progress';
-  featured?: boolean;
+  _id: string;
+  title: string;
+  author: Author;
+  coAuthors?: string[];
+  client: Client;
+  startDate?: string;
+  deadline?: string;
+  deliveryDate?: string;
+  description: string;
+  techStack?: string[];
+  tools?: string[];
+  category: string;
+  status: string;
+  priority: string;
+  slug: string;
+  imageUrl?: string;
+  publicId?: string;
+  projectUrl: string;
+  repoUrl: string;
+  deployment: string;
+  budget?: number;
+  currency: string;
+  contractType: string;
+  paymentStatus: string;
+  featured: boolean;
+  caseStudy: string;
+  createdAt: string;
+  updatedAt: string;
+  date: string; // ✅ always string now
 }
 
-const sampleProjects: Project[] = [
-  {
-    id: '1',
-    name: 'E-Commerce Platform',
-    url: 'https://example-ecommerce.com',
-    coverImage: '/images/portfolio/image-1.jpg',
-    description: 'A modern e-commerce platform built with Next.js and Stripe integration for seamless online shopping experience.',
-    technologies: ['Next.js', 'TypeScript', 'Stripe', 'Tailwind CSS'],
-    status: 'active',
-    featured: true,
-  },
-  {
-    id: '2',
-    name: 'Task Management App',
-    url: 'https://taskmanager-app.com',
-    coverImage: '/images/portfolio/image-2.jpg',
-    description: 'Collaborative task management application with real-time updates and team collaboration features.',
-    technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB'],
-    status: 'completed',
-    featured: true,
-  },
-  {
-    id: '3',
-    name: 'AI Chat Assistant',
-    url: 'https://ai-chat-assistant.com',
-    coverImage: '/images/portfolio/image-3.jpg',
-    description: 'Intelligent chatbot powered by machine learning for customer support and automated responses.',
-    technologies: ['Python', 'TensorFlow', 'FastAPI', 'PostgreSQL'],
-    status: 'in-progress',
-    featured: true,
-  },
-  {
-    id: '4',
-    name: 'Portfolio Website',
-    url: 'https://portfolio-showcase.com',
-    coverImage: '/images/portfolio/image-4.jpg',
-    description: 'Personal portfolio website showcasing creative work and professional experience.',
-    technologies: ['React', 'Framer Motion', 'GSAP', 'Vercel'],
-    status: 'completed',
-  },
-  {
-    id: '5',
-    name: 'Weather Dashboard',
-    url: 'https://weather-dashboard.com',
-    description: 'Real-time weather monitoring dashboard with interactive maps and detailed forecasts.',
-    technologies: ['Vue.js', 'D3.js', 'OpenWeather API', 'Chart.js'],
-    status: 'active',
-  },
-  {
-    id: '6',
-    name: 'Social Media Analytics',
-    url: 'https://social-analytics.com',
-    coverImage: '/images/portfolio/image (6).jpg',
-    description: 'Comprehensive analytics platform for social media performance tracking and insights.',
-    technologies: ['Angular', 'Python', 'Redis', 'AWS'],
-    status: 'in-progress',
-  },
-  {
-    id: '7',
-    name: 'Fitness Tracking App',
-    url: 'https://fitness-tracker.com',
-    coverImage: '/images/portfolio/image (9).jpg',
-    description: 'Mobile fitness application with workout tracking, nutrition planning, and progress analytics.',
-    technologies: ['React Native', 'Firebase', 'Redux', 'Expo'],
-    status: 'active',
-  },
-  {
-    id: '8',
-    name: 'Real Estate Platform',
-    url: 'https://real-estate-platform.com',
-    coverImage: '/images/portfolio/image (10).jpg',
-    description: 'Comprehensive real estate platform with property listings, virtual tours, and agent management.',
-    technologies: ['Next.js', 'Prisma', 'PostgreSQL', 'Mapbox'],
-    status: 'completed',
-  },
-];
+interface RawProject {
+  _id: string;
+  title: string;
+  author: string;
+  coAuthors?: string[];
+  client: string;
+  startDate?: string;
+  deadline?: string;
+  deliveryDate?: string;
+  description: string;
+  techStack?: string[];
+  tools?: string[];
+  category: string;
+  status: string;
+  priority: string;
+  slug: string;
+  imageUrl?: string;
+  publicId?: string;
+  projectUrl: string;
+  repoUrl: string;
+  deployment: string;
+  budget?: number;
+  currency: string;
+  contractType: string;
+  paymentStatus: string;
+  featured: boolean;
+  caseStudy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Author {
+  userId: string;
+  name: string;
+  avatar?: string | null;
+  email?: string | null;
+  bio: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface Client {
+  userId: string;
+  name: string;
+  avatar?: string | null;
+  email?: string | null;
+  bio: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 const ProjectsPage = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [filter, setFilter] = useState<'all' | 'featured'>('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredProjects = filter === 'all' ? sampleProjects : sampleProjects.filter(project => project.featured);
+  useEffect(() => {
+    const fetchProjectsAndUsers = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/projects?page=1&limit=100');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to fetch projects (status: ${response.status})`);
+        }
+        const data = await response.json();
+        const rawProjects: RawProject[] = Array.isArray(data.projects) ? data.projects : [];
+
+        // Cache for authors
+        const authorCache: { [key: string]: Author } = {};
+        const uniqueAuthorIds = [...new Set(rawProjects.map(project => project.author).filter(Boolean))] as string[];
+
+        for (const userId of uniqueAuthorIds) {
+          try {
+            const userResponse = await fetch(`/api/users/${userId}`);
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              authorCache[userId] = {
+                userId,
+                name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown Author',
+                avatar: userData.avatar && typeof userData.avatar === 'string' && userData.avatar.trim() !== '' ? userData.avatar : null,
+                bio: userData.bio || 'No bio available',
+              };
+            } else {
+              authorCache[userId] = { userId, name: 'Unknown Author', avatar: null, bio: 'No bio available' };
+            }
+          } catch {
+            authorCache[userId] = { userId, name: 'Unknown Author', avatar: null, bio: 'No bio available' };
+          }
+        }
+
+        // Cache for clients
+        const clientCache: { [key: string]: Client } = {};
+        const uniqueClientIds = [...new Set(rawProjects.map(project => project.client).filter(Boolean))] as string[];
+
+        for (const userId of uniqueClientIds) {
+          try {
+            const clientResponse = await fetch(`/api/users/${userId}`);
+            if (clientResponse.ok) {
+              const clientData = await clientResponse.json();
+              console.log(clientData)
+              clientCache[userId] = {
+                userId,
+                name: `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || 'Unknown Client',
+                avatar: clientData.avatar && typeof clientData.avatar === 'string' && clientData.avatar.trim() !== '' ? clientData.avatar : null,
+                bio: clientData.bio || 'No bio available',
+              };
+            } else {
+              clientCache[userId] = { userId, name: 'Unknown Client', avatar: null, bio: 'No bio available' };
+            }
+          } catch {
+            clientCache[userId] = { userId, name: 'Unknown Client', avatar: null, bio: 'No bio available' };
+          }
+        }
+
+        const statusMap: { [key: string]: string } = {
+          ongoing: 'in-progress',
+        };
+
+        const mappedProjects: Project[] = rawProjects.map(project => ({
+          ...project,
+          title: project.title || 'Untitled',
+          description: project.description || '',
+          category: project.category || 'General',
+          techStack: project.techStack || [],
+          projectUrl: project.projectUrl || '',
+          repoUrl: project.repoUrl || '',
+          deployment: project.deployment || '',
+          status: statusMap[project.status] || project.status,
+          author: authorCache[project.author] || { userId: project.author || 'unknown', name: 'Unknown Author', avatar: null, bio: 'No bio available' },
+          client: clientCache[project.client] || { userId: project.client || 'unknown', name: 'Unknown Client', avatar: null, bio: 'No bio available' },
+          date: project.startDate || project.createdAt || new Date().toISOString(), // ✅ always a string
+        }));
+
+        setProjects(mappedProjects);
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch projects';
+        setError(errorMessage);
+        console.error('Fetch projects error:', errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProjectsAndUsers();
+  }, []);
+
+  useEffect(() => {
+    setFilteredProjects(filter === 'all' ? projects : projects.filter(project => project.featured));
+  }, [filter, projects]);
 
   return (
     <div className="min-h-screen relative">
+      <style jsx global>{`
+        .skeleton-pulse {
+          background: linear-gradient(
+            90deg,
+            rgba(229, 231, 235, 0.8) 0%,
+            rgba(209, 213, 219, 0.9) 50%,
+            rgba(229, 231, 235, 0.8) 100%
+          );
+          background-size: 200% 100%;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
+        }
+      `}</style>
 
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -127,33 +241,31 @@ const ProjectsPage = () => {
         {/* Filter Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-12">
           <button
-            className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-              filter === 'all' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25' 
+            className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${filter === 'all'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-            }`}
+              }`}
             onClick={() => setFilter('all')}
           >
             <span className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              All Projects ({sampleProjects.length})
+              All Projects ({projects.length})
             </span>
           </button>
           <button
-            className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-              filter === 'featured' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25' 
+            className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${filter === 'featured'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-            }`}
+              }`}
             onClick={() => setFilter('featured')}
           >
             <span className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
-              Featured Projects ({sampleProjects.filter(p => p.featured).length})
+              Featured Projects ({projects.filter(p => p.featured).length})
             </span>
           </button>
         </div>
@@ -170,14 +282,71 @@ const ProjectsPage = () => {
           </div>
 
           {/* Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#313244] rounded-xl overflow-hidden h-96"
+                >
+                  <div className="w-full h-48 skeleton-pulse" />
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-12 h-12 rounded-sm skeleton-pulse" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-5 w-24 rounded skeleton-pulse" />
+                          <Skeleton className="h-4 w-32 rounded skeleton-pulse" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-6 w-20 rounded-full skeleton-pulse" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-6 w-3/4 rounded skeleton-pulse" />
+                      <Skeleton className="h-4 w-full rounded skeleton-pulse" />
+                      <Skeleton className="h-4 w-2/3 rounded skeleton-pulse" />
+                    </div>
+                    <Skeleton className="h-4 w-48 rounded skeleton-pulse" />
+                    <div className="flex flex-wrap gap-2">
+                      <Skeleton className="h-6 w-20 rounded-md skeleton-pulse" />
+                      <Skeleton className="h-6 w-20 rounded-md skeleton-pulse" />
+                    </div>
+                    <Skeleton className="h-10 w-full rounded-lg skeleton-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-600 dark:text-gray-400 px-4">
+              <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-purple-500/20 dark:to-blue-500/20 rounded-full flex items-center justify-center">
+                <svg className="w-10 sm:w-12 h-10 sm:h-12 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">Error</h3>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{error}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project._id}
+                  project={{
+                    ...project,
+                    status:
+                      project.status === "active" ||
+                        project.status === "completed" ||
+                        project.status === "in-progress"
+                        ? project.status
+                        : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Empty State */}
-          {filteredProjects.length === 0 && (
+          {!isLoading && !error && filteredProjects.length === 0 && (
             <div className="text-center py-16">
               <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-purple-500/20 dark:to-blue-500/20 rounded-full flex items-center justify-center">
                 <svg className="w-12 h-12 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

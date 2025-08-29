@@ -29,6 +29,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       userId: user.userId || user._id.toString(),
       firstName: user.firstName || 'Unknown',
       lastName: user.lastName || 'User',
+      bio:user.bio,
       avatar:
         user.profileImage && typeof user.profileImage === 'string' && user.profileImage.trim() !== ''
           ? user.profileImage

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { FC, FormEvent, useState } from 'react';
+import { FC, FormEvent, useState, useEffect } from 'react';
 
 interface FormData {
   name: string;
@@ -20,6 +20,7 @@ interface FormErrors {
   message?: string;
   rating?: string;
   termsAccepted?: string;
+  apiError?: string;
 }
 
 const SupportSection: FC = () => {
@@ -32,10 +33,29 @@ const SupportSection: FC = () => {
     rating: 3,
     termsAccepted: false,
   });
-
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  // Clear errors after 2 seconds
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const timer = setTimeout(() => {
+        setErrors({});
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [errors]);
+
+  // Clear success message after 5 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -69,13 +89,17 @@ const SupportSection: FC = () => {
       else delete newErrors.email;
     }
 
-    if (name === 'subject' && !value) newErrors.subject = 'Subject is required';
-    else if (name === 'subject' && (value as string).length > 200) newErrors.subject = 'Subject must be less than 200 characters';
-    else delete newErrors.subject;
+    if (name === 'subject') {
+      if (!value) newErrors.subject = 'Subject is required';
+      else if ((value as string).length > 200) newErrors.subject = 'Subject must be less than 200 characters';
+      else delete newErrors.subject;
+    }
 
-    if (name === 'message' && !value) newErrors.message = 'Message is required';
-    else if (name === 'message' && (value as string).length > 5000) newErrors.message = 'Message must be less than 5000 characters';
-    else delete newErrors.message;
+    if (name === 'message') {
+      if (!value) newErrors.message = 'Message is required';
+      else if ((value as string).length > 5000) newErrors.message = 'Message must be less than 5000 characters';
+      else delete newErrors.message;
+    }
 
     if (name === 'rating') {
       const ratingValue = Number(value);
@@ -109,66 +133,60 @@ const SupportSection: FC = () => {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-        rating: 3,
-        termsAccepted: false
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
-      setErrors({});
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => setIsSubmitted(false), 5000);
-    }, 1500);
+
+      if (response.ok) {
+        setIsSubmitting(false);
+        setSuccessMessage('Message sent successfully! We will get back to you soon.');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+          rating: 3,
+          termsAccepted: false,
+        });
+        setErrors({});
+      } else {
+        const { error } = await response.json();
+        setErrors({ apiError: error || 'Failed to submit form' });
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      setErrors({ apiError: 'Error submitting form' });
+      console.error('Form submission error:', error);
+      setIsSubmitting(false);
+    }
   };
 
-  const email = 'info.codecraft.soft@gmail.com';
+  const emailContact = 'info.codecraft.soft@gmail.com';
   const encodeEmail = (email: string) => {
     return email.replace(/./g, (char) => `&#${char.charCodeAt(0)};`);
   };
-  const encodedEmail = encodeEmail(email);
+  const encodedEmail = encodeEmail(emailContact);
 
-  if (isSubmitted) {
-    return (
-      <section id="support">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="rounded-2xl p-8 shadow-xl">
-              <div className="mb-6">
-                <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
-                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Message Sent Successfully!</h3>
-                <p className="text-gray-600 dark:text-gray-300">Thank you for contacting us. We&apos;ll get back to you soon.</p>
-              </div>
-              <button
-                onClick={() => setIsSubmitted(false)}
-                className="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800"
-              >
-                Send Another Message
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Map field names to display names for error messages
+  const fieldDisplayNames: { [key: string]: string } = {
+    name: 'Name',
+    email: 'Email',
+    subject: 'Subject',
+    message: 'Message',
+    rating: 'Rating',
+    termsAccepted: 'Terms',
+    apiError: 'Submission',
+  };
 
   return (
     <section id="support">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 animate-fade-in">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between mb-8 md:mb-12 lg:mb-16">
-        
           {/* Section Title */}
           <div
             className="relative mx-auto mb-8 max-w-full sm:max-w-[620px] pt-6 text-center md:mb-16 lg:mb-0 lg:pt-16"
@@ -187,7 +205,6 @@ const SupportSection: FC = () => {
             >
               SUPPORT
             </span>
-
             <h2 className="font-heading text-dark mb-3 sm:mb-5 text-2xl sm:text-3xl md:text-4xl font-semibold md:text-[40px] md:leading-[48px] lg:text-[50px] lg:leading-[60px] dark:text-gray-100">
               Let&apos;s Connect
             </h2>
@@ -195,13 +212,12 @@ const SupportSection: FC = () => {
               Have questions or need assistance? Our team is here to help you succeed.
             </p>
           </div>
-          
           {/* Contact Info */}
           <div className="w-full sm:w-auto lg:w-1/3 relative group flex justify-center lg:justify-end">
             <div className="flex items-center justify-center lg:justify-end">
               <span className="bg-indigo-500 dark:bg-indigo-400 mr-4 h-1 w-8 sm:w-12 rounded-full transition-all duration-300 group-hover:w-16"></span>
               <Link
-                href={`mailto:${email}`}
+                href={`mailto:${emailContact}`}
                 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 break-all"
                 dangerouslySetInnerHTML={{ __html: encodedEmail }}
                 aria-label="Send us an email"
@@ -212,7 +228,6 @@ const SupportSection: FC = () => {
             </span>
           </div>
         </div>
-
         <div className="max-w-full sm:max-w-3xl mx-auto">
           <form onSubmit={handleSubmit} className="rounded-2xl p-3 xs:p-4 sm:p-6 md:p-8 shadow-xl border border-gray-100 dark:border-gray-700">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
@@ -233,10 +248,11 @@ const SupportSection: FC = () => {
                   maxLength={100}
                 />
                 {errors.name && (
-                  <p className="text-red-500 text-xs mt-1 animate-pulse">{errors.name}</p>
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
+                    {fieldDisplayNames.name}: {errors.name}
+                  </p>
                 )}
               </div>
-
               {/* Email Field */}
               <div className="w-full">
                 <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -254,10 +270,11 @@ const SupportSection: FC = () => {
                   maxLength={100}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1 animate-pulse">{errors.email}</p>
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
+                    {fieldDisplayNames.email}: {errors.email}
+                  </p>
                 )}
               </div>
-
               {/* Phone Field */}
               <div className="w-full">
                 <label htmlFor="phone" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -274,7 +291,6 @@ const SupportSection: FC = () => {
                   maxLength={20}
                 />
               </div>
-
               {/* Subject Field */}
               <div className="w-full">
                 <label htmlFor="subject" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -292,10 +308,11 @@ const SupportSection: FC = () => {
                   maxLength={200}
                 />
                 {errors.subject && (
-                  <p className="text-red-500 text-xs mt-1 animate-pulse">{errors.subject}</p>
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
+                    {fieldDisplayNames.subject}: {errors.subject}
+                  </p>
                 )}
               </div>
-
               {/* Message Field */}
               <div className="sm:col-span-2 w-full">
                 <label htmlFor="message" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -313,10 +330,11 @@ const SupportSection: FC = () => {
                   maxLength={5000}
                 ></textarea>
                 {errors.message && (
-                  <p className="text-red-500 text-xs mt-1 animate-pulse">{errors.message}</p>
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
+                    {fieldDisplayNames.message}: {errors.message}
+                  </p>
                 )}
               </div>
-
               {/* Rating Field */}
               <div className="sm:col-span-2 w-full space-y-2">
                 <label className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -335,7 +353,7 @@ const SupportSection: FC = () => {
                           : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                       tabIndex={0}
-                      onKeyDown={e => {
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           handleRatingChange(rating);
                         }
@@ -353,10 +371,11 @@ const SupportSection: FC = () => {
                   <span className="ml-2 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 font-medium min-w-[40px]">{formData.rating}/5</span>
                 </div>
                 {errors.rating && (
-                  <p className="text-red-500 text-xs mt-1 animate-pulse">{errors.rating}</p>
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
+                    {fieldDisplayNames.rating}: {errors.rating}
+                  </p>
                 )}
               </div>
-
               {/* Terms Checkbox */}
               <div className="sm:col-span-2 w-full">
                 <label className="flex items-center cursor-pointer group">
@@ -380,16 +399,17 @@ const SupportSection: FC = () => {
                   </span>
                 </label>
                 {errors.termsAccepted && (
-                  <p className="text-red-500 text-xs mt-1 animate-pulse">{errors.termsAccepted}</p>
+                  <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
+                    {fieldDisplayNames.termsAccepted}: {errors.termsAccepted}
+                  </p>
                 )}
               </div>
-
-              {/* Submit Button */}
-              <div className="sm:col-span-2 w-full">
+              {/* Submit Button, Success Message, and API Errors */}
+              <div className="sm:col-span-2 w-full space-y-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-indigo-600 text-white font-semibold py-2.5 sm:py-3 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
+                  className="w-full bg-indigo-600 cursor-pointer text-white font-semibold py-2.5 sm:py-3 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
@@ -403,6 +423,55 @@ const SupportSection: FC = () => {
                     'Send Message'
                   )}
                 </button>
+                {successMessage && (
+                  <div
+                    className="mt-3 p-4 border border-green-500 bg-green-50 dark:bg-green-900/50 rounded-lg shadow-sm animate-success-in"
+                    aria-live="polite"
+                    role="alert"
+                  >
+                    <div className="flex items-center">
+                      <svg
+                        className="w-5 h-5 text-green-500 dark:text-green-300 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-sm font-semibold text-green-600 dark:text-green-200">
+                        {successMessage}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {errors.apiError && (
+                  <div
+                    className="mt-3 p-4 border border-red-500 bg-red-50 dark:bg-red-900/50 rounded-lg shadow-sm animate-error-in"
+                    aria-live="polite"
+                    role="alert"
+                  >
+                    <div className="flex items-center">
+                      <svg
+                        className="w-5 h-5 text-red-500 dark:text-red-300 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                      <span className="text-sm text-red-600 dark:text-red-200">
+                        {fieldDisplayNames.apiError}: {errors.apiError}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </form>
@@ -416,6 +485,20 @@ const SupportSection: FC = () => {
         }
         .animate-fade-in {
           animation: fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @keyframes error-in {
+          0% { opacity: 0; transform: translateY(8px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-error-in {
+          animation: error-in 0.3s ease-out both;
+        }
+        @keyframes success-in {
+          0% { opacity: 0; transform: translateY(8px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-success-in {
+          animation: success-in 0.3s ease-out both;
         }
       `}</style>
     </section>

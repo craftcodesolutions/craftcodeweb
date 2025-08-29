@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -33,7 +34,15 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-  }
+  },
+  webpack: (config: any) => {
+    // Ensure .mjs files are resolved correctly
+    if (!config.resolve.extensionAlias) {
+      config.resolve.extensionAlias = {};
+    }
+    config.resolve.extensionAlias['.js'] = ['.js', '.mjs'];
+    return config;
+  },
 };
 
 export default nextConfig;
