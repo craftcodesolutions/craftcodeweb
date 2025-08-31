@@ -1,13 +1,16 @@
-"use client";
-
-// Removed 'use client'; now a server component
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-interface TeamMember {
+interface DisplayTeamMember {
   name: string;
   role: string;
   description: string;
@@ -15,60 +18,30 @@ interface TeamMember {
   userId: string;
 }
 
-// Static team data
-const teamMembers: TeamMember[] = [
-  {
-    name: "Fahad Alamgir Dhrubo",
-    role: "Chief Executive Officer (CEO)",
-    description: "Visionary leader focused on nurturing innovation and turning big ideas into real products.",
-    image: "/images/testimonial/dhrubo.jpg",
-    userId: "fahad-alamgir-dhrubo",
-  },
-  {
-    name: "Jayed Bin Islam",
-    role: "Chief Marketing Officer (CMO)",
-    description: "Expert in building trust and inspiring confidence through every interaction.",
-    image: "/images/testimonial/jayed.jpeg",
-    userId: "jayed-bin-islam",
-  },
-  {
-    name: "Tahmid Hasan Showmik",
-    role: "Editorial Head",
-    description: "Believes in thoughtful storytelling that elevates the reader's understanding.",
-    image: "/images/testimonial/shoumik.jpeg",
-    userId: "tahmid-hasan-showmik",
-  },
-  {
-    name: "Raihan Hossain",
-    role: "Graphic Designer",
-    description: "Crafts visual systems that make complex ideas feel simple and beautiful.",
-    image: "/images/testimonial/molla.jpg",
-    userId: "raihan-hossain",
-  },
-  {
-    name: "Atik Mahbub Akash",
-    role: "Senior Software Engineer",
-    description: "Writes not just functions, but future-ready experiences bridging ideas and impact.",
-    image: "/images/testimonial/atik.jpg",
-    userId: "atik-mahbub-akash",
-  },
-  {
-    name: "Juhayer Anzum Kabbo",
-    role: "Social Media Manager (SMM)",
-    description: "Transforms strategy into social moments, turning brands into communities.",
-    image: "/images/testimonial/protibondi.jpg",
-    userId: "juhayer-anzum-kabbo",
-  },
-  {
-    name: "Mohammad Siam",
-    role: "Operations Assistant",
-    description: "Takes pride in being a part of every build, supporting the foundation of strong systems.",
-    image: "/images/testimonial/cudirvai.jpg",
-    userId: "mohammad-siam",
-  },
-];
+interface PreviousJob {
+  title: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+}
 
-// Animation variants
+interface TeamMember {
+  _id: string;
+  userId: string;
+  slug: string;
+  banner: string | null;
+  publicIdBanner: string | null;
+  skills: string[];
+  previousJobs: PreviousJob[];
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  bio?: string;
+  profileImage?: string | null;
+  publicIdProfile?: string | null;
+}
+
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -91,12 +64,104 @@ const fadeIn = {
 };
 
 export default function TeamPage() {
+  const [teamMembers, setTeamMembers] = useState<DisplayTeamMember[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
+
+  const fetchTeamMembers = async () => {
+    setIsFetching(true);
+    try {
+      const response = await fetch('/api/teams?limit=100', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const teams: TeamMember[] = data.teams || [];
+
+        const userPromises = teams.map((team: TeamMember) =>
+          fetch(`/api/users/${team.userId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }).then(async (res) => {
+            if (res.ok) {
+              const userData = await res.json();
+              console.log(userData)
+              return {
+                userId: team.userId,
+                firstName: userData.firstName || 'Unknown',
+                lastName: userData.lastName || '',
+                email: userData.email || 'N/A',
+                bio: userData.bio || 'No bio available',
+                profileImage: userData.avatar || '/default-profile.png', // Ensure fallback
+                publicIdProfile: userData.publicIdProfile || null,
+              };
+            } else {
+              return {
+                userId: team.userId,
+                firstName: 'Unknown',
+                lastName: '',
+                email: 'N/A',
+                bio: 'No bio available',
+                profileImage: '/default-profile.png', // Ensure fallback
+                publicIdProfile: null,
+              };
+            }
+          }).catch(() => ({
+            userId: team.userId,
+            firstName: 'Unknown',
+            lastName: '',
+            email: 'N/A',
+            bio: 'No bio available',
+            profileImage: '/default-profile.png', // Ensure fallback
+            publicIdProfile: null,
+          }))
+        );
+
+        const users = await Promise.all(userPromises);
+
+        const enrichedTeams = teams.map((team: TeamMember, i: number) => ({
+          ...team,
+          firstName: users[i].firstName,
+          lastName: users[i].lastName,
+          email: users[i].email,
+          bio: users[i].bio,
+          profileImage: users[i].profileImage,
+          publicIdProfile: users[i].publicIdProfile,
+        }));
+
+        const displayMembers: DisplayTeamMember[] = enrichedTeams.map((member) => ({
+          name: `${member.firstName} ${member.lastName || ''}`.trim() || 'Unknown',
+          role: member.previousJobs[0]?.title || 'Team Member',
+          description: member.bio || 'No description available',
+          image: member.profileImage || '/default-profile.png', // Ensure fallback
+          userId: member.slug || member.userId,
+        }));
+
+        setTeamMembers(displayMembers);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData?.error || 'Failed to fetch team members');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to fetch team members');
+      console.error('Fetch team members error:', error);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
   return (
     <div className="min-h-screen px-4 sm:px-6 py-12">
-      {/* Floating gradient blobs */}
       <FloatingBlobs />
 
-      {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-100/40 to-transparent dark:from-blue-900/20 dark:to-transparent" />
         <motion.div
@@ -149,7 +214,6 @@ export default function TeamPage() {
         </motion.div>
       </section>
 
-      {/* Team Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div
           initial="hidden"
@@ -171,10 +235,32 @@ export default function TeamPage() {
           </motion.p>
         </motion.div>
 
-        {/* Team Members Grid */}
         <div id="team" className="mb-20">
           <AnimatePresence>
-            {teamMembers.length > 0 ? (
+            {isFetching ? (
+              <motion.div
+                variants={container}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+              >
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <motion.div
+                    key={index}
+                    variants={item}
+                    className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg transition-all duration-300 h-full flex flex-col"
+                  >
+                    <Skeleton className="h-48 w-full" />
+                    <div className="p-6 pt-4 mt-2 flex-grow space-y-2">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : teamMembers.length > 0 ? (
               <motion.div
                 variants={container}
                 initial="hidden"
@@ -203,6 +289,9 @@ export default function TeamPage() {
                               height={160}
                               className="object-cover transition-transform duration-300 group-hover:scale-105"
                               sizes="(max-width: 768px) 100vw, 160px"
+                              onError={(e) => {
+                                e.currentTarget.src = '/default-profile.png'; // Fallback on error
+                              }}
                             />
                           </div>
                         </div>
@@ -249,11 +338,11 @@ export default function TeamPage() {
           </AnimatePresence>
         </div>
       </section>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
 
-// Floating gradient blobs
 const FloatingBlobs = () => (
   <div className="fixed inset-0 flex items-center justify-center pointer-events-none overflow-hidden -z-10">
     <motion.div
