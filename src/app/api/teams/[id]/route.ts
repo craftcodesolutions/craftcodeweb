@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
 import { ObjectId } from 'mongodb';
 
-const DB_NAME = 'CraftCode';
-const COLLECTION = 'teams';
+// Environment variables
+const DB_NAME = process.env.DB_NAME || 'CraftCode';
+const COLLECTION = process.env.COLLECTION_NAME || 'teams';
 
 // Utility function to generate a slug
 const generateSlug = (firstName: string, lastName: string): string => {
@@ -56,6 +57,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       awards,
       references,
       supportiveEmail,
+      designation, // Added designation field
       debug,
     } = await req.json();
 
@@ -68,7 +70,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             userId,
             banner,
             publicIdBanner,
-            slug: providedSlug, // Include slug in debug response
+            slug: providedSlug,
             skills,
             previousJobs,
             projectLinks,
@@ -79,6 +81,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             awards,
             references,
             supportiveEmail,
+            designation, // Include designation in debug response
           },
         },
         { status: 200 }
@@ -229,6 +232,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         { status: 400 }
       );
     }
+    if (designation && (typeof designation !== 'string' || designation.length > 100)) {
+      return NextResponse.json(
+        { error: 'Designation must be a string and less than 100 characters' },
+        { status: 400 }
+      );
+    }
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
@@ -241,7 +250,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     // Fetch user data to get firstName and lastName
-    const user = await teamsCollection.findOne({ userId });
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }); // Adjusted to users collection
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -255,7 +264,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       userId,
       banner: banner || null,
       publicIdBanner: publicIdBanner || null,
-      slug, // Include slug
+      slug,
       skills: skills || [],
       previousJobs: previousJobs || [],
       projectLinks: projectLinks || [],
@@ -266,6 +275,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       awards: awards || [],
       references: references || [],
       supportiveEmail: supportiveEmail.toLowerCase(),
+      designation: designation || '', // Include designation
       updatedAt: new Date(),
     };
 
@@ -280,7 +290,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     return NextResponse.json(
-      { success: true, message: 'Team profile updated successfully', slug }, // Return slug for reference
+      { success: true, message: 'Team profile updated successfully', slug },
       { status: 200 }
     );
   } catch (error) {

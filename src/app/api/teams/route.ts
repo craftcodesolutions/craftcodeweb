@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
+import { ObjectId } from 'mongodb';
 
-const DB_NAME = 'CraftCode';
-const COLLECTION = 'teams';
+// Environment variables
+const DB_NAME = process.env.DB_NAME || 'CraftCode';
+const COLLECTION = process.env.COLLECTION_NAME || 'teams';
 
 // Utility function to generate a slug
 const generateSlug = (firstName: string, lastName: string): string => {
@@ -44,14 +46,29 @@ export async function GET(req: NextRequest) {
     const teamsCollection = db.collection(COLLECTION);
     const usersCollection = db.collection('users');
 
-    // Build query for search (search by userId, supportiveEmail, or slug)
+    // Build query for search
     const query: any = {};
     if (search) {
       const searchRegex = new RegExp(search, 'i');
+
+      // Search users by name, email, bio
+      const matchingUsers = await usersCollection.find({
+        $or: [
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { email: searchRegex },
+          { bio: searchRegex },
+        ]
+      }).project({ userId: 1 }).toArray();
+
+      const matchingUserIds = matchingUsers.map((u: any) => u.userId);
+
+      // Search teams by userId (from users), supportiveEmail, slug, designation
       query.$or = [
-        { userId: searchRegex },
+        { userId: { $in: matchingUserIds } },
         { supportiveEmail: searchRegex },
-        { slug: searchRegex }, // Add slug to search
+        { slug: searchRegex },
+        { designation: searchRegex },
       ];
     }
 
@@ -68,12 +85,13 @@ export async function GET(req: NextRequest) {
 
     // Enrich team data with user data
     const formattedTeams = await Promise.all(
-      teams.map(async (team) => {
+      teams.map(async (team: any) => {
         const user = await usersCollection.findOne({ userId: team.userId });
         return {
           ...team,
           _id: team._id.toString(),
           slug: team.slug, // Include slug
+          designation: team.designation || '', // Include designation
           firstName: user?.firstName || '',
           lastName: user?.lastName || '',
           email: user?.email || '',
@@ -114,6 +132,7 @@ export async function POST(req: NextRequest) {
       awards,
       references,
       supportiveEmail,
+      designation, // Added designation field
       debug,
     } = await req.json();
 
@@ -126,7 +145,7 @@ export async function POST(req: NextRequest) {
             userId,
             banner,
             publicIdBanner,
-            slug: providedSlug, // Include slug in debug response
+            slug: providedSlug,
             skills,
             previousJobs,
             projectLinks,
@@ -137,6 +156,7 @@ export async function POST(req: NextRequest) {
             awards,
             references,
             supportiveEmail,
+            designation, // Include designation in debug response
           },
         },
         { status: 200 }
@@ -186,11 +206,23 @@ export async function POST(req: NextRequest) {
     if (!supportiveEmail || !/^\S+@\S+\.\S+$/.test(supportiveEmail) || supportiveEmail.length > 100) {
       return NextResponse.json({ error: 'Valid supportive email is required and must be less than 100 characters' }, { status: 400 });
     }
+    if (designation && (typeof designation !== 'string' || designation.length > 100)) {
+      return NextResponse.json(
+        { error: 'Designation must be a string and less than 100 characters' },
+        { status: 400 }
+      );
+    }
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const teamsCollection = db.collection(COLLECTION);
-    
+
+    // Check if supportiveEmail is unique (optional, but added for consistency)
+    const lowerEmail = supportiveEmail.toLowerCase();
+    const existingEmail = await teamsCollection.findOne({ supportiveEmail: lowerEmail });
+    if (existingEmail) {
+      return NextResponse.json({ error: 'Supportive email already in use' }, { status: 400 });
+    }
 
     // Check if user already has a team entry
     const existingTeam = await teamsCollection.findOne({ userId });
@@ -199,7 +231,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch user data to get firstName and lastName
-    const user = await teamsCollection.findOne({ userId });
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    console.log(userId)
+    console.log(user)
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -213,7 +247,7 @@ export async function POST(req: NextRequest) {
       userId,
       banner: banner || null,
       publicIdBanner: publicIdBanner || null,
-      slug, // Include slug
+      slug,
       skills: skills || [],
       previousJobs: previousJobs || [],
       projectLinks: projectLinks || [],
@@ -223,7 +257,8 @@ export async function POST(req: NextRequest) {
       hobbies: hobbies || [],
       awards: awards || [],
       references: references || [],
-      supportiveEmail: supportiveEmail.toLowerCase(),
+      supportiveEmail: lowerEmail,
+      designation: designation || '', // Include designation
       createdAt: new Date(),
     };
 
@@ -235,7 +270,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true, message: 'Team profile created successfully', slug }, // Return slug for reference
+      { success: true, message: 'Team profile created successfully', slug },
       { status: 201 }
     );
   } catch (error) {

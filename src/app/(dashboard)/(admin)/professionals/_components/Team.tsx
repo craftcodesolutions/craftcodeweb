@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
@@ -93,12 +94,14 @@ interface TeamMember extends User {
     awards: Award[];
     references: Reference[];
     supportiveEmail: string;
+    designation: string;
     blogs: any[];
     projects: any[];
 }
 
 interface TeamMemberForm {
     _id?: string;
+    userId: string;
     banner: string | null;
     publicIdBanner: string | null;
     slug: string;
@@ -112,6 +115,9 @@ interface TeamMemberForm {
     awards: Award[];
     references: Reference[];
     supportiveEmail: string;
+    designation: string;
+    skillsString?: string;
+    hobbiesString?: string;
 }
 
 const Team: React.FC = () => {
@@ -131,8 +137,9 @@ const Team: React.FC = () => {
     const [updateSlug, setUpdateSlug] = useState(''); // State for update modal slug input
     const [newTeamMember, setNewTeamMember] = useState<TeamMemberForm>({
         banner: null,
+        userId: '',
         publicIdBanner: null,
-        slug: '', // Initialize slug
+        slug: '',
         skills: [],
         previousJobs: [],
         projectLinks: [],
@@ -143,6 +150,9 @@ const Team: React.FC = () => {
         awards: [],
         references: [],
         supportiveEmail: '',
+        designation: '',
+        skillsString: undefined, // Add this line
+        hobbiesString: undefined, // Add this line
     });
     const [newProfileImagePreview, setNewProfileImagePreview] = useState<string | null>(null);
     const [newBannerPreview, setNewBannerPreview] = useState<string | null>(null);
@@ -155,6 +165,7 @@ const Team: React.FC = () => {
     const proficiencyOptions = ['Native', 'Fluent', 'Intermediate', 'Basic'];
     const itemsPerPage = 6;
     const [hasTeamData, setHasTeamData] = useState(false);
+
 
     // User fields for form
     const [firstName, setFirstName] = useState('');
@@ -169,6 +180,7 @@ const Team: React.FC = () => {
     const [updateBio, setUpdateBio] = useState('');
     const [updateProfileImage, setUpdateProfileImage] = useState<string | null>(null);
     const [updatePublicIdProfile, setUpdatePublicIdProfile] = useState<string | null>(null);
+
 
     const generateSlug = (firstName: string, lastName: string): string => {
         const baseSlug = `${firstName || ''} ${lastName || ''}`
@@ -337,6 +349,7 @@ const Team: React.FC = () => {
                 // Set team-specific fields including slug
                 setSelectedTeamMember({
                     _id: teamMember._id,
+                    userId: teamMember.userId,
                     banner: teamMember.banner || null,
                     publicIdBanner: teamMember.publicIdBanner || null,
                     slug: teamMember.slug || generateSlug(userData.firstName || user?.firstName || '', userData.lastName || user?.lastName || ''), // Initialize slug
@@ -360,6 +373,7 @@ const Team: React.FC = () => {
                     })) || [],
                     references: teamMember.references || [],
                     supportiveEmail: teamMember.supportiveEmail || '',
+                    designation: teamMember.designation || '',
                 });
 
                 // Set user-specific fields
@@ -564,7 +578,7 @@ const Team: React.FC = () => {
 
         try {
             // Update user profile in users collection
-            const updateData: Partial<User> = {
+            /* const updateData: Partial<User> = {
                 firstName,
                 lastName,
                 bio,
@@ -575,13 +589,14 @@ const Team: React.FC = () => {
             if (!updateResult.success) {
                 toast.error(updateResult.error || 'Failed to update user profile');
                 return;
-            }
+            } */
 
             // Create team data in teams collection
             const teamData: TeamMemberForm = {
+                userId: user!.userId,  // Fixed here with non-null assertion
                 banner: newTeamMember.banner,
                 publicIdBanner: newTeamMember.publicIdBanner,
-                slug: newSlug, // Include slug
+                slug: newSlug,
                 skills: newTeamMember.skills,
                 previousJobs: newTeamMember.previousJobs,
                 projectLinks: newTeamMember.projectLinks,
@@ -592,6 +607,8 @@ const Team: React.FC = () => {
                 awards: newTeamMember.awards,
                 references: newTeamMember.references,
                 supportiveEmail,
+                designation: newTeamMember.designation,
+                // Do not include skillsString or hobbiesString
             };
 
             const response = await fetch('/api/teams', {
@@ -599,18 +616,19 @@ const Team: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ userId: user?.userId, ...teamData }),
+                body: JSON.stringify({ ...teamData }),  // Fixed here with non-null assertion
             });
 
             if (response.ok) {
                 setIsAddModalOpen(false);
                 setNewProfileImagePreview(null);
                 setNewBannerPreview(null);
-                setNewSlug(''); // Reset slug
+                setNewSlug('');
                 setNewTeamMember({
+                    userId: user!.userId,  // Fixed here with non-null assertion
                     banner: null,
                     publicIdBanner: null,
-                    slug: '', // Reset slug
+                    slug: '',
                     skills: [],
                     previousJobs: [],
                     projectLinks: [],
@@ -621,6 +639,9 @@ const Team: React.FC = () => {
                     awards: [],
                     references: [],
                     supportiveEmail: '',
+                    designation: '',
+                    skillsString: undefined, // Reset skillsString
+                    hobbiesString: undefined, // Reset hobbiesString
                 });
                 setFirstName('');
                 setLastName('');
@@ -655,7 +676,7 @@ const Team: React.FC = () => {
         try {
             // Update user profile in users collection
             const updateData: Partial<User> = {
-                userId: user?.userId,
+                userId: user?.userId,  // Fixed here with non-null assertion
                 firstName: updateFirstName,
                 lastName: updateLastName,
                 bio: updateBio,
@@ -670,6 +691,7 @@ const Team: React.FC = () => {
 
             // Update team data in teams collection
             const teamData: TeamMemberForm = {
+                userId: user!.userId,  // Fixed here with non-null assertion
                 _id: selectedTeamMember._id,
                 banner: selectedTeamMember.banner,
                 publicIdBanner: selectedTeamMember.publicIdBanner,
@@ -684,6 +706,7 @@ const Team: React.FC = () => {
                 awards: selectedTeamMember.awards,
                 references: selectedTeamMember.references,
                 supportiveEmail: updateSupportiveEmail,
+                designation: selectedTeamMember.designation,
             };
 
             const response = await fetch(`/api/teams/${selectedTeamMember._id}`, {
@@ -691,7 +714,7 @@ const Team: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ userId: user?.userId, ...teamData }),
+                body: JSON.stringify({ ...teamData }),  // Fixed here with non-null assertion
             });
 
             if (response.ok) {
@@ -826,11 +849,10 @@ const Team: React.FC = () => {
                     {isAuthenticated && (
                         <button
                             onClick={() => {
-                                if (hasTeamData) {
-                                    const myTeam = teamMembers.find(m => m.userId === user?.userId);
-                                    if (myTeam) {
-                                        handleUpdateTeamMember(myTeam._id);
-                                    }
+                                const myTeam = teamMembers.find((m) => m.userId === user?.userId);
+
+                                if (myTeam) {
+                                    handleUpdateTeamMember(myTeam._id);
                                 } else {
                                     setFirstName(user?.firstName || '');
                                     setLastName(user?.lastName || '');
@@ -844,9 +866,12 @@ const Team: React.FC = () => {
                             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-medium text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                         >
                             <Plus className="h-5 w-5" />
-                            <span>{hasTeamData ? 'Update Profile' : 'Add Profile'}</span>
+                            <span>
+                                {teamMembers.some((m) => m.userId === user?.userId) ? 'Update Profile' : 'Add Profile'}
+                            </span>
                         </button>
                     )}
+
                 </div>
                 <div className="border-t border-gray-600 dark:border-gray-700 p-6 md:p-10">
                     {/* Search */}
@@ -930,6 +955,9 @@ const Team: React.FC = () => {
                                         <h4 className="text-xl font-semibold text-gray-900 dark:text-white truncate tracking-tight" title={`${member.firstName} ${member.lastName || ''}`}>
                                             {member.firstName} {member.lastName || ''}
                                         </h4>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                            {member.designation || ''}
+                                        </p>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                                             {member.email || 'Email not available'}
                                         </p>
@@ -1239,6 +1267,19 @@ const Team: React.FC = () => {
 
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Designation
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={newTeamMember.designation}
+                                                        onChange={(e) => setNewTeamMember({ ...newTeamMember, designation: e.target.value })}
+                                                        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2.5 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                                        placeholder="Enter designation (e.g., Software Engineer)"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                         Slug *
                                                     </label>
                                                     <input
@@ -1299,11 +1340,29 @@ const Team: React.FC = () => {
                                                     </label>
                                                     <input
                                                         type="text"
-                                                        value={newTeamMember.skills.join(', ')}
-                                                        onChange={(e) => setNewTeamMember({
-                                                            ...newTeamMember,
-                                                            skills: e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                                                        })}
+                                                        value={newTeamMember.skillsString ?? newTeamMember.skills.join(', ')}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            setNewTeamMember({
+                                                                ...newTeamMember,
+                                                                skillsString: value, // Store raw input for smooth typing
+                                                                skills: value
+                                                                    .split(',')
+                                                                    .map((item) => item.trim())
+                                                                    .filter((item) => item !== ''), // Update array in sync
+                                                            });
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const value = e.target.value;
+                                                            setNewTeamMember({
+                                                                ...newTeamMember,
+                                                                skills: value
+                                                                    .split(',')
+                                                                    .map((item) => item.trim())
+                                                                    .filter((item) => item !== ''), // Clean up array
+                                                                skillsString: undefined, // Clear temporary string
+                                                            });
+                                                        }}
                                                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2.5 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                                         placeholder="React, JavaScript, Design"
                                                     />
@@ -1316,11 +1375,29 @@ const Team: React.FC = () => {
                                                     </label>
                                                     <input
                                                         type="text"
-                                                        value={newTeamMember.hobbies.join(', ')}
-                                                        onChange={(e) => setNewTeamMember({
-                                                            ...newTeamMember,
-                                                            hobbies: e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                                                        })}
+                                                        value={newTeamMember.hobbiesString ?? newTeamMember.hobbies.join(', ')}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            setNewTeamMember({
+                                                                ...newTeamMember,
+                                                                hobbiesString: value, // Store raw input for smooth typing
+                                                                hobbies: value
+                                                                    .split(',')
+                                                                    .map((item) => item.trim())
+                                                                    .filter((item) => item !== ''), // Update array in sync
+                                                            });
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const value = e.target.value;
+                                                            setNewTeamMember({
+                                                                ...newTeamMember,
+                                                                hobbies: value
+                                                                    .split(',')
+                                                                    .map((item) => item.trim())
+                                                                    .filter((item) => item !== ''), // Clean up array
+                                                                hobbiesString: undefined, // Clear temporary string
+                                                            });
+                                                        }}
                                                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2.5 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                                         placeholder="Reading, Travel, Photography"
                                                     />
@@ -1774,10 +1851,12 @@ const Team: React.FC = () => {
                                                 </h4>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setNewTeamMember({
-                                                        ...newTeamMember,
-                                                        languages: [...newTeamMember.languages, { name: '', proficiency: '' }]
-                                                    })}
+                                                    onClick={() =>
+                                                        setNewTeamMember({
+                                                            ...newTeamMember,
+                                                            languages: [...newTeamMember.languages, { name: '', proficiency: '' }],
+                                                        })
+                                                    }
                                                     className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
@@ -1787,7 +1866,10 @@ const Team: React.FC = () => {
 
                                             <div className="space-y-4">
                                                 {newTeamMember.languages.map((lang, index) => (
-                                                    <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3 relative bg-white dark:bg-gray-800">
+                                                    <div
+                                                        key={index}
+                                                        className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-3 relative bg-white dark:bg-gray-800"
+                                                    >
                                                         <button
                                                             type="button"
                                                             onClick={() => {
@@ -1801,6 +1883,7 @@ const Team: React.FC = () => {
                                                         </button>
 
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            {/* Language Input */}
                                                             <div>
                                                                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                                                     Language
@@ -1817,30 +1900,38 @@ const Team: React.FC = () => {
                                                                     placeholder="English, Spanish, etc."
                                                                 />
                                                             </div>
+
+                                                            {/* Segmented Proficiency */}
                                                             <div>
-                                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                                                                     Proficiency
                                                                 </label>
-                                                                <select
-                                                                    value={lang.proficiency}
-                                                                    onChange={(e) => {
-                                                                        const updated = [...newTeamMember.languages];
-                                                                        updated[index].proficiency = e.target.value;
-                                                                        setNewTeamMember({ ...newTeamMember, languages: updated });
-                                                                    }}
-                                                                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-transparent py-2 px-3 text-sm"
-                                                                >
-                                                                    <option value="">Select Proficiency</option>
+                                                                <div className="flex flex-wrap gap-2">
                                                                     {proficiencyOptions.map((option) => (
-                                                                        <option key={option} value={option}>{option}</option>
+                                                                        <button
+                                                                            key={option}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const updated = [...newTeamMember.languages];
+                                                                                updated[index].proficiency = option;
+                                                                                setNewTeamMember({ ...newTeamMember, languages: updated });
+                                                                            }}
+                                                                            className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${lang.proficiency === option
+                                                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                                                    : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                                                }`}
+                                                                        >
+                                                                            {option}
+                                                                        </button>
                                                                     ))}
-                                                                </select>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
+
 
                                         {/* Awards Section */}
                                         <div className="bg-gray-50 dark:bg-gray-700/30 p-5 rounded-xl">
@@ -2272,6 +2363,19 @@ const Team: React.FC = () => {
 
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                            Designation
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTeamMember.designation}
+                                                            onChange={(e) => setSelectedTeamMember({ ...selectedTeamMember, designation: e.target.value })}
+                                                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2.5 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                                            placeholder="Enter designation (e.g., Software Engineer)"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                             Slug *
                                                         </label>
                                                         <input
@@ -2332,11 +2436,33 @@ const Team: React.FC = () => {
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            value={selectedTeamMember.skills.join(', ')}
-                                                            onChange={(e) => setSelectedTeamMember({
-                                                                ...selectedTeamMember,
-                                                                skills: e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                                                            })}
+                                                            value={selectedTeamMember?.skillsString ?? selectedTeamMember?.skills.join(', ') ?? ''}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                if (selectedTeamMember) {
+                                                                    setSelectedTeamMember({
+                                                                        ...selectedTeamMember,
+                                                                        skillsString: value, // Store raw input for smooth typing
+                                                                        skills: value
+                                                                            .split(',')
+                                                                            .map((item) => item.trim())
+                                                                            .filter((item) => item !== ''), // Update array in sync
+                                                                    });
+                                                                }
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                const value = e.target.value;
+                                                                if (selectedTeamMember) {
+                                                                    setSelectedTeamMember({
+                                                                        ...selectedTeamMember,
+                                                                        skills: value
+                                                                            .split(',')
+                                                                            .map((item) => item.trim())
+                                                                            .filter((item) => item !== ''), // Clean up array
+                                                                        skillsString: undefined, // Clear temporary string
+                                                                    });
+                                                                }
+                                                            }}
                                                             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2.5 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                                             placeholder="React, JavaScript, Design"
                                                         />
@@ -2349,11 +2475,33 @@ const Team: React.FC = () => {
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            value={selectedTeamMember.hobbies.join(', ')}
-                                                            onChange={(e) => setSelectedTeamMember({
-                                                                ...selectedTeamMember,
-                                                                hobbies: e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                                                            })}
+                                                            value={selectedTeamMember?.hobbiesString ?? selectedTeamMember?.hobbies.join(', ') ?? ''}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                if (selectedTeamMember) {
+                                                                    setSelectedTeamMember({
+                                                                        ...selectedTeamMember,
+                                                                        hobbiesString: value, // Store raw input for smooth typing
+                                                                        hobbies: value
+                                                                            .split(',')
+                                                                            .map((item) => item.trim())
+                                                                            .filter((item) => item !== ''), // Update array in sync
+                                                                    });
+                                                                }
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                const value = e.target.value;
+                                                                if (selectedTeamMember) {
+                                                                    setSelectedTeamMember({
+                                                                        ...selectedTeamMember,
+                                                                        hobbies: value
+                                                                            .split(',')
+                                                                            .map((item) => item.trim())
+                                                                            .filter((item) => item !== ''), // Clean up array
+                                                                        hobbiesString: undefined, // Clear temporary string
+                                                                    });
+                                                                }
+                                                            }}
                                                             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2.5 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                                             placeholder="Reading, Travel, Photography"
                                                         />

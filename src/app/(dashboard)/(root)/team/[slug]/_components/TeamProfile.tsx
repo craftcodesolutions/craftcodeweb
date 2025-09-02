@@ -11,7 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '@/context/AuthContext';
 import { motion, Variants } from 'framer-motion';
 
-// Define interfaces (unchanged)
+// Define interfaces
 interface User {
     userId: string;
     firstName?: string;
@@ -102,6 +102,7 @@ interface TeamMember extends User {
     blogs: Blog[];
     projects: AdditionalProject[];
     location?: string;
+    designation: string;
 }
 
 // Animation variants
@@ -394,15 +395,22 @@ const TeamProfile: React.FC = () => {
     }
 
     if (!memoizedTeamMember) {
+        // You can check if it's still loading vs not found with a separate `loading` state
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-10 flex items-center justify-center">
                 <div className="max-w-2xl w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-12 text-center border border-gray-100/40 dark:border-gray-700/30">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Profile Not Found</h1>
-                    <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">The requested team member profile could not be found.</p>
+                    {/* Skeleton for Title */}
+                    <div className="h-10 md:h-12 w-3/4 mx-auto mb-4 rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
+
+                    {/* Skeleton for Subtitle / text */}
+                    <div className="h-4 md:h-5 w-5/6 mx-auto mb-2 rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
+                    <div className="h-4 md:h-5 w-2/3 mx-auto mb-2 rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
+                    <div className="h-4 md:h-5 w-1/2 mx-auto rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
                 </div>
             </div>
         );
     }
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-12 font-sans relative overflow-hidden">
@@ -445,6 +453,11 @@ const TeamProfile: React.FC = () => {
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">
                                         {memoizedTeamMember.firstName} {memoizedTeamMember.lastName || ''}
                                     </h1>
+                                    <p className="text-blue-600 dark:text-blue-400 font-medium text-lg mb-3">
+                                        {memoizedTeamMember.designation
+                                            ? memoizedTeamMember.designation.charAt(0).toUpperCase() + memoizedTeamMember.designation.slice(1).toLowerCase()
+                                            : 'Team Member'}
+                                    </p>
                                     {memoizedTeamMember.location && (
                                         <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-600 dark:text-gray-400 text-sm mb-3">
                                             <MapPin className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />

@@ -40,6 +40,7 @@ interface TeamMember {
   bio?: string;
   profileImage?: string | null;
   publicIdProfile?: string | null;
+  designation: string;
 }
 
 const container = {
@@ -89,14 +90,13 @@ export default function TeamPage() {
           }).then(async (res) => {
             if (res.ok) {
               const userData = await res.json();
-              console.log(userData)
               return {
                 userId: team.userId,
                 firstName: userData.firstName || 'Unknown',
                 lastName: userData.lastName || '',
                 email: userData.email || 'N/A',
                 bio: userData.bio || 'No bio available',
-                profileImage: userData.avatar || '/default-profile.png', // Ensure fallback
+                profileImage: userData.avatar || '/default-profile.png',
                 publicIdProfile: userData.publicIdProfile || null,
               };
             } else {
@@ -106,7 +106,7 @@ export default function TeamPage() {
                 lastName: '',
                 email: 'N/A',
                 bio: 'No bio available',
-                profileImage: '/default-profile.png', // Ensure fallback
+                profileImage: '/default-profile.png',
                 publicIdProfile: null,
               };
             }
@@ -116,7 +116,7 @@ export default function TeamPage() {
             lastName: '',
             email: 'N/A',
             bio: 'No bio available',
-            profileImage: '/default-profile.png', // Ensure fallback
+            profileImage: '/default-profile.png',
             publicIdProfile: null,
           }))
         );
@@ -135,9 +135,11 @@ export default function TeamPage() {
 
         const displayMembers: DisplayTeamMember[] = enrichedTeams.map((member) => ({
           name: `${member.firstName} ${member.lastName || ''}`.trim() || 'Unknown',
-          role: member.previousJobs[0]?.title || 'Team Member',
+          role: member.designation
+            ? member.designation.charAt(0).toUpperCase() + member.designation.slice(1).toLowerCase()
+            : 'Team Member',
           description: member.bio || 'No description available',
-          image: member.profileImage || '/default-profile.png', // Ensure fallback
+          image: member.profileImage || '/default-profile.png',
           userId: member.slug || member.userId,
         }));
 
@@ -290,7 +292,7 @@ export default function TeamPage() {
                               className="object-cover transition-transform duration-300 group-hover:scale-105"
                               sizes="(max-width: 768px) 100vw, 160px"
                               onError={(e) => {
-                                e.currentTarget.src = '/default-profile.png'; // Fallback on error
+                                e.currentTarget.src = '/default-profile.png';
                               }}
                             />
                           </div>

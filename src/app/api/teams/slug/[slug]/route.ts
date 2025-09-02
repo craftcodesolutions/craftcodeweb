@@ -78,6 +78,7 @@ interface TeamMember {
   projects: any[];
   createdAt: string;
   updatedAt: string;
+  designation: string;
 }
 
 function normalizeDate(date: any): string {
@@ -122,6 +123,7 @@ export async function GET(req: NextRequest) {
       profileImage: user?.profileImage || null,
       publicIdProfile: user?.publicIdProfile || null,
       banner: teamMember.banner || null,
+      designation: teamMember.designation || '', 
       publicIdBanner: teamMember.publicIdBanner || null,
       skills: Array.isArray(teamMember.skills) ? teamMember.skills : [],
       previousJobs: Array.isArray(teamMember.previousJobs) ? teamMember.previousJobs : [],
