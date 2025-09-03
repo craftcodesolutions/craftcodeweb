@@ -102,7 +102,7 @@ const ContactPage: React.FC = () => {
           <div className="mb-2">
             <span className="font-semibold">Press / Media / Blogger Information</span>
             <div>
-              <a href="#" className="text-blue-600 hover:underline">Visit our Newsroom for contact info</a>
+              <a href="https://craftcodesolutions.com" className="text-blue-600 hover:underline">Visit our Newsroom for contact info</a>
             </div>
           </div>
         </div>

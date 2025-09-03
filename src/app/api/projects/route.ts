@@ -105,6 +105,13 @@ interface ProjectResponse {
   updatedAt: string | null;
 }
 
+interface AdditionalProjectResponse {
+  _id: string;
+  name: string;
+  description: string;
+  url?: string;
+}
+
 // Helper function to safely convert dates
 function normalizeDate(date: any): string | null {
   if (!date) return null;
@@ -121,6 +128,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '6');
     const search = searchParams.get('search') || '';
+    const userId = searchParams.get('userId') || '';
 
     if (page < 1 || limit < 1) {
       return NextResponse.json({ error: 'Invalid page or limit' }, { status: 400 });
@@ -130,65 +138,94 @@ export async function GET(req: NextRequest) {
     const db = client.db(DB_NAME);
     const projectsCollection = db.collection<ProjectDB>(COLLECTION);
 
-    const query = search
-      ? {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { category: { $regex: search, $options: 'i' } },
-          ],
-        }
-      : {};
+    let query: any = {};
+    if (userId) {
+      query.coAuthors = userId; // Match if userId is in coAuthors array
+    }
 
-    const totalProjects = await projectsCollection.countDocuments(query);
-    const totalPages = Math.ceil(totalProjects / limit);
+    if (search) {
+      const searchQuery = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } },
+        ],
+      };
+      if (Object.keys(query).length > 0) {
+        query = { $and: [query, searchQuery] };
+      } else {
+        query = searchQuery;
+      }
+    }
 
-    const projects = await projectsCollection
-      .find(query)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .toArray();
+    if (userId) {
+      // For userId (co-author projects), fetch all without pagination, return simplified response
+      const projects = await projectsCollection
+        .find(query)
+        .sort({ createdAt: -1 })
+        .toArray();
 
-    const projectResponses: ProjectResponse[] = projects.map((project) => ({
-      _id: project._id.toString(),
-      title: project.title,
-      author: project.author,
-      coAuthors: project.coAuthors || [],
-      client: project.client,
-      startDate: normalizeDate(project.startDate),
-      deadline: normalizeDate(project.deadline),
-      deliveryDate: normalizeDate(project.deliveryDate),
-      description: project.description,
-      techStack: project.techStack || [],
-      tools: project.tools || [],
-      category: project.category,
-      status: project.status,
-      priority: project.priority,
-      slug: project.slug,
-      imageUrl: project.imageUrl || null,
-      publicId: project.publicId || null,
-      projectUrl: project.projectUrl || '',
-      repoUrl: project.repoUrl || '',
-      deployment: project.deployment || '',
-      budget: project.budget || null,
-      currency: project.currency || 'USD',
-      contractType: project.contractType || '',
-      paymentStatus: project.paymentStatus || 'pending',
-      featured: !!project.featured,
-      caseStudy: project.caseStudy || '',
-      milestones: project.milestones || [],
-      createdAt: normalizeDate(project.createdAt),
-      updatedAt: normalizeDate(project.updatedAt),
-    }));
+      const additionalProjects: AdditionalProjectResponse[] = projects.map((project) => ({
+        _id: project._id.toString(),
+        name: project.title,
+        description: project.description,
+        url: project.projectUrl || undefined,
+      }));
 
-    return NextResponse.json(
-      {
-        projects: projectResponses,
-        totalPages,
-        currentPage: page,
-      },
-      { status: 200 }
-    );
+      return NextResponse.json({ projects: additionalProjects }, { status: 200 });
+    } else {
+      // For general fetch, use pagination and full response
+      const totalProjects = await projectsCollection.countDocuments(query);
+      const totalPages = Math.ceil(totalProjects / limit);
+
+      const projects = await projectsCollection
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .toArray();
+
+      const projectResponses: ProjectResponse[] = projects.map((project) => ({
+        _id: project._id.toString(),
+        title: project.title,
+        author: project.author,
+        coAuthors: project.coAuthors || [],
+        client: project.client,
+        startDate: normalizeDate(project.startDate),
+        deadline: normalizeDate(project.deadline),
+        deliveryDate: normalizeDate(project.deliveryDate),
+        description: project.description,
+        techStack: project.techStack || [],
+        tools: project.tools || [],
+        category: project.category,
+        status: project.status,
+        priority: project.priority,
+        slug: project.slug,
+        imageUrl: project.imageUrl || null,
+        publicId: project.publicId || null,
+        projectUrl: project.projectUrl || '',
+        repoUrl: project.repoUrl || '',
+        deployment: project.deployment || '',
+        budget: project.budget || null,
+        currency: project.currency || 'USD',
+        contractType: project.contractType || '',
+        paymentStatus: project.paymentStatus || 'pending',
+        featured: !!project.featured,
+        caseStudy: project.caseStudy || '',
+        milestones: project.milestones || [],
+        createdAt: normalizeDate(project.createdAt),
+        updatedAt: normalizeDate(project.updatedAt),
+      }));
+
+      return NextResponse.json(
+        {
+          projects: projectResponses,
+          totalPages,
+          currentPage: page,
+        },
+        { status: 200 }
+      );
+    }
   } catch (error) {
     console.error('Fetch projects error:', error);
     return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });

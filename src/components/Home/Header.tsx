@@ -286,8 +286,8 @@ function Header() {
           <div className="px-3 py-3 space-y-1">
             {user.isAdmin && (
               <button
-                onClick={() => handleNavigation('/admin')}
-                onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/admin'))}
+                onClick={() => handleNavigation('/dashboard')}
+                onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/dashboard'))}
                 className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
                 aria-label="Navigate to Admin Dashboard"
                 role="button"
@@ -316,8 +316,8 @@ function Header() {
               <span>My Profile</span>
             </button>
             <button
-              onClick={() => handleNavigation('/settings')}
-              onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/settings'))}
+              onClick={() => handleNavigation('/account-settings')}
+              onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/account-settings'))}
               className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
               aria-label="Navigate to Account Settings"
               role="button"

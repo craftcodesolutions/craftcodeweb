@@ -10,6 +10,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '@/context/AuthContext';
 import { motion, Variants } from 'framer-motion';
+import Link from 'next/link';
 
 // Define interfaces
 interface User {
@@ -21,6 +22,7 @@ interface User {
     profileImage?: string | null;
     publicIdProfile?: string | null;
     isAdmin?: boolean;
+    location?: string;
 }
 
 interface AuthContextType {
@@ -101,7 +103,6 @@ interface TeamMember extends User {
     supportiveEmail: string;
     blogs: Blog[];
     projects: AdditionalProject[];
-    location?: string;
     designation: string;
 }
 
@@ -143,7 +144,7 @@ const cardVariants: Variants = {
 };
 
 // Reusable components
-const ProfileImage: React.FC<{ src: string, alt: string }> = ({ src, alt }) => (
+const ProfileImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
     <div className="relative w-36 h-36 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-2xl ring-4 ring-blue-100/30 dark:ring-blue-900/20">
         <Image
             src={src}
@@ -157,7 +158,7 @@ const ProfileImage: React.FC<{ src: string, alt: string }> = ({ src, alt }) => (
     </div>
 );
 
-const SectionHeader: React.FC<{ icon: React.ReactNode, title: string }> = ({ icon, title }) => (
+const SectionHeader: React.FC<{ icon: React.ReactNode; title: string }> = ({ icon, title }) => (
     <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 text-gray-900 dark:text-white">
         <span className="p-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md">
             {icon}
@@ -166,7 +167,7 @@ const SectionHeader: React.FC<{ icon: React.ReactNode, title: string }> = ({ ico
     </h2>
 );
 
-const TimelineItem: React.FC<{ icon: React.ReactNode, children: React.ReactNode, index: number }> = ({ icon, children, index }) => (
+const TimelineItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode; index: number }> = ({ icon, children, index }) => (
     <motion.div
         variants={cardVariants}
         className="relative pl-12 group"
@@ -222,19 +223,15 @@ const TeamProfile: React.FC = () => {
     const [teamMember, setTeamMember] = useState<TeamMember | null>(null);
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [additionalProjects, setAdditionalProjects] = useState<AdditionalProject[]>([]);
-    const [isFetching, setIsFetching] = useState(true);
-    const [isFetchingBlogs, setIsFetchingBlogs] = useState(true);
-    const [isFetchingProjects, setIsFetchingProjects] = useState(true);
+    const [isLoadingData, setIsLoadingData] = useState(true);
     const [isOwner, setIsOwner] = useState(false);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const fetchTeamMember = useCallback(async () => {
         if (!slug) {
             toast.error('No profile slug provided', { toastId: 'no-slug' });
-            setIsFetching(false);
             return;
         }
-        setIsFetching(true);
         abortControllerRef.current = new AbortController();
         try {
             const response = await fetch(`/api/teams/slug/${encodeURIComponent(slug)}`, {
@@ -273,7 +270,7 @@ const TeamProfile: React.FC = () => {
                 lastName: userData.lastName || '',
                 email: userData.email || 'N/A',
                 bio: userData.bio || 'No bio available',
-                profileImage: userData.avatar || '/default-profile.png',
+                profileImage: userData.avatar || '/default-profile.png', // Fixed: use profileImage from userData
                 publicIdProfile: userData.publicIdProfile || null,
                 blogs: [],
                 projects: [],
@@ -282,18 +279,18 @@ const TeamProfile: React.FC = () => {
 
             setTeamMember(enrichedTeam);
             setIsOwner(isAuthenticated && enrichedTeam.userId === user?.userId);
+            return enrichedTeam.userId; // Return userId for parallel fetches
         } catch (error) {
             if (error instanceof Error && error.name !== 'AbortError') {
                 console.error('Fetch team member error:', error);
                 toast.error(error.message || 'Failed to fetch team member profile', { toastId: 'fetch-team-error' });
             }
-        } finally {
-            setIsFetching(false);
+            return null;
         }
     }, [slug, isAuthenticated, user?.userId]);
 
     const fetchBlogs = useCallback(async (userId: string) => {
-        setIsFetchingBlogs(true);
+        if (!userId) return;
         abortControllerRef.current = new AbortController();
         try {
             const response = await fetch(`/api/blogs?userId=${userId}`, {
@@ -312,13 +309,11 @@ const TeamProfile: React.FC = () => {
                 console.error('Fetch blogs error:', error);
                 toast.error(error.message || 'Failed to load blogs', { toastId: 'fetch-blogs-error' });
             }
-        } finally {
-            setIsFetchingBlogs(false);
         }
     }, []);
 
     const fetchAdditionalProjects = useCallback(async (userId: string) => {
-        setIsFetchingProjects(true);
+        if (!userId) return;
         abortControllerRef.current = new AbortController();
         try {
             const response = await fetch(`/api/projects?userId=${userId}`, {
@@ -337,27 +332,23 @@ const TeamProfile: React.FC = () => {
                 console.error('Fetch projects error:', error);
                 toast.error(error.message || 'Failed to load projects', { toastId: 'fetch-projects-error' });
             }
-        } finally {
-            setIsFetchingProjects(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchTeamMember();
+        setIsLoadingData(true);
+        const loadData = async () => {
+            const userId = await fetchTeamMember();
+            if (userId) {
+                await Promise.all([fetchBlogs(userId), fetchAdditionalProjects(userId)]);
+            }
+            setIsLoadingData(false);
+        };
+        loadData();
         return () => {
             abortControllerRef.current?.abort();
         };
-    }, [fetchTeamMember]);
-
-    useEffect(() => {
-        if (teamMember?.userId) {
-            fetchBlogs(teamMember.userId);
-            fetchAdditionalProjects(teamMember.userId);
-        }
-        return () => {
-            abortControllerRef.current?.abort();
-        };
-    }, [teamMember?.userId, fetchBlogs, fetchAdditionalProjects]);
+    }, [fetchTeamMember, fetchBlogs, fetchAdditionalProjects]);
 
     const formatDate = useCallback((dateString: string): string => {
         try {
@@ -373,7 +364,7 @@ const TeamProfile: React.FC = () => {
 
     const memoizedTeamMember = useMemo(() => teamMember, [teamMember]);
 
-    if (authLoading || isFetching) {
+    if (authLoading || isLoadingData) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-10">
                 <div className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 sm:p-8 md:p-10 overflow-hidden border border-gray-100/40 dark:border-gray-700/30">
@@ -395,22 +386,42 @@ const TeamProfile: React.FC = () => {
     }
 
     if (!memoizedTeamMember) {
-        // You can check if it's still loading vs not found with a separate `loading` state
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-10 flex items-center justify-center">
-                <div className="max-w-2xl w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-12 text-center border border-gray-100/40 dark:border-gray-700/30">
-                    {/* Skeleton for Title */}
-                    <div className="h-10 md:h-12 w-3/4 mx-auto mb-4 rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
-
-                    {/* Skeleton for Subtitle / text */}
-                    <div className="h-4 md:h-5 w-5/6 mx-auto mb-2 rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
-                    <div className="h-4 md:h-5 w-2/3 mx-auto mb-2 rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
-                    <div className="h-4 md:h-5 w-1/2 mx-auto rounded-lg bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 p-6">
+                <div className="max-w-xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 md:p-10 border border-gray-200 dark:border-gray-700">
+                    
+                    {/* Skeleton Loader */}
+                    <div className="animate-pulse space-y-6">
+                        <div className="h-20 w-20 mx-auto rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mx-auto"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto"></div>
+                        <div className="space-y-3 pt-4">
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                        </div>
+                    </div>
+    
+                    {/* Not Found Fallback */}
+                    <div className="hidden animate-fadeIn text-center" id="notFoundMessage">
+                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+                            Profile Not Found
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            The requested team member profile could not be found. Please check the URL or try again later.
+                        </p>
+                        <button
+                            onClick={() => window.location.href = "/team"}
+                            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition"
+                        >
+                            Go Back
+                        </button>
+                    </div>
                 </div>
             </div>
         );
     }
-
+    
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-12 font-sans relative overflow-hidden">
@@ -429,7 +440,6 @@ const TeamProfile: React.FC = () => {
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover"
                         loading="lazy"
-                        priority={false}
                         onError={(e) => { e.currentTarget.src = '/default-banner.png'; }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 dark:to-black/60" />
@@ -445,35 +455,44 @@ const TeamProfile: React.FC = () => {
                                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-xl opacity-50 animate-pulse" />
                                 <ProfileImage
                                     src={memoizedTeamMember.profileImage || '/default-profile.png'}
-                                    alt={`${memoizedTeamMember.firstName || 'User'} ${memoizedTeamMember.lastName || ''} Profile Image`}
+                                    alt={`${memoizedTeamMember.firstName || 'User'} ${memoizedTeamMember.lastName || ''}'s Profile Image`}
                                 />
                             </div>
                             <div className="flex-grow space-y-6 text-center sm:text-left">
                                 <div>
-                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">
-                                        {memoizedTeamMember.firstName} {memoizedTeamMember.lastName || ''}
-                                    </h1>
-                                    <p className="text-blue-600 dark:text-blue-400 font-medium text-lg mb-3">
-                                        {memoizedTeamMember.designation
-                                            ? memoizedTeamMember.designation.charAt(0).toUpperCase() + memoizedTeamMember.designation.slice(1).toLowerCase()
-                                            : 'Team Member'}
-                                    </p>
-                                    {memoizedTeamMember.location && (
-                                        <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-600 dark:text-gray-400 text-sm mb-3">
-                                            <MapPin className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
-                                            <span>{memoizedTeamMember.location}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex flex-col gap-2 text-gray-600 dark:text-gray-300 text-sm md:text-base">
-                                        <div className="flex items-center justify-center sm:justify-start gap-2">
-                                            <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
-                                            <span className="truncate" title={memoizedTeamMember.email || 'N/A'}>{memoizedTeamMember.email || 'N/A'}</span>
-                                        </div>
-                                        {memoizedTeamMember.supportiveEmail && (
-                                            <div className="flex items-center justify-center sm:justify-start gap-2">
-                                                <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
-                                                <span className="truncate" title={memoizedTeamMember.supportiveEmail}>{memoizedTeamMember.supportiveEmail}</span>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">
+                                                {memoizedTeamMember.firstName} {memoizedTeamMember.lastName || ''}
+                                            </h1>
+                                            <p className="text-blue-600 dark:text-blue-400 font-medium text-lg mb-3">
+                                                {memoizedTeamMember.designation
+                                                    ? memoizedTeamMember.designation.charAt(0).toUpperCase() + memoizedTeamMember.designation.slice(1).toLowerCase()
+                                                    : 'Team Member'}
+                                            </p>
+                                            {memoizedTeamMember.location && (
+                                                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-600 dark:text-gray-400 text-sm mb-3">
+                                                    <MapPin className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                                                    <span>{memoizedTeamMember.location}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex flex-col gap-2 text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                                                <div className="flex items-center justify-center sm:justify-start gap-2">
+                                                    <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                                                    <span className="truncate" title={memoizedTeamMember.email || 'N/A'}>{memoizedTeamMember.email || 'N/A'}</span>
+                                                </div>
+                                                {memoizedTeamMember.supportiveEmail && (
+                                                    <div className="flex items-center justify-center sm:justify-start gap-2">
+                                                        <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                                                        <span className="truncate" title={memoizedTeamMember.supportiveEmail}>{memoizedTeamMember.supportiveEmail}</span>
+                                                    </div>
+                                                )}
                                             </div>
+                                        </div>
+                                        {isOwner && (
+                                            <Link href={`/profile`} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                                                Edit Profile
+                                            </Link>
                                         )}
                                     </div>
                                 </div>
@@ -538,10 +557,8 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    {/* Other sections remain the same, but with potential small fixes like consistent alt texts, etc. */}
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<Briefcase className="h-5 w-5" />} title="Work Experience" />
                         <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-blue-200/60 to-transparent dark:from-blue-700/60 dark:to-transparent">
                             {memoizedTeamMember.previousJobs.map((job, idx) => (
@@ -558,10 +575,7 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<GraduationCap className="h-5 w-5" />} title="Education" />
                         <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-purple-200/60 to-transparent dark:from-purple-700/60 dark:to-transparent">
                             {memoizedTeamMember.education.map((edu, idx) => (
@@ -578,10 +592,7 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Certifications" />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {memoizedTeamMember.certifications.map((cert, idx) => (
@@ -606,10 +617,7 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<Award className="h-5 w-5" />} title="Awards" />
                         <div className="space-y-4">
                             {memoizedTeamMember.awards.map((award, idx) => (
@@ -637,10 +645,7 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Projects" />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {memoizedTeamMember.projectLinks.map((proj, idx) => (
@@ -667,18 +672,9 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Blogs" />
-                        {isFetchingBlogs ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {Array.from({ length: 3 }).map((_, idx) => (
-                                    <Skeleton key={idx} className="h-40 rounded-lg" />
-                                ))}
-                            </div>
-                        ) : blogs.length > 0 ? (
+                        {blogs.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {blogs.map((blog, idx) => (
                                     <motion.div
@@ -696,14 +692,14 @@ const TeamProfile: React.FC = () => {
                                                 {formatDate(blog.date)}
                                             </p>
                                             <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">{blog.content}</p>
-                                            <a
+                                            <Link
                                                 href={`/blog/${blog.slug}`}
                                                 className="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 text-sm font-medium hover:underline transition-colors focus:outline-none focus:underline"
                                                 aria-label={`Read more about ${blog.title}`}
                                             >
                                                 Read More
                                                 <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                                            </a>
+                                            </Link>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -716,18 +712,9 @@ const TeamProfile: React.FC = () => {
                         )}
                     </motion.section>
 
-                    <motion.section
-                        variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm"
-                    >
+                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Additional Projects" />
-                        {isFetchingProjects ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {Array.from({ length: 3 }).map((_, idx) => (
-                                    <Skeleton key={idx} className="h-40 rounded-lg" />
-                                ))}
-                            </div>
-                        ) : additionalProjects.length > 0 ? (
+                        {additionalProjects.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {additionalProjects.map((proj, idx) => (
                                     <motion.div
