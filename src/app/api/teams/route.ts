@@ -1,11 +1,121 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
-import { ObjectId } from 'mongodb';
+import { Db, ObjectId, WithId } from 'mongodb';
 
 // Environment variables
 const DB_NAME = process.env.DB_NAME || 'CraftCode';
 const COLLECTION = process.env.COLLECTION_NAME || 'teams';
+
+// Interfaces for data structures
+interface PreviousJob {
+  title: string;
+  company: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+}
+
+interface ProjectLink {
+  title: string;
+  url: string;
+  description: string;
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  startYear: number;
+  endYear: number;
+  description: string;
+}
+
+interface Certification {
+  title: string;
+  issuer: string;
+  year: number;
+}
+
+interface Language {
+  name: string;
+  proficiency: string;
+}
+
+interface Award {
+  title: string;
+  issuer: string;
+  year: number;
+  description: string;
+}
+
+interface Reference {
+  name: string;
+  designation: string;
+  contact: string;
+}
+
+interface User {
+  _id?: ObjectId;
+  userId: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  bio?: string;
+  profileImage?: string | null;
+  publicIdProfile?: string | null;
+}
+
+interface Team {
+  _id?: ObjectId;
+  userId: string;
+  banner?: string | null;
+  publicIdBanner?: string | null;
+  slug: string;
+  skills?: string[];
+  previousJobs?: PreviousJob[];
+  projectLinks?: ProjectLink[];
+  education?: Education[];
+  certifications?: Certification[];
+  languages?: Language[];
+  hobbies?: string[];
+  awards?: Award[];
+  references?: Reference[];
+  supportiveEmail: string;
+  designation?: string;
+  createdAt?: Date;
+}
+
+interface TeamsResponse {
+  teams: (Omit<Team, '_id'> & {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    bio: string;
+    profileImage: string | null;
+    publicIdProfile: string | null;
+  })[];
+  totalPages: number;
+}
+
+interface PostRequestBody {
+  userId: string;
+  banner?: string;
+  publicIdBanner?: string;
+  slug?: string;
+  skills?: string[];
+  previousJobs?: PreviousJob[];
+  projectLinks?: ProjectLink[];
+  education?: Education[];
+  certifications?: Certification[];
+  languages?: Language[];
+  hobbies?: string[];
+  awards?: Award[];
+  references?: Reference[];
+  supportiveEmail: string;
+  designation?: string;
+  debug?: boolean;
+}
 
 // Utility function to generate a slug
 const generateSlug = (firstName: string, lastName: string): string => {
@@ -20,10 +130,10 @@ const generateSlug = (firstName: string, lastName: string): string => {
 };
 
 // Utility function to ensure slug uniqueness
-const ensureUniqueSlug = async (db: any, baseSlug: string): Promise<string> => {
+const ensureUniqueSlug = async (db: Db, baseSlug: string): Promise<string> => {
   let slug = baseSlug;
   let counter = 1;
-  while (await db.collection(COLLECTION).findOne({ slug })) {
+  while (await db.collection<Team>(COLLECTION).findOne({ slug })) {
     slug = `${baseSlug}-${counter}`;
     counter++;
   }
@@ -43,27 +153,30 @@ export async function GET(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const teamsCollection = db.collection(COLLECTION);
-    const usersCollection = db.collection('users');
+    const teamsCollection = db.collection<Team>(COLLECTION);
+    const usersCollection = db.collection<User>('users');
 
     // Build query for search
-    const query: any = {};
+    const query: Partial<Team> & { $or?: any[] } = {};
     if (search) {
       const searchRegex = new RegExp(search, 'i');
 
       // Search users by name, email, bio
-      const matchingUsers = await usersCollection.find({
-        $or: [
-          { firstName: searchRegex },
-          { lastName: searchRegex },
-          { email: searchRegex },
-          { bio: searchRegex },
-        ]
-      }).project({ userId: 1 }).toArray();
+      const matchingUsers = await usersCollection
+        .find({
+          $or: [
+            { firstName: searchRegex },
+            { lastName: searchRegex },
+            { email: searchRegex },
+            { bio: searchRegex },
+          ],
+        })
+        .project<Pick<User, 'userId'>>({ userId: 1 })
+        .toArray();
 
-      const matchingUserIds = matchingUsers.map((u: any) => u.userId);
+      const matchingUserIds = matchingUsers.map((u) => u.userId);
 
-      // Search teams by userId (from users), supportiveEmail, slug, designation
+      // Search teams by userId, supportiveEmail, slug, designation
       query.$or = [
         { userId: { $in: matchingUserIds } },
         { supportiveEmail: searchRegex },
@@ -85,13 +198,13 @@ export async function GET(req: NextRequest) {
 
     // Enrich team data with user data
     const formattedTeams = await Promise.all(
-      teams.map(async (team: any) => {
+      teams.map(async (team: WithId<Team>) => {
         const user = await usersCollection.findOne({ userId: team.userId });
         return {
           ...team,
           _id: team._id.toString(),
-          slug: team.slug, // Include slug
-          designation: team.designation || '', // Include designation
+          slug: team.slug,
+          designation: team.designation || '',
           firstName: user?.firstName || '',
           lastName: user?.lastName || '',
           email: user?.email || '',
@@ -102,7 +215,7 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    return NextResponse.json(
+    return NextResponse.json<TeamsResponse>(
       {
         teams: formattedTeams,
         totalPages,
@@ -117,11 +230,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const body: PostRequestBody = await req.json();
     const {
       userId,
       banner,
       publicIdBanner,
-      slug: providedSlug, // Allow optional slug in request
+      slug: providedSlug,
       skills,
       previousJobs,
       projectLinks,
@@ -129,35 +243,19 @@ export async function POST(req: NextRequest) {
       certifications,
       languages,
       hobbies,
-      awards,
+      awards: bodyAwards, // Renamed to avoid conflict with imported 'awards'
       references,
       supportiveEmail,
-      designation, // Added designation field
+      designation,
       debug,
-    } = await req.json();
+    } = body;
 
     // If debug is true, return the payload for inspection and skip DB logic
     if (debug && userId) {
       return NextResponse.json(
         {
           debug: true,
-          received: {
-            userId,
-            banner,
-            publicIdBanner,
-            slug: providedSlug,
-            skills,
-            previousJobs,
-            projectLinks,
-            education,
-            certifications,
-            languages,
-            hobbies,
-            awards,
-            references,
-            supportiveEmail,
-            designation, // Include designation in debug response
-          },
+          received: body,
         },
         { status: 200 }
       );
@@ -176,31 +274,31 @@ export async function POST(req: NextRequest) {
     if (providedSlug && (typeof providedSlug !== 'string' || !/^[a-z0-9-]+$/.test(providedSlug) || providedSlug.length > 100)) {
       return NextResponse.json({ error: 'Slug must be a string, contain only lowercase letters, numbers, and hyphens, and be less than 100 characters' }, { status: 400 });
     }
-    if (skills && (!Array.isArray(skills) || skills.some((s: any) => typeof s !== 'string' || s.length > 100))) {
+    if (skills && (!Array.isArray(skills) || skills.some((s) => typeof s !== 'string' || s.length > 100))) {
       return NextResponse.json({ error: 'Skills must be an array of strings, each less than 100 characters' }, { status: 400 });
     }
-    if (previousJobs && (!Array.isArray(previousJobs) || previousJobs.some((j: any) => typeof j.title !== 'string' || typeof j.company !== 'string' || typeof j.startDate !== 'string' || typeof j.endDate !== 'string' || typeof j.description !== 'string'))) {
+    if (previousJobs && (!Array.isArray(previousJobs) || previousJobs.some((j) => typeof j.title !== 'string' || typeof j.company !== 'string' || typeof j.startDate !== 'string' || typeof j.endDate !== 'string' || typeof j.description !== 'string'))) {
       return NextResponse.json({ error: 'Previous jobs must be an array of objects with string title, company, startDate, endDate, and description' }, { status: 400 });
     }
-    if (projectLinks && (!Array.isArray(projectLinks) || projectLinks.some((p: any) => typeof p.title !== 'string' || typeof p.url !== 'string' || typeof p.description !== 'string'))) {
+    if (projectLinks && (!Array.isArray(projectLinks) || projectLinks.some((p) => typeof p.title !== 'string' || typeof p.url !== 'string' || typeof p.description !== 'string'))) {
       return NextResponse.json({ error: 'Project links must be an array of objects with string title, url, and description' }, { status: 400 });
     }
-    if (education && (!Array.isArray(education) || education.some((e: any) => typeof e.degree !== 'string' || typeof e.institution !== 'string' || typeof e.startYear !== 'number' || typeof e.endYear !== 'number' || typeof e.description !== 'string'))) {
+    if (education && (!Array.isArray(education) || education.some((e) => typeof e.degree !== 'string' || typeof e.institution !== 'string' || typeof e.startYear !== 'number' || typeof e.endYear !== 'number' || typeof e.description !== 'string'))) {
       return NextResponse.json({ error: 'Education must be an array of objects with string degree, institution, description, and number startYear, endYear' }, { status: 400 });
     }
-    if (certifications && (!Array.isArray(certifications) || certifications.some((c: any) => typeof c.title !== 'string' || typeof c.issuer !== 'string' || typeof c.year !== 'number'))) {
+    if (certifications && (!Array.isArray(certifications) || certifications.some((c) => typeof c.title !== 'string' || typeof c.issuer !== 'string' || typeof c.year !== 'number'))) {
       return NextResponse.json({ error: 'Certifications must be an array of objects with string title, issuer, and number year' }, { status: 400 });
     }
-    if (languages && (!Array.isArray(languages) || languages.some((l: any) => typeof l.name !== 'string' || typeof l.proficiency !== 'string'))) {
+    if (languages && (!Array.isArray(languages) || languages.some((l) => typeof l.name !== 'string' || typeof l.proficiency !== 'string'))) {
       return NextResponse.json({ error: 'Languages must be an array of objects with string name and proficiency' }, { status: 400 });
     }
-    if (hobbies && (!Array.isArray(hobbies) || hobbies.some((h: any) => typeof h !== 'string' || h.length > 100))) {
+    if (hobbies && (!Array.isArray(hobbies) || hobbies.some((h) => typeof h !== 'string' || h.length > 100))) {
       return NextResponse.json({ error: 'Hobbies must be an array of strings, each less than 100 characters' }, { status: 400 });
     }
-    if (awards && (!Array.isArray(awards) || awards.some((a: any) => typeof a.title !== 'string' || typeof a.issuer !== 'string' || typeof a.year !== 'number' || typeof a.description !== 'string'))) {
+    if (bodyAwards && (!Array.isArray(bodyAwards) || bodyAwards.some((a) => typeof a.title !== 'string' || typeof a.issuer !== 'string' || typeof a.year !== 'number' || typeof a.description !== 'string'))) {
       return NextResponse.json({ error: 'Awards must be an array of objects with string title, issuer, description, and number year' }, { status: 400 });
     }
-    if (references && (!Array.isArray(references) || references.some((r: any) => typeof r.name !== 'string' || typeof r.designation !== 'string' || typeof r.contact !== 'string'))) {
+    if (references && (!Array.isArray(references) || references.some((r) => typeof r.name !== 'string' || typeof r.designation !== 'string' || typeof r.contact !== 'string'))) {
       return NextResponse.json({ error: 'References must be an array of objects with string name, designation, and contact' }, { status: 400 });
     }
     if (!supportiveEmail || !/^\S+@\S+\.\S+$/.test(supportiveEmail) || supportiveEmail.length > 100) {
@@ -215,9 +313,9 @@ export async function POST(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const teamsCollection = db.collection(COLLECTION);
+    const teamsCollection = db.collection<Team>(COLLECTION);
 
-    // Check if supportiveEmail is unique (optional, but added for consistency)
+    // Check if supportiveEmail is unique
     const lowerEmail = supportiveEmail.toLowerCase();
     const existingEmail = await teamsCollection.findOne({ supportiveEmail: lowerEmail });
     if (existingEmail) {
@@ -231,9 +329,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch user data to get firstName and lastName
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    console.log(userId)
-    console.log(user)
+    const user = await db.collection<User>('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -243,7 +339,7 @@ export async function POST(req: NextRequest) {
     slug = await ensureUniqueSlug(db, slug);
 
     // Create team object
-    const teamData = {
+    const teamData: Team = {
       userId,
       banner: banner || null,
       publicIdBanner: publicIdBanner || null,
@@ -255,10 +351,10 @@ export async function POST(req: NextRequest) {
       certifications: certifications || [],
       languages: languages || [],
       hobbies: hobbies || [],
-      awards: awards || [],
+      awards: bodyAwards || [],
       references: references || [],
       supportiveEmail: lowerEmail,
-      designation: designation || '', // Include designation
+      designation: designation || '',
       createdAt: new Date(),
     };
 
