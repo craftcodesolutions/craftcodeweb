@@ -2,9 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
 import { verifyAuth } from '@/lib/auth';
 
-
 const DB_NAME = 'CraftCode';
 const COLLECTION = 'blogs';
+
+interface Section {
+  id: number;
+  type: 'text' | 'image';
+  content: string;
+  publicId?: string | null;
+}
+
+interface BlogData {
+  title: string;
+  author: string;
+  date: string;
+  content: Section[];
+  tags: string[];
+  category: string;
+  slug: string;
+  image: string | null;
+  publicId: string | null; // Added for banner image
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,11 +54,12 @@ export async function GET(req: NextRequest) {
           title: blog.title,
           author: blog.author,
           date: blog.date,
-          content: blog.content,
+          content: blog.content, // Now supports Section[] or string
           tags: blog.tags,
           category: blog.category,
           slug: blog.slug,
           image: blog.image,
+          publicId: blog.publicId, // Added
           createdAt: blog.createdAt,
           updatedAt: blog.updatedAt,
         })),
@@ -72,16 +91,8 @@ export async function POST(req: NextRequest) {
       category,
       slug,
       image,
-    }: {
-      title: string;
-      author: string;
-      date: string;
-      content: string;
-      tags: string[];
-      category: string;
-      slug: string;
-      image: string | null;
-    } = await req.json();
+      publicId,
+    }: BlogData = await req.json();
 
     // Validation
     if (!title || !author || !date || !content || !category || !slug) {
@@ -92,8 +103,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Title must be at least 3 characters long' }, { status: 400 });
     }
 
-    if (content.length < 10) {
-      return NextResponse.json({ error: 'Content must be at least 10 characters long' }, { status: 400 });
+    if (!Array.isArray(content) || content.length === 0) {
+      return NextResponse.json({ error: 'Content must be a non-empty array of sections' }, { status: 400 });
+    }
+
+    for (const section of content) {
+      if (!section.id || !section.type || !['text', 'image'].includes(section.type)) {
+        return NextResponse.json({ error: 'Each section must have a valid id and type (text or image)' }, { status: 400 });
+      }
+      if (section.type === 'text' && section.content.length < 10) {
+        return NextResponse.json({ error: 'Text section content must be at least 10 characters long' }, { status: 400 });
+      }
+      if (section.type === 'image' && !section.content) {
+        return NextResponse.json({ error: 'Image section must have a valid content URL' }, { status: 400 });
+      }
     }
 
     if (!['Technology', 'Design', 'Development', 'UI/UX', 'Other'].includes(category)) {
@@ -117,13 +140,14 @@ export async function POST(req: NextRequest) {
     // Create blog object
     const blogData = {
       title,
-      author: author,
+      author,
       date: new Date(date),
-      content,
+      content, // Now Section[]
       tags: tags || [],
       category,
       slug,
       image: image || null,
+      publicId: publicId || null, // Added
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -138,6 +162,7 @@ export async function POST(req: NextRequest) {
     const insertedBlog = {
       _id: result.insertedId.toString(),
       ...blogData,
+      date: blogData.date.toISOString(),
       createdAt: blogData.createdAt.toISOString(),
       updatedAt: blogData.updatedAt.toISOString(),
     };

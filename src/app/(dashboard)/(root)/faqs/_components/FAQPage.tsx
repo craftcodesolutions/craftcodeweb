@@ -14,95 +14,96 @@ interface FAQ {
 const sampleFAQs: FAQ[] = [
   {
     id: '1',
-    question: "What is the purpose of this platform?",
-    answer: "Our platform connects developers and creators to collaborate on exciting projects. Whether you're a coder, designer, or innovator, you can find opportunities to work together and build something amazing. We provide tools for project management, code sharing, and team collaboration.",
+    question: "What is CraftCode Solutions?",
+    answer: "CraftCode Solutions is a software development company that builds modern web applications, mobile apps, and custom software solutions. We also provide marketing strategies and consultancy to help businesses grow digitally.",
     category: 'general'
   },
   {
     id: '2',
-    question: "How do I get started with collaboration?",
-    answer: "Getting started is easy! Simply click the 'Get Started Now' button, sign up for an account, and start exploring projects or creating your own. You can browse our blog for tips and inspiration, join community discussions, and connect with other developers.",
-    category: 'collaboration'
+    question: "How can I get started with CraftCode Solutions?",
+    answer: "To get started, reach out through our website or contact form. We’ll discuss your project requirements, suggest suitable solutions, and guide you through our development, marketing, or consultancy services.",
+    category: 'general'
   },
   {
     id: '3',
-    question: "Is there a cost to join the platform?",
-    answer: "We offer a free tier with access to core features and limited usage. For advanced collaboration tools, higher usage limits, and premium support, you can upgrade to our Pro or Enterprise plans. Check our pricing page for detailed information.",
+    question: "Does CraftCode Solutions provide marketing services?",
+    answer: "Yes! In addition to software development, we offer digital marketing solutions including social media campaigns, SEO, branding strategies, and consultancy to help your business reach its goals.",
     category: 'general'
   },
   {
     id: '4',
-    question: "Can I share code snippets and technical content?",
-    answer: "Absolutely! Our platform supports rich code sharing with syntax highlighting, markdown formatting, and version control integration. You can share code snippets in blog posts, project descriptions, and team discussions with proper formatting.",
-    category: 'technical'
+    question: "What types of projects can CraftCode work on?",
+    answer: "We develop custom web applications, mobile apps, software solutions, e-commerce platforms, and automation tools. We also assist with marketing campaigns and business consultancy projects.",
+    category: 'collaboration'
   },
   {
     id: '5',
-    question: "How can I contact support when I need help?",
-    answer: "Our support team is available 24/7 through multiple channels. You can reach us via the contact form on our website, email us at support@platform.com, or use our live chat feature. We typically respond within 2-4 hours.",
-    category: 'support'
+    question: "How do I request a project quote?",
+    answer: "You can request a quote via our contact form or by emailing our sales team. Provide details about your project, requirements, and timeline, and we’ll respond with a detailed proposal and cost estimate.",
+    category: 'collaboration'
   },
   {
     id: '6',
-    question: "What types of projects can I find on the platform?",
-    answer: "Our platform hosts diverse projects including web development, mobile apps, open-source contributions, AI/ML projects, blockchain applications, and creative design collaborations. You can filter by category, skill level, or required expertise.",
+    question: "Can CraftCode handle ongoing projects or maintenance?",
+    answer: "Absolutely. We provide long-term support, software updates, bug fixes, and marketing consultancy to ensure your project continues running smoothly after deployment.",
     category: 'collaboration'
   },
   {
     id: '7',
-    question: "How do I ensure my contributions are properly recognized?",
-    answer: "All contributions are tracked within project dashboards with detailed analytics. You can showcase your work in your profile, earn badges for achievements, and get recognition as a top contributor. These can be shared on your portfolio or social media.",
-    category: 'collaboration'
+    question: "How does CraftCode ensure quality in software development?",
+    answer: "Our team follows modern development practices, including agile methodologies, code reviews, testing, and deployment best practices. We ensure scalable, secure, and maintainable solutions.",
+    category: 'technical'
   },
   {
     id: '8',
-    question: "What security measures are in place to protect my work?",
-    answer: "We implement enterprise-grade security including end-to-end encryption, secure code repositories, access controls, and regular security audits. Your intellectual property is protected, and you maintain full ownership of your contributions.",
+    question: "Can CraftCode integrate third-party tools or APIs?",
+    answer: "Yes! We can integrate APIs, payment gateways, cloud services, and other third-party tools into your apps, websites, or software to enhance functionality and streamline processes.",
     category: 'technical'
   },
   {
     id: '9',
-    question: "Can I work on multiple projects simultaneously?",
-    answer: "Yes! You can participate in multiple projects at the same time. Our platform provides tools to manage your workload, track progress across projects, and balance your commitments effectively.",
-    category: 'collaboration'
-  },
-  {
-    id: '10',
-    question: "How do I find the right team members for my project?",
-    answer: "Our advanced matching algorithm helps you find team members based on skills, experience, availability, and project requirements. You can also browse profiles, review portfolios, and conduct interviews to ensure the perfect fit.",
-    category: 'collaboration'
-  },
-  {
-    id: '11',
-    question: "What payment methods do you accept for premium plans?",
-    answer: "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers for annual plans. All payments are processed securely through Stripe, and you can cancel or upgrade your plan at any time.",
-    category: 'general'
-  },
-  {
-    id: '12',
-    question: "How do I integrate third-party tools with the platform?",
-    answer: "Our platform offers extensive API support and integrations with popular tools like GitHub, GitLab, Slack, Discord, and project management tools. You can also use webhooks for custom integrations and automate your workflow.",
+    question: "Does CraftCode provide consultancy for business strategies?",
+    answer: "Yes, our consultancy services cover digital transformation, marketing strategies, product planning, and operational efficiency to help businesses grow and leverage technology effectively.",
     category: 'technical'
   },
   {
+    id: '10',
+    question: "How is client data secured?",
+    answer: "We implement enterprise-grade security measures including encryption, secure servers, access control, and regular audits. Your data and intellectual property are fully protected.",
+    category: 'technical'
+  },
+  {
+    id: '11',
+    question: "How can I contact support at CraftCode?",
+    answer: "You can reach our support team via email at support@craftcodesolutions.com, live chat, or the contact form on our website. Our team typically responds within 24 hours.",
+    category: 'support'
+  },
+  {
+    id: '12',
+    question: "How does CraftCode handle project revisions or changes?",
+    answer: "We provide clear revision policies and project management tools to track changes. Our team communicates with you regularly to ensure project milestones and expectations are met.",
+    category: 'support'
+  },
+  {
     id: '13',
-    question: "What happens if I need to leave a project?",
-    answer: "You can leave a project at any time through your project dashboard. We recommend giving your team notice and completing any pending tasks. Your contributions remain in the project, and you can request a certificate of contribution.",
+    question: "Can CraftCode develop projects for businesses of all sizes?",
+    answer: "Yes, we work with startups, SMEs, and large enterprises. Whether you need a small website, a complex app, or full-scale software with marketing support, we can tailor solutions to your needs.",
     category: 'collaboration'
   },
   {
     id: '14',
-    question: "How do you handle disputes between team members?",
-    answer: "We have a dedicated conflict resolution team and clear guidelines for handling disputes. Most issues are resolved through mediation, and we provide tools for project owners to manage team dynamics effectively.",
+    question: "Can I request training or consultancy after project delivery?",
+    answer: "Yes, CraftCode offers post-project consultancy and training sessions for your team to help them understand the software, marketing tools, and strategies effectively.",
     category: 'support'
   },
   {
     id: '15',
-    question: "Can I use the platform for commercial projects?",
-    answer: "Absolutely! Many users work on commercial projects, startups, and client work through our platform. We provide additional features for business users including invoicing, client management, and professional branding.",
-    category: 'collaboration'
+    question: "What payment methods are accepted for services?",
+    answer: "We accept all major credit cards, PayPal, and bank transfers. For larger projects or enterprise clients, flexible payment schedules can be arranged.",
+    category: 'general'
   }
 ];
+
 
 const FAQItem = ({
   faq,

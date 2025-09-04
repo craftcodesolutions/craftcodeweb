@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
@@ -143,6 +144,13 @@ const cardVariants: Variants = {
     },
 };
 
+// Utility function to extract string from object
+const extractString = (value: any, fallback: string): string => {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value?.content) return value.content;
+    return fallback;
+};
+
 // Reusable components
 const ProfileImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
     <div className="relative w-36 h-36 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-2xl ring-4 ring-blue-100/30 dark:ring-blue-900/20">
@@ -246,7 +254,8 @@ const TeamProfile: React.FC = () => {
             }
 
             const data = await response.json();
-            const team: TeamMember = data.team;
+            console.log('Team API Response:', JSON.stringify(data, null, 2)); // Debug log
+            const team: any = data.team;
 
             if (!team) {
                 throw new Error('Team member not found');
@@ -264,22 +273,82 @@ const TeamProfile: React.FC = () => {
             }
 
             const userData = await userResponse.json();
+            console.log('User API Response:', JSON.stringify(userData, null, 2)); // Debug log
             const enrichedTeam: TeamMember = {
                 ...team,
-                firstName: userData.firstName || 'Unknown',
-                lastName: userData.lastName || '',
-                email: userData.email || 'N/A',
-                bio: userData.bio || 'No bio available',
-                profileImage: userData.avatar || '/default-profile.png', // Fixed: use profileImage from userData
-                publicIdProfile: userData.publicIdProfile || null,
+                firstName: extractString(userData.firstName, 'Unknown'),
+                lastName: extractString(userData.lastName, ''),
+                email: extractString(userData.email, 'N/A'),
+                bio: extractString(userData.bio, 'No bio available'),
+                profileImage: extractString(userData.avatar, '/default-profile.png'),
+                publicIdProfile: extractString(userData.publicIdProfile, ''),
+                location: extractString(userData.location, ''),
+                skills: Array.isArray(team.skills)
+                    ? team.skills.map((skill: any) => extractString(skill, 'Unknown Skill'))
+                    : [],
+                hobbies: Array.isArray(team.hobbies)
+                    ? team.hobbies.map((hobby: any) => extractString(hobby, 'Unknown Hobby'))
+                    : [],
+                previousJobs: Array.isArray(team.previousJobs)
+                    ? team.previousJobs.map((job: any) => ({
+                          title: extractString(job.title, 'Unknown Title'),
+                          company: extractString(job.company, 'Unknown Company'),
+                          startDate: extractString(job.startDate, 'Unknown Date'),
+                          endDate: extractString(job.endDate, 'Present'),
+                          description: extractString(job.description, ''),
+                      }))
+                    : [],
+                projectLinks: Array.isArray(team.projectLinks)
+                    ? team.projectLinks.map((link: any) => ({
+                          title: extractString(link.title, 'Unknown Project'),
+                          url: extractString(link.url, '#'),
+                          description: extractString(link.description, ''),
+                      }))
+                    : [],
+                education: Array.isArray(team.education)
+                    ? team.education.map((edu: any) => ({
+                          degree: extractString(edu.degree, 'Unknown Degree'),
+                          institution: extractString(edu.institution, 'Unknown Institution'),
+                          startYear: typeof edu.startYear === 'number' ? edu.startYear : 0,
+                          endYear: typeof edu.endYear === 'number' ? edu.endYear : 0,
+                          description: extractString(edu.description, ''),
+                      }))
+                    : [],
+                certifications: Array.isArray(team.certifications)
+                    ? team.certifications.map((cert: any) => ({
+                          title: extractString(cert.title, 'Unknown Certification'),
+                          issuer: extractString(cert.issuer, 'Unknown Issuer'),
+                          year: typeof cert.year === 'number' ? cert.year : 0,
+                      }))
+                    : [],
+                languages: Array.isArray(team.languages)
+                    ? team.languages.map((lang: any) => ({
+                          name: extractString(lang.name, 'Unknown Language'),
+                          proficiency: extractString(lang.proficiency, 'Unknown Proficiency'),
+                      }))
+                    : [],
+                awards: Array.isArray(team.awards)
+                    ? team.awards.map((award: any) => ({
+                          title: extractString(award.title, 'Unknown Award'),
+                          issuer: extractString(award.issuer, 'Unknown Issuer'),
+                          year: typeof award.year === 'number' ? award.year : 0,
+                          description: extractString(award.description, ''),
+                      }))
+                    : [],
+                supportiveEmail: extractString(team.supportiveEmail, ''),
                 blogs: [],
                 projects: [],
-                location: userData.location || '',
+                designation: extractString(team.designation, ''),
+                userId: extractString(team.userId, ''),
+                _id: extractString(team._id || team.id, ''),
+                slug: extractString(team.slug, ''),
+                banner: extractString(team.banner, ''),
+                publicIdBanner: extractString(team.publicIdBanner, ''),
             };
 
             setTeamMember(enrichedTeam);
             setIsOwner(isAuthenticated && enrichedTeam.userId === user?.userId);
-            return enrichedTeam.userId; // Return userId for parallel fetches
+            return enrichedTeam.userId;
         } catch (error) {
             if (error instanceof Error && error.name !== 'AbortError') {
                 console.error('Fetch team member error:', error);
@@ -303,7 +372,17 @@ const TeamProfile: React.FC = () => {
                 throw new Error(errorData?.error || 'Failed to fetch blogs');
             }
             const data = await response.json();
-            setBlogs(data.blogs || []);
+            console.log('Blogs API Response:', JSON.stringify(data, null, 2)); // Debug log
+            const transformedBlogs = Array.isArray(data.blogs)
+                ? data.blogs.map((blog: any) => ({
+                      _id: extractString(blog._id || blog.id, ''),
+                      slug: extractString(blog.slug, ''),
+                      title: extractString(blog.title, 'Untitled'),
+                      content: extractString(blog.content, ''),
+                      date: extractString(blog.date, new Date().toISOString()),
+                  }))
+                : [];
+            setBlogs(transformedBlogs);
         } catch (error) {
             if (error instanceof Error && error.name !== 'AbortError') {
                 console.error('Fetch blogs error:', error);
@@ -326,7 +405,16 @@ const TeamProfile: React.FC = () => {
                 throw new Error(errorData?.error || 'Failed to fetch projects');
             }
             const data = await response.json();
-            setAdditionalProjects(data.projects || []);
+            console.log('Projects API Response:', JSON.stringify(data, null, 2)); // Debug log
+            const transformedProjects = Array.isArray(data.projects)
+                ? data.projects.map((proj: any) => ({
+                      _id: extractString(proj._id || proj.id, ''),
+                      name: extractString(proj.name, 'Untitled'),
+                      description: extractString(proj.description, ''),
+                      url: proj.url ? extractString(proj.url, '') : undefined,
+                  }))
+                : [];
+            setAdditionalProjects(transformedProjects);
         } catch (error) {
             if (error instanceof Error && error.name !== 'AbortError') {
                 console.error('Fetch projects error:', error);
@@ -389,8 +477,6 @@ const TeamProfile: React.FC = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 p-6">
                 <div className="max-w-xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 md:p-10 border border-gray-200 dark:border-gray-700">
-                    
-                    {/* Skeleton Loader */}
                     <div className="animate-pulse space-y-6">
                         <div className="h-20 w-20 mx-auto rounded-full bg-gray-200 dark:bg-gray-700"></div>
                         <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mx-auto"></div>
@@ -401,8 +487,6 @@ const TeamProfile: React.FC = () => {
                             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
                         </div>
                     </div>
-    
-                    {/* Not Found Fallback */}
                     <div className="hidden animate-fadeIn text-center" id="notFoundMessage">
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
                             Profile Not Found
@@ -421,7 +505,6 @@ const TeamProfile: React.FC = () => {
             </div>
         );
     }
-    
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-12 font-sans relative overflow-hidden">
@@ -463,7 +546,7 @@ const TeamProfile: React.FC = () => {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">
-                                                {memoizedTeamMember.firstName} {memoizedTeamMember.lastName || ''}
+                                                {memoizedTeamMember.firstName} {memoizedTeamMember.lastName}
                                             </h1>
                                             <p className="text-blue-600 dark:text-blue-400 font-medium text-lg mb-3">
                                                 {memoizedTeamMember.designation
@@ -557,7 +640,6 @@ const TeamProfile: React.FC = () => {
                         </div>
                     </motion.section>
 
-                    {/* Other sections remain the same, but with potential small fixes like consistent alt texts, etc. */}
                     <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
                         <SectionHeader icon={<Briefcase className="h-5 w-5" />} title="Work Experience" />
                         <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-blue-200/60 to-transparent dark:from-blue-700/60 dark:to-transparent">

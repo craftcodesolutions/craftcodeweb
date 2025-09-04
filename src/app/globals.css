@@ -2,6 +2,18 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+/* global.css */
+
+/* Hide scrollbar but keep scrolling functional */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+
 
 @theme inline {
   --color-background: var(--background);

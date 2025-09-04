@@ -24,12 +24,19 @@ interface AuthContextType {
     isLoading?: boolean;
 }
 
+interface Section {
+    id: number;
+    type: "text" | "image";
+    content: string;
+    publicId?: string | null;
+}
+
 interface Blog {
     _id: string;
     title: string;
     author: string; // userId
     date: string;
-    content: string;
+    content: string | Section[];
     tags: string[];
     category: string;
     slug: string;
@@ -44,7 +51,7 @@ interface BlogForm {
     title: string;
     author: string; // userId
     date: string;
-    content: string;
+    content: Section[];
     tags: string[];
     category: string;
     slug: string;
@@ -67,7 +74,7 @@ const Blogs: React.FC = () => {
         title: '',
         author: '',
         date: '',
-        content: '',
+        content: [],
         tags: [],
         category: '',
         slug: '',
@@ -137,8 +144,15 @@ const Blogs: React.FC = () => {
     const handleUpdateBlog = (blogId: string) => {
         const blog = blogs.find((b) => b._id === blogId);
         if (blog && isAuthenticated && user?.userId === blog.author) {
+            let contentSections: Section[];
+            if (typeof blog.content === 'string') {
+                contentSections = [{ id: Date.now(), type: 'text', content: blog.content }];
+            } else {
+                contentSections = blog.content;
+            }
             setSelectedBlog({
                 ...blog,
+                content: contentSections,
                 author: blog.author,
                 image: blog.image,
                 publicId: blog.publicId,
@@ -227,30 +241,23 @@ const Blogs: React.FC = () => {
                 throw new Error(data.error || 'Failed to upload image');
             }
 
-            const reader = new FileReader();
-            reader.onload = () => {
-                const previewUrl = reader.result as string;
-                if (isUpdate && selectedBlog) {
-                    setSelectedBlog({
-                        ...selectedBlog,
-                        image: data.imageUrl,
-                        publicId: data.publicId,
-                    });
-                    setUpdateBlogImagePreview(previewUrl);
-                } else {
-                    setNewBlog({
-                        ...newBlog,
-                        image: data.imageUrl,
-                        publicId: data.publicId,
-                    });
-                    setNewBlogImagePreview(previewUrl);
-                }
-                toast.success('Image uploaded successfully!');
-            };
-            reader.onerror = () => {
-                toast.error('Failed to generate image preview');
-            };
-            reader.readAsDataURL(file);
+            const previewUrl = URL.createObjectURL(file);
+            if (isUpdate && selectedBlog) {
+                setSelectedBlog({
+                    ...selectedBlog,
+                    image: data.imageUrl,
+                    publicId: data.publicId,
+                });
+                setUpdateBlogImagePreview(previewUrl);
+            } else {
+                setNewBlog({
+                    ...newBlog,
+                    image: data.imageUrl,
+                    publicId: data.publicId,
+                });
+                setNewBlogImagePreview(previewUrl);
+            }
+            toast.success('Image uploaded successfully!');
         } catch (error: any) {
             toast.error(error.message || 'Failed to upload image');
             console.error('Image upload error:', error);
@@ -291,9 +298,154 @@ const Blogs: React.FC = () => {
         }
     };
 
+    const addSection = (type: "text" | "image", isUpdate: boolean) => {
+        const newSection: Section = {
+            id: Date.now(),
+            type,
+            content: "",
+            publicId: null,
+        };
+        if (isUpdate) {
+            if (selectedBlog) {
+                setSelectedBlog({ ...selectedBlog, content: [...selectedBlog.content, newSection] });
+            }
+        } else {
+            setNewBlog({ ...newBlog, content: [...newBlog.content, newSection] });
+        }
+    };
+
+    const removeSection = async (id: number, isUpdate: boolean) => {
+        let sectionToDelete: Section | undefined;
+        if (isUpdate) {
+            if (selectedBlog) {
+                sectionToDelete = selectedBlog.content.find(s => s.id === id);
+                const updated = selectedBlog.content.filter(s => s.id !== id);
+                setSelectedBlog({ ...selectedBlog, content: updated });
+            }
+        } else {
+            sectionToDelete = newBlog.content.find(s => s.id === id);
+            const updated = newBlog.content.filter(s => s.id !== id);
+            setNewBlog({ ...newBlog, content: updated });
+        }
+
+        if (sectionToDelete?.type === "image" && sectionToDelete.publicId) {
+            try {
+                await fetch(`/api/cloudinary_blog_image?publicId=${encodeURIComponent(sectionToDelete.publicId)}`, {
+                    method: 'DELETE',
+                });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                console.error('Failed to delete section image from Cloudinary');
+            }
+        }
+    };
+
+    const handleSectionTextChange = (id: number, value: string, isUpdate: boolean) => {
+        const updateFunc = (sections: Section[]) => sections.map(s => (s.id === id ? { ...s, content: value } : s));
+        if (isUpdate) {
+            if (selectedBlog) {
+                setSelectedBlog({ ...selectedBlog, content: updateFunc(selectedBlog.content) });
+            }
+        } else {
+            setNewBlog({ ...newBlog, content: updateFunc(newBlog.content) });
+        }
+    };
+
+    const handleSectionImageUpload = async (id: number, file: File, isUpdate: boolean) => {
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload a valid image file');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size must be less than 5MB');
+            return;
+        }
+
+        setIsUploadingImage(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await fetch('/api/auth/cloudinary_blog_image', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to upload image');
+            }
+
+            // Delete old image if exists
+            let oldPublicId: string | null = null;
+            if (isUpdate && selectedBlog) {
+                const section = selectedBlog.content.find(s => s.id === id);
+                oldPublicId = section?.publicId || null;
+            } else {
+                const section = newBlog.content.find(s => s.id === id);
+                oldPublicId = section?.publicId || null;
+            }
+            if (oldPublicId) {
+                await fetch(`/api/cloudinary_blog_image?publicId=${encodeURIComponent(oldPublicId)}`, {
+                    method: 'DELETE',
+                });
+            }
+
+            const updateFunc = (sections: Section[]) =>
+                sections.map(s => (s.id === id ? { ...s, content: data.imageUrl, publicId: data.publicId } : s));
+
+            if (isUpdate) {
+                if (selectedBlog) {
+                    setSelectedBlog({ ...selectedBlog, content: updateFunc(selectedBlog.content) });
+                }
+            } else {
+                setNewBlog({ ...newBlog, content: updateFunc(newBlog.content) });
+            }
+            toast.success('Section image uploaded successfully!');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to upload section image');
+        } finally {
+            setIsUploadingImage(false);
+        }
+    };
+
+    const handleRemoveSectionImage = async (id: number, isUpdate: boolean) => {
+        let publicId: string | null = null;
+        if (isUpdate && selectedBlog) {
+            const section = selectedBlog.content.find(s => s.id === id);
+            publicId = section?.publicId || null;
+        } else {
+            const section = newBlog.content.find(s => s.id === id);
+            publicId = section?.publicId || null;
+        }
+
+        if (publicId) {
+            try {
+                const response = await fetch(`/api/cloudinary_blog_image?publicId=${encodeURIComponent(publicId)}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to delete image');
+                }
+            } catch (error: any) {
+                toast.error(error.message || 'Failed to remove section image');
+            }
+        }
+
+        const updateFunc = (sections: Section[]) =>
+            sections.map(s => (s.id === id ? { ...s, content: '', publicId: null } : s));
+
+        if (isUpdate) {
+            if (selectedBlog) {
+                setSelectedBlog({ ...selectedBlog, content: updateFunc(selectedBlog.content) });
+            }
+        } else {
+            setNewBlog({ ...newBlog, content: updateFunc(newBlog.content) });
+        }
+        toast.success('Section image removed successfully!');
+    };
+
     const handleAddSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newBlog.title || !newBlog.author || !newBlog.date || !newBlog.content || !newBlog.category) {
+        if (!newBlog.title || !newBlog.author || !newBlog.date || newBlog.content.length === 0 || !newBlog.category) {
             toast.error('Please fill in all required fields.');
             return;
         }
@@ -320,7 +472,7 @@ const Blogs: React.FC = () => {
                     title: '',
                     author: user?.userId || '',
                     date: '',
-                    content: '',
+                    content: [],
                     tags: [],
                     category: '',
                     slug: '',
@@ -342,7 +494,7 @@ const Blogs: React.FC = () => {
         e.preventDefault();
         if (!selectedBlog) return;
 
-        if (!selectedBlog.title || !selectedBlog.author || !selectedBlog.date || !selectedBlog.content || !selectedBlog.category) {
+        if (!selectedBlog.title || !selectedBlog.author || !selectedBlog.date || selectedBlog.content.length === 0 || !selectedBlog.category) {
             toast.error('Please fill in all required fields.');
             return;
         }
@@ -545,67 +697,78 @@ const Blogs: React.FC = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {blogs.map((blog) => (
-                                    <div
-                                        key={blog._id}
-                                        className="group rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-                                    >
-                                        {blog.image && (
-                                            <div className="relative w-full h-52 rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg">
-                                                <Image
-                                                    src={blog.image}
-                                                    alt={blog.title}
-                                                    fill
-                                                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                            </div>
-                                        )}
-                                        <h4 className="text-xl font-semibold text-gray-900 dark:text-white truncate tracking-tight" title={blog.title}>
-                                            {blog.title}
-                                        </h4>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                            {user?.firstName} {user?.lastName}
-                                        </p>
-                                        <p className="text-sm text-gray-400 dark:text-gray-500">
-                                            {new Date(blog.date).toLocaleDateString()}
-                                        </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-2" title={blog.content}>
-                                            {blog.content}
-                                        </p>
-                                        <div className="flex flex-wrap gap-2 mt-3">
-                                            <span className="text-xs rounded-full px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 font-medium shadow-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer">
-                                                {blog.category}
-                                            </span>
-                                            {blog.tags.map((tag, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="text-xs rounded-full px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 font-medium shadow-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer"
-                                                >
-                                                    {tag}
+                                {blogs.map((blog) => {
+                                    let previewText = '';
+                                    let fullContent = '';
+                                    if (typeof blog.content === 'string') {
+                                        previewText = blog.content.slice(0, 150) + '...';
+                                        fullContent = blog.content;
+                                    } else {
+                                        previewText = blog.content.filter(s => s.type === 'text').map(s => s.content).join(' ').slice(0, 150) + '...';
+                                        fullContent = blog.content.map(s => s.type === 'text' ? s.content : '[Image]').join('\n');
+                                    }
+                                    return (
+                                        <div
+                                            key={blog._id}
+                                            className="group rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                        >
+                                            {blog.image && (
+                                                <div className="relative w-full h-52 rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg">
+                                                    <Image
+                                                        src={blog.image}
+                                                        alt={blog.title}
+                                                        fill
+                                                        className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                </div>
+                                            )}
+                                            <h4 className="text-xl font-semibold text-gray-900 dark:text-white truncate tracking-tight" title={blog.title}>
+                                                {blog.title}
+                                            </h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                                {user?.firstName} {user?.lastName}
+                                            </p>
+                                            <p className="text-sm text-gray-400 dark:text-gray-500">
+                                                {new Date(blog.date).toLocaleDateString()}
+                                            </p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-2" title={fullContent}>
+                                                {previewText}
+                                            </p>
+                                            <div className="flex flex-wrap gap-2 mt-3">
+                                                <span className="text-xs rounded-full px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 font-medium shadow-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer">
+                                                    {blog.category}
                                                 </span>
-                                            ))}
-                                        </div>
-                                        {!isLoading && isAuthenticated && user?.userId && blog.author && user.userId === blog.author && (
-                                            <div className="flex items-center justify-end gap-3 mt-4">
-                                                <button
-                                                    onClick={() => handleUpdateBlog(blog._id)}
-                                                    className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer"
-                                                    title="Edit Blog"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteBlog(blog._id)}
-                                                    className="flex items-center justify-center h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/50 transition-all duration-200 cursor-pointer"
-                                                    title="Delete Blog"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                {blog.tags.map((tag, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="text-xs rounded-full px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 font-medium shadow-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer"
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+                                            {!isLoading && isAuthenticated && user?.userId && blog.author && user.userId === blog.author && (
+                                                <div className="flex items-center justify-end gap-3 mt-4">
+                                                    <button
+                                                        onClick={() => handleUpdateBlog(blog._id)}
+                                                        className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer"
+                                                        title="Edit Blog"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteBlog(blog._id)}
+                                                        className="flex items-center justify-center h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/50 transition-all duration-200 cursor-pointer"
+                                                        title="Delete Blog"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -634,11 +797,10 @@ const Blogs: React.FC = () => {
                                             <li key={page}>
                                                 <button
                                                     onClick={() => handlePageChange(page)}
-                                                    className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium shadow-sm transition-all duration-200 cursor-pointer ${
-                                                        currentPage === page
-                                                            ? 'bg-[#2b2720] text-[#aca08e]'
-                                                            : 'text-[#362e23] bg-white hover:bg-[#dbc59c]/10'
-                                                    }`}
+                                                    className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium shadow-sm transition-all duration-200 cursor-pointer ${currentPage === page
+                                                        ? 'bg-[#2b2720] text-[#aca08e]'
+                                                        : 'text-[#362e23] bg-white hover:bg-[#dbc59c]/10'
+                                                        }`}
                                                 >
                                                     {page}
                                                 </button>
@@ -767,16 +929,166 @@ const Blogs: React.FC = () => {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                                                Content
+                                                Content Sections
                                             </label>
-                                            <textarea
-                                                value={newBlog.content}
-                                                onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
-                                                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
-                                                placeholder="Enter blog content"
-                                                rows={6}
-                                                required
-                                            />
+                                            {newBlog.content.map((section) => (
+                                                <div key={section.id} className="mb-4 border border-gray-200 dark:border-gray-700 p-4 rounded relative">
+                                                    {section.type === "text" ? (
+                                                        <textarea
+                                                            className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
+                                                            placeholder="Write section content..."
+                                                            value={section.content}
+                                                            onChange={(e) => handleSectionTextChange(section.id, e.target.value, false)}
+                                                            rows={6}
+                                                        />
+                                                    ) : (
+                                                        <div>
+                                                            {section.content ? (
+                                                                <div className="relative w-full h-48">
+                                                                    <Image
+                                                                        src={section.content}
+                                                                        alt="Section Image Preview"
+                                                                        fill
+                                                                        className="object-cover rounded-lg"
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveSectionImage(section.id, false)}
+                                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all duration-200 cursor-pointer"
+                                                                        aria-label="Remove section image"
+                                                                    >
+                                                                        <svg
+                                                                            className="h-4 w-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M6 18L18 6M6 6l12 12"
+                                                                            />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${isDragging
+                                                                            ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
+                                                                            : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80'
+                                                                        } transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer`}
+                                                                    onDragOver={handleDragOver}
+                                                                    onDragEnter={handleDragEnter}
+                                                                    onDragLeave={handleDragLeave}
+                                                                    onDrop={(e) => {
+                                                                        e.preventDefault();
+                                                                        setIsDragging(false);
+                                                                        const files = Array.from(e.dataTransfer.files);
+                                                                        if (files.length > 0) handleSectionImageUpload(section.id, files[0], false);
+                                                                    }}
+                                                                >
+                                                                    {isUploadingImage ? (
+                                                                        <div className="flex items-center justify-center">
+                                                                            <svg
+                                                                                className="animate-spin h-6 w-6 text-indigo-500 dark:text-indigo-400"
+                                                                                viewBox="0 0 24 24"
+                                                                                fill="none"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                            >
+                                                                                <circle
+                                                                                    className="opacity-25"
+                                                                                    cx="12"
+                                                                                    cy="12"
+                                                                                    r="10"
+                                                                                    stroke="currentColor"
+                                                                                    strokeWidth="4"
+                                                                                ></circle>
+                                                                                <path
+                                                                                    className="opacity-75"
+                                                                                    fill="currentColor"
+                                                                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                                                                ></path>
+                                                                            </svg>
+                                                                            <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                                                                                Uploading...
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="text-center">
+                                                                            <svg
+                                                                                className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                aria-hidden="true"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={2}
+                                                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                                />
+                                                                            </svg>
+                                                                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                                Drag and drop an image here, or
+                                                                            </p>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    const input = document.getElementById(`sectionImage-${section.id}`) as HTMLInputElement;
+                                                                                    if (input) input.click();
+                                                                                }}
+                                                                                className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-200 cursor-pointer"
+                                                                            >
+                                                                                Browse Files
+                                                                            </button>
+                                                                            <input
+                                                                                id={`sectionImage-${section.id}`}
+                                                                                type="file"
+                                                                                accept="image/*"
+                                                                                onChange={(e) => e.target.files && handleSectionImageUpload(section.id, e.target.files[0], false)}
+                                                                                className="hidden"
+                                                                                aria-label="Upload section image"
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                Upload an image (max 5MB, PNG/JPEG)
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSection(section.id, false)}
+                                                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-all duration-200"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <div className="flex gap-4 mt-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addSection("text", false)}
+                                                    className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-6 py-3 text-sm font-medium text-white hover:bg-blue-600 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                                >
+                                                    <Plus className="h-5 w-5" />
+                                                    Add Text Section
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addSection("image", false)}
+                                                    className="inline-flex items-center gap-2 rounded-full bg-green-500 px-6 py-3 text-sm font-medium text-white hover:bg-green-600 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                                >
+                                                    <Plus className="h-5 w-5" />
+                                                    Add Image Section
+                                                </button>
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -804,14 +1116,13 @@ const Blogs: React.FC = () => {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                                                Blog Image
+                                                Banner Image
                                             </label>
                                             <div
-                                                className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${
-                                                    isDragging
-                                                        ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
-                                                        : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80'
-                                                } transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer`}
+                                                className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${isDragging
+                                                    ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
+                                                    : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80'
+                                                    } transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer`}
                                                 onDragOver={handleDragOver}
                                                 onDragEnter={handleDragEnter}
                                                 onDragLeave={handleDragLeave}
@@ -928,9 +1239,8 @@ const Blogs: React.FC = () => {
                                             </button>
                                             <button
                                                 type="submit"
-                                                className={`inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:focus:ring-indigo-400 transition-all duration-300 transform hover:scale-105 cursor-pointer ${
-                                                    isUploadingImage ? 'opacity-70 cursor-not-allowed' : ''
-                                                }`}
+                                                className={`inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:focus:ring-indigo-400 transition-all duration-300 transform hover:scale-105 cursor-pointer ${isUploadingImage ? 'opacity-70 cursor-not-allowed' : ''
+                                                    }`}
                                                 disabled={isUploadingImage}
                                             >
                                                 {isUploadingImage ? (
@@ -1073,18 +1383,166 @@ const Blogs: React.FC = () => {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                                                    Content
+                                                    Content Sections
                                                 </label>
-                                                <textarea
-                                                    value={selectedBlog.content}
-                                                    onChange={(e) =>
-                                                        setSelectedBlog({ ...selectedBlog, content: e.target.value })
-                                                    }
-                                                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
-                                                    placeholder="Enter blog content"
-                                                    rows={6}
-                                                    required
-                                                />
+                                                {selectedBlog.content.map((section) => (
+                                                    <div key={section.id} className="mb-4 border border-gray-200 dark:border-gray-700 p-4 rounded relative">
+                                                        {section.type === "text" ? (
+                                                            <textarea
+                                                                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
+                                                                placeholder="Write section content..."
+                                                                value={section.content}
+                                                                onChange={(e) => handleSectionTextChange(section.id, e.target.value, true)}
+                                                                rows={6}
+                                                            />
+                                                        ) : (
+                                                            <div>
+                                                                {section.content ? (
+                                                                    <div className="relative w-full h-48">
+                                                                        <Image
+                                                                            src={section.content}
+                                                                            alt="Section Image Preview"
+                                                                            fill
+                                                                            className="object-cover rounded-lg"
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleRemoveSectionImage(section.id, true)}
+                                                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-all duration-200 cursor-pointer"
+                                                                            aria-label="Remove section image"
+                                                                        >
+                                                                            <svg
+                                                                                className="h-4 w-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={2}
+                                                                                    d="M6 18L18 6M6 6l12 12"
+                                                                                />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div
+                                                                        className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${isDragging
+                                                                            ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
+                                                                            : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80'
+                                                                            } transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer`}
+                                                                        onDragOver={handleDragOver}
+                                                                        onDragEnter={handleDragEnter}
+                                                                        onDragLeave={handleDragLeave}
+                                                                        onDrop={(e) => {
+                                                                            e.preventDefault();
+                                                                            setIsDragging(false);
+                                                                            const files = Array.from(e.dataTransfer.files);
+                                                                            if (files.length > 0) handleSectionImageUpload(section.id, files[0], true);
+                                                                        }}
+                                                                    >
+                                                                        {isUploadingImage ? (
+                                                                            <div className="flex items-center justify-center">
+                                                                                <svg
+                                                                                    className="animate-spin h-6 w-6 text-indigo-500 dark:text-indigo-400"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    fill="none"
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                >
+                                                                                    <circle
+                                                                                        className="opacity-25"
+                                                                                        cx="12"
+                                                                                        cy="12"
+                                                                                        r="10"
+                                                                                        stroke="currentColor"
+                                                                                        strokeWidth="4"
+                                                                                    ></circle>
+                                                                                    <path
+                                                                                        className="opacity-75"
+                                                                                        fill="currentColor"
+                                                                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                                                                    ></path>
+                                                                                </svg>
+                                                                                <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                                                                                    Uploading...
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="text-center">
+                                                                                <svg
+                                                                                    className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    aria-hidden="true"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth={2}
+                                                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                                    />
+                                                                                </svg>
+                                                                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                                    Drag and drop an image here, or
+                                                                                </p>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        const input = document.getElementById(`sectionImage-${section.id}`) as HTMLInputElement;
+                                                                                        if (input) input.click();
+                                                                                    }}
+                                                                                    className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-200 cursor-pointer"
+                                                                                >
+                                                                                    Browse Files
+                                                                                </button>
+                                                                                <input
+                                                                                    id={`sectionImage-${section.id}`}
+                                                                                    type="file"
+                                                                                    accept="image/*"
+                                                                                    onChange={(e) => e.target.files && handleSectionImageUpload(section.id, e.target.files[0], true)}
+                                                                                    className="hidden"
+                                                                                    aria-label="Upload section image"
+                                                                                />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                    Upload an image (max 5MB, PNG/JPEG)
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeSection(section.id, true)}
+                                                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-all duration-200"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <div className="flex gap-4 mt-4">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addSection("text", true)}
+                                                        className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-6 py-3 text-sm font-medium text-white hover:bg-blue-600 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                                    >
+                                                        <Plus className="h-5 w-5" />
+                                                        Add Text Section
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addSection("image", true)}
+                                                        className="inline-flex items-center gap-2 rounded-full bg-green-500 px-6 py-3 text-sm font-medium text-white hover:bg-green-600 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                                    >
+                                                        <Plus className="h-5 w-5" />
+                                                        Add Image Section
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -1120,14 +1578,13 @@ const Blogs: React.FC = () => {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                                                    Blog Image
+                                                    Banner Image
                                                 </label>
                                                 <div
-                                                    className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${
-                                                        isDragging
-                                                            ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
-                                                            : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80'
-                                                    } transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer`}
+                                                    className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${isDragging
+                                                        ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
+                                                        : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80'
+                                                        } transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer`}
                                                     onDragOver={handleDragOver}
                                                     onDragEnter={handleDragEnter}
                                                     onDragLeave={handleDragLeave}
@@ -1244,9 +1701,8 @@ const Blogs: React.FC = () => {
                                                 </button>
                                                 <button
                                                     type="submit"
-                                                    className={`inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:focus:ring-indigo-400 transition-all duration-300 transform hover:scale-105 cursor-pointer ${
-                                                        isUploadingImage ? 'opacity-70 cursor-not-allowed' : ''
-                                                    }`}
+                                                    className={`inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:focus:ring-indigo-400 transition-all duration-300 transform hover:scale-105 cursor-pointer ${isUploadingImage ? 'opacity-70 cursor-not-allowed' : ''
+                                                        }`}
                                                     disabled={isUploadingImage}
                                                 >
                                                     {isUploadingImage ? (

@@ -208,18 +208,17 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
               >
                 <Link
                   href={item.path}
-                  className={`block truncate transition duration-200 w-full h-full
-                   ${isActive(item.path)
-                     ? 'text-white'
-                     : 'text-neutral-900 dark:text-white hover:text-white'}
-                 `}
+                  className="block truncate transition duration-200 w-full h-full"
                   aria-label={`Navigate to ${item.label}`}
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-white' : 'text-amber-500 dark:text-amber-400'}`} />
+                  <span className={`inline-flex items-center gap-2
+    ${isActive(item.path) ? 'text-white' : 'text-amber-500 dark:text-amber-400'}
+  `}>
+                    <item.icon className="w-4 h-4" />
                     {item.label}
                   </span>
                 </Link>
+
               </li>
             ))}
           </ul>

@@ -7,17 +7,27 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Define Section interface
+interface Section {
+  id: number;
+  type: "text" | "image";
+  content: string;
+  publicId?: string | null;
+}
+
 // Blog interface with author object
 interface Blog {
   _id: string;
   slug: string;
   title: string;
-  content: string;
+  content: Section[] | string; // Support Section[] or legacy string
   image?: string | null;
+  publicId?: string | null; // Added for banner image
   author: {
     userId: string;
     name: string;
     avatar?: string | null;
+    bio?: string | null; // Added for consistency
   };
   date: string;
   tags?: string[];
@@ -31,6 +41,7 @@ interface User {
   firstName: string;
   lastName: string;
   avatar?: string | null;
+  bio?: string | null;
 }
 
 // Raw blog type to ensure author is a string from API
@@ -38,8 +49,9 @@ interface RawBlog {
   _id: string;
   slug: string;
   title: string;
-  content: string;
+  content: Section[] | string; // Updated to support Section[]
   image?: string | null;
+  publicId?: string | null; // Added
   author: string;
   date: string;
   tags?: string[];
@@ -52,6 +64,18 @@ const Card = ({ blog }: { blog: Blog }) => {
   const [coverImageError, setCoverImageError] = useState(false);
   const [avatarImageError, setAvatarImageError] = useState(false);
   const tag = blog.tags?.length ? blog.tags[0] : blog.category || "General";
+
+  // Extract preview from content (first text section, truncated)
+  const getContentPreview = (content: Section[] | string) => {
+    if (typeof content === "string") {
+      return content.length > 100 ? `${content.slice(0, 100)}...` : content;
+    }
+    const textSection = content.find((section) => section.type === "text");
+    if (!textSection) return "No content available";
+    return textSection.content.length > 100
+      ? `${textSection.content.slice(0, 100)}...`
+      : textSection.content;
+  };
 
   const isValidAvatar =
     blog.author?.avatar &&
@@ -75,7 +99,7 @@ const Card = ({ blog }: { blog: Blog }) => {
       className="w-full sm:w-[320px] md:w-[370px]"
     >
       <Link
-        href={`/blog/${blog.slug}`}
+        href={`/blog/${blog.slug}`} 
         className="group block"
         aria-label={`Read ${blog.title}`}
       >
@@ -147,7 +171,7 @@ const Card = ({ blog }: { blog: Blog }) => {
                 {blog.title || "Untitled"}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base line-clamp-3">
-                {blog.content || "No content available"}
+                {getContentPreview(blog.content)}
               </p>
             </div>
 
@@ -204,6 +228,7 @@ const BlogPage = () => {
                 firstName: userData.firstName || "Unknown",
                 lastName: userData.lastName || "User",
                 avatar: userData.avatar && typeof userData.avatar === "string" && userData.avatar.trim() !== "" ? userData.avatar : null,
+                bio: userData.bio || "No bio available.",
               };
             } else {
               console.warn(`User ${userId} not found or unauthorized, status: ${userResponse.status}`);
@@ -212,6 +237,7 @@ const BlogPage = () => {
                 firstName: "Unknown",
                 lastName: "User",
                 avatar: null,
+                bio: "No bio available.",
               };
             }
           } catch (userError: unknown) {
@@ -221,6 +247,7 @@ const BlogPage = () => {
               firstName: "Unknown",
               lastName: "User",
               avatar: null,
+              bio: "No bio available.",
             };
           }
         }
@@ -229,14 +256,16 @@ const BlogPage = () => {
         const mappedBlogs: Blog[] = rawBlogs.map(blog => ({
           ...blog,
           title: blog.title || "Untitled",
-          content: blog.content || "",
+          content: blog.content || [],
           category: blog.category || "General",
           tags: blog.tags || [],
           date: blog.date || new Date().toISOString(),
+          publicId: blog.publicId || null, // Added
           author: {
             userId: blog.author || "unknown",
             name: authorCache[blog.author]?.firstName ? `${authorCache[blog.author].firstName} ${authorCache[blog.author].lastName}`.trim() : "Unknown Author",
             avatar: authorCache[blog.author]?.avatar || null,
+            bio: authorCache[blog.author]?.bio || "No bio available.",
           },
         }));
 

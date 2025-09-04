@@ -8,20 +8,32 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Define Section interface
+interface Section {
+  id: number;
+  type: "text" | "image";
+  content: string;
+  publicId?: string | null;
+}
+
 // Blog interface with author object
 interface Blog {
   _id: string;
   slug: string;
   title: string;
-  content: string;
+  content: Section[] | string; // Support Section[] or legacy string
   image?: string | null;
+  publicId?: string | null; // Added for banner image
   author: {
     userId: string;
     firstName: string;
     lastName: string;
     avatar?: string | null;
+    bio?: string | null; // Added for consistency
   };
+  date?: string; // Added
   createdAt: string;
+  updatedAt?: string; // Added
   tags?: string[];
   category: string;
   published: boolean;
@@ -32,6 +44,7 @@ interface User {
   firstName: string;
   lastName: string;
   avatar?: string | null;
+  bio?: string | null; // Added
 }
 
 // Raw blog type to ensure author is a string from API
@@ -39,10 +52,13 @@ interface RawBlog {
   _id: string;
   slug: string;
   title: string;
-  content: string;
-  coverImage?: string | null;
+  content: Section[] | string; // Updated to support Section[]
+  image?: string | null; // Standardized to image
+  publicId?: string | null; // Added
   author: string;
+  date?: string; // Added
   createdAt: string;
+  updatedAt?: string; // Added
   tags?: string[];
   category: string;
   published: boolean;
@@ -65,6 +81,18 @@ const Card = ({ blog }: { blog: Blog }) => {
     blog.author?.avatar &&
     typeof blog.author.avatar === "string" &&
     blog.author.avatar.trim() !== "";
+
+  // Extract preview from content (first text section, truncated)
+  const getContentPreview = (content: Section[] | string) => {
+    if (typeof content === "string") {
+      return content.length > 80 ? `${content.slice(0, 80)}...` : content;
+    }
+    const textSection = content.find((section) => section.type === "text");
+    if (!textSection) return "No content available";
+    return textSection.content.length > 80
+      ? `${textSection.content.slice(0, 80)}...`
+      : textSection.content;
+  };
 
   return (
     <motion.div
@@ -132,7 +160,7 @@ const Card = ({ blog }: { blog: Blog }) => {
                 {blog.title || "Untitled"}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 text-base line-clamp-2">
-                {blog.content || "No content available"}
+                {getContentPreview(blog.content)}
               </p>
             </div>
 
@@ -174,13 +202,11 @@ const BlogSection: NextPage = () => {
       try {
         // Fetch blogs
         const blogResponse = await fetch(`/api/blogs?page=${currentPage}&limit=${itemsPerPage}`);
-        
         if (!blogResponse.ok) {
           const errorData = await blogResponse.json().catch(() => ({}));
           throw new Error(errorData.error || `Failed to fetch blogs (status: ${blogResponse.status})`);
         }
         const blogData = await blogResponse.json();
-        console.log(blogData)
         const rawBlogs: RawBlog[] = Array.isArray(blogData.blogs) ? blogData.blogs : [];
 
         // Fetch author details for each unique userId
@@ -197,6 +223,7 @@ const BlogSection: NextPage = () => {
                 firstName: userData.firstName || "Unknown",
                 lastName: userData.lastName || "User",
                 avatar: userData.avatar && typeof userData.avatar === "string" && userData.avatar.trim() !== "" ? userData.avatar : null,
+                bio: userData.bio || "No bio available.",
               };
             } else {
               console.warn(`User ${userId} not found or unauthorized, status: ${userResponse.status}`);
@@ -205,6 +232,7 @@ const BlogSection: NextPage = () => {
                 firstName: "Unknown",
                 lastName: "User",
                 avatar: null,
+                bio: "No bio available.",
               };
             }
           } catch (userError: unknown) {
@@ -214,6 +242,7 @@ const BlogSection: NextPage = () => {
               firstName: "Unknown",
               lastName: "User",
               avatar: null,
+              bio: "No bio available.",
             };
           }
         }
@@ -222,15 +251,19 @@ const BlogSection: NextPage = () => {
         const mappedBlogs: Blog[] = rawBlogs.map(blog => ({
           ...blog,
           title: blog.title || "Untitled",
-          content: blog.content || "",
+          content: blog.content || [],
           category: blog.category || "General",
           tags: blog.tags || [],
+          date: blog.date || new Date().toISOString(),
           createdAt: blog.createdAt || new Date().toISOString(),
+          updatedAt: blog.updatedAt || new Date().toISOString(),
+          publicId: blog.publicId || null,
           author: {
             userId: blog.author || "unknown",
             firstName: authorCache[blog.author]?.firstName || "Unknown",
             lastName: authorCache[blog.author]?.lastName || "User",
             avatar: authorCache[blog.author]?.avatar || null,
+            bio: authorCache[blog.author]?.bio || "No bio available.",
           },
           published: blog.published ?? true,
         }));
