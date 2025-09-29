@@ -200,21 +200,48 @@ const Projects: React.FC = () => {
                 }
             };
 
-            const fetchClients = async () => {
+            /* const fetchClients = async () => {
                 try {
-                    const response = await fetch('/api/users');
+                    const response = await fetch('/api/clients');
                     if (response.ok) {
                         const data = await response.json();
+                        
                         console.log(data); // Debug the response
-                        if (Array.isArray(data.users)) {
+                        if (Array.isArray(data.clients)) {
                             setClients(
-                                data.users.map((c: any) => ({
+                                data.clients.map((c: any) => ({
                                     id: c._id,
                                     name: c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown'
                                 }))
                             );
                         } else {
-                            console.error('Clients data is not an array:', data.users);
+                            console.error('Clients data is not an array:', data.clients);
+                            setClients([]);
+                        }
+                    } else {
+                        console.error('Failed to fetch clients:', response.statusText);
+                        setClients([]);
+                    }
+                } catch (error) {
+                    console.error('Fetch clients error:', error);
+                    setClients([]);
+                }
+            }; */
+            const fetchClients = async () => {
+                try {
+                    const response = await fetch('/api/clients');
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("clients",data); // Debug the response
+                        if (Array.isArray(data.clients)) {
+                            setClients(
+                                data.clients.map((c: any) => ({
+                                    id: c._id,
+                                    name: c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown'
+                                }))
+                            );
+                        } else {
+                            console.error('Clients data is not an array:', data.clients);
                             setClients([]);
                         }
                     } else {
