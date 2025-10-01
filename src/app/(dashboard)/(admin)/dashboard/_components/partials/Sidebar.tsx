@@ -152,17 +152,17 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('messages') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('messenger') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
-                  href="/messages"
-                  className={`block text-[#6b4f27] hover:text-amber-700 truncate transition duration-150`}
+                  href="/messenger"
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('messages') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('messenger') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -175,7 +175,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
                       >
-                        Messages
+                        Messenger
                       </span>
                     </div>
                   </div>

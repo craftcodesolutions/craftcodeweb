@@ -3,6 +3,11 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
+import { GlobalChatProvider } from "@/context/GlobalChatContext";
+import FloatingChatButton from "@/components/FloatingChatButton";
+import GlobalChatBox from "@/components/GlobalChatBox";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // import ModeToggle from "@/components/ModeToggle"; // Remove this import
 
@@ -26,7 +31,23 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            {children}
+            <GlobalChatProvider>
+              {children}
+              <FloatingChatButton />
+              <GlobalChatBox />
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+              />
+            </GlobalChatProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

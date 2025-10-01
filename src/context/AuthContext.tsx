@@ -3,6 +3,8 @@
 
 import * as React from 'react';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { toast } from 'react-toastify';
+import { io, Socket } from 'socket.io-client';
 
 interface User {
   userId: string;
@@ -27,6 +29,15 @@ interface AuthContextType {
   updateProfile: (updateData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   updateEmail: (currentEmail: string, newEmail: string, password: string) => Promise<{ success: boolean; error?: string }>;
   changePassword: (email: string, currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  // New functionalities from Zustand store
+  isSigningUp: boolean;
+  isLoggingIn: boolean;
+  socket: Socket | null;
+  onlineUsers: string[];
+  checkAuth: () => Promise<void>;
+  signup: (data: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
+  connectSocket: () => void;
+  disconnectSocket: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -42,6 +53,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // New state variables from Zustand store
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+
+  // Base URL for socket connection
+  const BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "/";
 
   /**
    * Fetch user info from backend using the /api/auth/me endpoint.
@@ -95,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initial user fetch on mount
   useEffect(() => {
-    refreshUser();
+    checkAuth();
   }, []);
 
   // Periodic polling to check for session updates
@@ -111,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setIsLoggingIn(true);
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -123,15 +143,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         await fetchUserFromBackend();
+        toast.success("Logged in successfully");
+        connectSocket();
         return { success: true };
       } else {
-        return { success: false, error: data.error || 'Login failed' };
+        const errorMessage = data.error || 'Login failed';
+        toast.error(errorMessage);
+        return { success: false, error: errorMessage };
       }
     } catch (err) {
       console.error('Login failed:', err);
-      return { success: false, error: 'Unexpected error during login' };
+      const errorMessage = 'Unexpected error during login';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
@@ -139,13 +166,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      toast.success("Logged out successfully");
     } catch (err) {
       console.error('Logout failed:', err);
+      toast.error("Error logging out");
     } finally {
       setUser(null);
       setIsAuthenticated(false);
       setError(null);
       setIsLoading(false);
+      disconnectSocket();
     }
   };
 
@@ -170,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Updated user data from /api/users/[id]:', updatedData); // Debug log
 
       await refreshUser();
+      toast.success("Profile updated successfully");
       return { success: true };
     } catch (err) {
       console.error('Profile update failed:', err);
@@ -237,9 +268,152 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Check authentication status - equivalent to checkAuth from Zustand
+   */
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Authentication check failed');
+      }
+
+      const data = await response.json();
+      const updatedUser: User = {
+        userId: data.userId,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        isAdmin: data.isAdmin,
+        profileImage: data.profileImage,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        bio: data.bio || '',
+      };
+
+      setUser(updatedUser);
+      setIsAuthenticated(true);
+      setError(null);
+      connectSocket();
+    } catch (error) {
+      console.log("Error in authCheck:", error);
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Signup function - equivalent to signup from Zustand
+   */
+  const signup = async (data: { email: string; password: string; firstName?: string; lastName?: string }) => {
+    setIsSigningUp(true);
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Signup failed');
+      }
+
+      const userData = await response.json();
+      const newUser: User = {
+        userId: userData.userId,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        isAdmin: userData.isAdmin,
+        profileImage: userData.profileImage,
+        createdAt: userData.createdAt,
+        updatedAt: userData.updatedAt,
+        bio: userData.bio || '',
+      };
+
+      setUser(newUser);
+      setIsAuthenticated(true);
+      setError(null);
+
+      toast.success("Account created successfully!");
+      connectSocket();
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSigningUp(false);
+    }
+  };
+
+  /**
+   * Connect socket - equivalent to connectSocket from Zustand
+   */
+  const connectSocket = () => {
+    if (!user || socket?.connected) return;
+
+    try {
+      const newSocket = io(BASE_URL, {
+        withCredentials: true, // this ensures cookies are sent with the connection
+      });
+
+      newSocket.connect();
+      setSocket(newSocket);
+
+      // listen for online users event
+      newSocket.on("getOnlineUsers", (userIds: string[]) => {
+        setOnlineUsers(userIds);
+      });
+    } catch (error) {
+      console.error('Socket connection failed:', error);
+    }
+  };
+
+  /**
+   * Disconnect socket - equivalent to disconnectSocket from Zustand
+   */
+  const disconnectSocket = () => {
+    if (socket?.connected) {
+      socket.disconnect();
+      setSocket(null);
+      setOnlineUsers([]);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, isLoading, error, login, logout, refreshUser, updateProfile, updateEmail, changePassword }}
+      value={{ 
+        isAuthenticated, 
+        user, 
+        isLoading, 
+        error, 
+        login, 
+        logout, 
+        refreshUser, 
+        updateProfile, 
+        updateEmail, 
+        changePassword,
+        // New properties from Zustand store
+        isSigningUp,
+        isLoggingIn,
+        socket,
+        onlineUsers,
+        checkAuth,
+        signup,
+        connectSocket,
+        disconnectSocket
+      }}
     >
       {children}
     </AuthContext.Provider>
