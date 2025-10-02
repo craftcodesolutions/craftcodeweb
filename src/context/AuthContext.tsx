@@ -29,6 +29,7 @@ interface AuthContextType {
   updateProfile: (updateData: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   updateEmail: (currentEmail: string, newEmail: string, password: string) => Promise<{ success: boolean; error?: string }>;
   changePassword: (email: string, currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  updateUserByAdmin: (userId: string, field: 'isAdmin' | 'status', value: boolean) => Promise<{ success: boolean; error?: string; updatedUser?: User }>;
   // New functionalities from Zustand store
   isSigningUp: boolean;
   isLoggingIn: boolean;
@@ -391,6 +392,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Update user by admin - for admin user management
+   */
+  const updateUserByAdmin = async (userId: string, field: 'isAdmin' | 'status', value: boolean) => {
+    try {
+      const response = await fetch(`/api/users?id=${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field, value }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to update ${field}`);
+      }
+
+      const updatedUser = await response.json();
+      
+      // Check if the updated user is the current logged-in user
+      if (user && user.userId === userId) {
+        // Refresh the current user's session data
+        await refreshUser();
+        toast.success(`Your ${field === 'isAdmin' ? 'admin status' : 'account status'} has been updated`);
+      }
+
+      return { success: true, updatedUser };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : `Failed to update ${field}`;
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{ 
@@ -404,6 +439,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateProfile, 
         updateEmail, 
         changePassword,
+        updateUserByAdmin,
         // New properties from Zustand store
         isSigningUp,
         isLoggingIn,

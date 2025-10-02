@@ -211,11 +211,47 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                   </div>
                 </Link>
               </li>
+              <li
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('meeting')
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                    : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'
+                  }`}
+              >
+                <Link
+                  href="/meeting"
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="grow flex items-center">
+                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
+                        <svg
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('meeting')
+                              ? 'text-indigo-600'
+                              : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
+                            }`}
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M19 6h-1V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM8 4h8v2H8V4zm11 16H5V8h14v12zM7 10h2v2H7v-2zm0 4h2v2H7v-2zm4-4h6v2h-6v-2zm0 4h6v2h-6v-2z" />
+                        </svg>
+                      </span>
+                      <span
+                        className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
+                          } 2xl:opacity-100 sidebar-text`}
+                      >
+                        Meeting
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </li>
 
               <li
                 className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('professionals')
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                    : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                  : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'
                   } ${pathname.includes('professionals') &&
                   'from-emerald-500/[0.12] dark:from-emerald-500/[0.24] to-emerald-500/[0.04]'
                   }`}
@@ -223,8 +259,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 <Link
                   href="/professionals"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes('professionals')
-                      ? ''
-                      : 'hover:text-gray-900 dark:hover:text-white'
+                    ? ''
+                    : 'hover:text-gray-900 dark:hover:text-white'
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -232,8 +268,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('professionals')
-                              ? 'text-indigo-600'
-                              : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
+                            ? 'text-indigo-600'
+                            : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
                             }`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"

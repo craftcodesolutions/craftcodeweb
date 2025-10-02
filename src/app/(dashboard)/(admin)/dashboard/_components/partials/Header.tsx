@@ -19,7 +19,7 @@ function Header({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHea
 
   return (
     <header
-      className={`sticky top-0 before:absolute before:inset-0 before:backdrop-blur-md before:bg-white dark:before:bg-gray-900 before:-z-10 z-30 shadow-sm transition-all duration-500`}
+      className={`sticky top-0 before:absolute before:inset-0 before:backdrop-blur-md before:bg-white dark:before:bg-gray-900 before:-z-10 z-2 shadow-sm transition-all duration-500`}
     >
       <div className="px-4 sm:px-6 lg:px-8">
         <div

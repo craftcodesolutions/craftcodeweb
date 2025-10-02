@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/context/AuthContext';
 
 interface User {
   _id: string;
@@ -22,6 +23,7 @@ interface User {
 }
 
 const UsersTable: React.FC = () => {
+  const { updateUserByAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>({});
@@ -151,6 +153,7 @@ const UsersTable: React.FC = () => {
         ? !users.find((u) => u._id === userId)?.isAdmin
         : !users.find((u) => u._id === userId)?.status;
 
+    // Optimistic update
     setUsers((prev) =>
       prev.map((u) => (u._id === userId ? { ...u, [field]: newValue } : u))
     );
@@ -160,44 +163,46 @@ const UsersTable: React.FC = () => {
     }));
 
     try {
-      const response = await fetch(`/api/users?id=${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field, value: newValue }),
-      });
+      // Use AuthContext function which handles session refresh if needed
+      const result = await updateUserByAdmin(userId, field, newValue);
 
-      if (response.ok) {
-        const updatedUser = await response.json();
+      if (result.success && result.updatedUser) {
+        const serverUpdatedUser = result.updatedUser as unknown as User;  // Safe type assertion through unknown
+        // Update local state with server response
         setUsers((prev) =>
           prev.map((u) =>
             u._id === userId
               ? {
                   ...u,
-                  [field]: updatedUser[field],
-                  firstName: updatedUser.firstName || u.firstName,
-                  lastName: updatedUser.lastName || u.lastName,
-                  name: updatedUser.name || `${updatedUser.firstName || u.firstName} ${updatedUser.lastName || u.lastName}`.trim(),
-                  email: updatedUser.email || u.email,
-                  picture: updatedUser.profileImage || updatedUser.picture || u.picture,
-                  bio: updatedUser.bio || u.bio,
-                  status: updatedUser.status ?? u.status,
+                  [field]: field === 'isAdmin' || field === 'status' 
+                    ? serverUpdatedUser[field] ?? u[field]
+                    : u[field],
+                  firstName: serverUpdatedUser.firstName || u.firstName,
+                  lastName: serverUpdatedUser.lastName || u.lastName,
+                  name: `${serverUpdatedUser.firstName || u.firstName} ${serverUpdatedUser.lastName || u.lastName}`.trim(),
+                  email: serverUpdatedUser.email || u.email,
+                  picture: serverUpdatedUser.picture ?? u.picture,
+                  bio: serverUpdatedUser.bio || u.bio,
+                  status: typeof serverUpdatedUser.status === 'boolean' ? serverUpdatedUser.status : u.status,
                 }
               : u
           )
         );
+        
+        // Show success message only for other users (AuthContext handles current user messages)
+        const updatedUser = users.find(u => u._id === userId);
         toast.success(
-          `${field === 'isAdmin' ? 'Admin status' : 'Status'} updated for ${updatedUser.name || 'user'}`
+          `${field === 'isAdmin' ? 'Admin status' : 'Status'} updated for ${updatedUser?.name || 'user'}`
         );
       } else {
+        // Revert optimistic update on failure
         setUsers(originalUsers);
         setCheckedItems(originalCheckedItems);
-        const { error } = await response.json();
-        toast.error(error || `Failed to update ${field}`);
       }
     } catch (error) {
+      // Revert optimistic update on error
       setUsers(originalUsers);
       setCheckedItems(originalCheckedItems);
-      toast.error(`Failed to update ${field}`);
       console.error(`Checkbox update error for ${field}:`, error);
     }
   };

@@ -11,9 +11,12 @@
   "dependencies": {
     "@headlessui/react": "^2.2.7",
     "@radix-ui/react-accordion": "^1.2.12",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@stream-io/node-sdk": "^0.7.3",
+    "@stream-io/video-react-sdk": "^1.23.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^6.4.17",

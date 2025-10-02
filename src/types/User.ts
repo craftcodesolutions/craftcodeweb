@@ -8,6 +8,9 @@ export interface User {
   isAdmin?: boolean;
   profileImage?: string;
   bio?: string;
+  status?: boolean;
+  name?: string;
+  picture?: string;
   resetToken?: string;
   resetTokenExpiry?: Date;
   createdAt?: Date;
