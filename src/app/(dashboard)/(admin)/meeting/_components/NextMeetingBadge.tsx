@@ -35,12 +35,25 @@ const NextMeetingBadge = () => {
   if (isLoading) {
     return (
       <div className="flex justify-start">
-        <div className="glassmorphism max-w-[320px] rounded-xl sm:rounded-2xl py-3 px-4 sm:px-6 text-center border border-white/30 backdrop-blur-md shadow-lg animate-pulse">
+        <div className="glassmorphism max-w-[320px] rounded-xl sm:rounded-2xl py-3 px-4 sm:px-6 text-center border border-white/30 backdrop-blur-md shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-            <span className="text-sm sm:text-base font-semibold text-gray-300">
+            {/* Enhanced loading indicator */}
+            <div className="relative">
+              {/* Outer glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-sm opacity-40 animate-pulse scale-150"></div>
+              {/* Spinning ring */}
+              <div className="relative w-3 h-3 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+            <span className="text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent animate-pulse">
               Loading meetings...
             </span>
+            
+            {/* Loading dots */}
+            <div className="flex items-center gap-1 ml-2">
+              <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-1 h-1 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
           </div>
         </div>
       </div>

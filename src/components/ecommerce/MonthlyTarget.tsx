@@ -25,38 +25,40 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 interface TargetData {
   currentProgress: number;
   target: number;
-  revenue: number;
-  todayEarnings: number;
+  completedProjects: number;
+  todayProjects: number;
   percentageChange: number;
   message: string;
 }
 
-interface Payment {
+interface Project {
   _id: string;
-  amount: number;
+  title: string;
   status: string;
   createdAt: string;
-  customer?: {
-    reference: string;
-  };
+  milestones: Array<{
+    name: string;
+    completed: boolean;
+    date: string;
+  }>;
 }
 
 const MonthlyTarget = () => {
   const [targetData, setTargetData] = useState<TargetData>({
     currentProgress: 75.55,
-    target: 20000,
-    revenue: 15000,
-    todayEarnings: 3287,
+    target: 20,
+    completedProjects: 15,
+    todayProjects: 3,
     percentageChange: 10,
-    message: "You earn $3287 today, it's higher than last month. Keep up your good work!"
+    message: "You completed 3 projects today, it's higher than last month. Keep up your good work!"
   });
   
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
 
-  // Fetch real payment data
+  // Fetch real project data
   useEffect(() => {
-    const fetchPaymentData = async () => {
+    const fetchProjectData = async () => {
       setIsLoading(true);
       try {
         // Get current date and calculate date ranges
@@ -90,70 +92,85 @@ const MonthlyTarget = () => {
           prevEndDate = startOfYear;
         }
 
-        // Fetch current period payments with success status
-        const currentResponse = await fetch(`/api/payments?status=success&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&limit=1000`);
-        const currentData = await currentResponse.json();
+        // Fetch all projects
+        const response = await fetch('/api/projects?limit=1000');
+        const data = await response.json();
         
-        // Fetch previous period payments with success status for comparison
-        const prevResponse = await fetch(`/api/payments?status=success&startDate=${prevStartDate.toISOString()}&endDate=${prevEndDate.toISOString()}&limit=1000`);
-        const prevData = await prevResponse.json();
+        if (data.projects) {
+          // Filter projects by current period
+          const currentProjects = data.projects.filter((project: Project) => {
+            const projectDate = new Date(project.createdAt);
+            return projectDate >= startDate && projectDate <= endDate;
+          });
+          
+          // Filter projects by previous period
+          const prevProjects = data.projects.filter((project: Project) => {
+            const projectDate = new Date(project.createdAt);
+            return projectDate >= prevStartDate && projectDate < prevEndDate;
+          });
 
-        // Calculate current period revenue
-        const currentRevenue = currentData.payments?.reduce((sum: number, payment: Payment) => {
-          return sum + (payment.amount || 0);
-        }, 0) || 0;
+          // Calculate completed projects in current period
+          const completedProjects = currentProjects.filter((project: Project) => {
+            return project.status === 'completed' || 
+              (project.milestones && project.milestones.length > 0 && 
+               project.milestones.every(milestone => milestone.completed));
+          }).length;
 
-        // Calculate previous period revenue
-        const prevRevenue = prevData.payments?.reduce((sum: number, payment: Payment) => {
-          return sum + (payment.amount || 0);
-        }, 0) || 0;
+          // Calculate completed projects in previous period
+          const prevCompletedProjects = prevProjects.filter((project: Project) => {
+            return project.status === 'completed' || 
+              (project.milestones && project.milestones.length > 0 && 
+               project.milestones.every(milestone => milestone.completed));
+          }).length;
 
-        // Calculate today's earnings
-        const todayPayments = currentData.payments?.filter((payment: Payment) => {
-          const paymentDate = new Date(payment.createdAt);
-          return paymentDate >= today;
-        }) || [];
-        
-        const todayEarnings = todayPayments.reduce((sum: number, payment: Payment) => {
-          return sum + (payment.amount || 0);
-        }, 0);
+          // Calculate today's completed projects
+          const todayProjects = data.projects.filter((project: Project) => {
+            const projectDate = new Date(project.createdAt);
+            const isToday = projectDate >= today;
+            const isCompleted = project.status === 'completed' || 
+              (project.milestones && project.milestones.length > 0 && 
+               project.milestones.every(milestone => milestone.completed));
+            return isToday && isCompleted;
+          }).length;
 
-        // Calculate percentage change
-        const percentageChange = prevRevenue > 0 ? ((currentRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+          // Calculate percentage change
+          const percentageChange = prevCompletedProjects > 0 ? 
+            ((completedProjects - prevCompletedProjects) / prevCompletedProjects) * 100 : 0;
 
-        // Set target based on period
-        const target = selectedPeriod === 'month' ? 20000 : selectedPeriod === 'quarter' ? 60000 : 120000;
-        
-        // Calculate progress percentage based on today's revenue vs total target
-        const currentProgress = target > 0 ? Math.min(100, (todayEarnings / target) * 100) : 0;
+          // Set target based on period
+          const target = selectedPeriod === 'month' ? 20 : selectedPeriod === 'quarter' ? 60 : 120;
+          
+          // Calculate progress percentage based on completed projects vs target
+          const currentProgress = target > 0 ? Math.min(100, (completedProjects / target) * 100) : 0;
 
-        setTargetData({
-          currentProgress: Math.round(currentProgress * 10) / 10,
-          target: target,
-          revenue: Math.round(currentRevenue),
-          todayEarnings: Math.round(todayEarnings),
-          percentageChange: Math.round(percentageChange * 10) / 10,
-          message: percentageChange > 0 
-            ? `You earned $${todayEarnings.toLocaleString()} today, it's ${Math.abs(percentageChange).toFixed(1)}% higher than last ${selectedPeriod}. Keep up your good work!`
-            : `You earned $${todayEarnings.toLocaleString()} today, it's ${Math.abs(percentageChange).toFixed(1)}% lower than last ${selectedPeriod}. Let's improve!`
-        });
+          setTargetData({
+            currentProgress: Math.round(currentProgress * 10) / 10,
+            target: target,
+            completedProjects: completedProjects,
+            todayProjects: todayProjects,
+            percentageChange: Math.round(percentageChange * 10) / 10,
+            message: percentageChange > 0 
+              ? `You completed ${todayProjects} projects today, it's ${Math.abs(percentageChange).toFixed(1)}% higher than last ${selectedPeriod}. Keep up your good work!`
+              : `You completed ${todayProjects} projects today, it's ${Math.abs(percentageChange).toFixed(1)}% lower than last ${selectedPeriod}. Let's improve!`
+          });
+        }
 
       } catch (error) {
-        console.error('Error fetching payment data:', error);
+        console.error('Error fetching project data:', error);
         setTargetData({
           currentProgress: 0,
-          target: selectedPeriod === 'month' ? 20000 : selectedPeriod === 'quarter' ? 60000 : 120000,
-          revenue: 0,
-          todayEarnings: 0,
+          target: selectedPeriod === 'month' ? 20 : selectedPeriod === 'quarter' ? 60 : 120,
+          completedProjects: 0,
+          todayProjects: 0,
           percentageChange: 0,
-          message: "Unable to fetch payment data. Please try again later."
+          message: "Unable to fetch project data. Please try again later."
         });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPaymentData();
+    fetchProjectData();
   }, [selectedPeriod]);
 
   const series = [targetData.currentProgress];
@@ -232,7 +249,7 @@ const MonthlyTarget = () => {
         <div className="flex justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Monthly Target
+              Project Target
             </h3>
             <p className="mt-1 font-normal text-gray-600 dark:text-gray-300 text-sm">
               Target you’ve set for each month
@@ -294,7 +311,7 @@ const MonthlyTarget = () => {
             Target
           </p>
           <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
-            ${(targetData.target / 1000).toFixed(0)}K
+            {targetData.target}
             <svg
               width="16"
               height="16"
@@ -314,10 +331,10 @@ const MonthlyTarget = () => {
         <div className="w-px bg-gray-200/50 dark:bg-gray-700/50 h-7"></div>
         <div>
           <p className="mb-1 text-center text-gray-600 dark:text-gray-300 text-sm sm:text-sm">
-            Revenue
+            Completed
           </p>
           <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
-            ${(targetData.revenue / 1000).toFixed(0)}K
+            {targetData.completedProjects}
             <svg
               width="16"
               height="16"
@@ -340,7 +357,7 @@ const MonthlyTarget = () => {
             Today
           </p>
           <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
-            ${(targetData.todayEarnings / 1000).toFixed(0)}K
+            {targetData.todayProjects}
             <svg
               width="16"
               height="16"

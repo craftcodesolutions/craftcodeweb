@@ -51,14 +51,19 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [targetUser, setTargetUser] = useState<Contact | null>(null);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return JSON.parse(localStorage.getItem("globalChatSoundEnabled") || 'true') === true;
-    }
-    return true;
-  });
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const TARGET_EMAIL = 'somethinn999awkwardd@gmail.com';
+
+  // Handle client-side hydration for localStorage
+  useEffect(() => {
+    setIsHydrated(true);
+    const savedSoundSetting = localStorage.getItem("globalChatSoundEnabled");
+    if (savedSoundSetting !== null) {
+      setIsSoundEnabled(JSON.parse(savedSoundSetting) === true);
+    }
+  }, []);
 
   /**
    * Toggle chat box visibility
@@ -73,7 +78,7 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   const toggleSound = () => {
     const newSoundState = !isSoundEnabled;
     setIsSoundEnabled(newSoundState);
-    if (typeof window !== 'undefined') {
+    if (isHydrated) {
       localStorage.setItem("globalChatSoundEnabled", JSON.stringify(newSoundState));
     }
   };

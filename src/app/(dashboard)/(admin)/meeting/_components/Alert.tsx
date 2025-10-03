@@ -13,13 +13,13 @@ interface PermissionCardProps {
 
 const Alert = ({ title, iconUrl }: PermissionCardProps) => {
   return (
-    <section className="flex-center h-screen w-full">
+    <section className="fixed inset-0 z-50 flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
       <Card className="w-full max-w-[520px] border-none bg-dark-1 p-6 py-9 text-white">
         <CardContent>
           <div className="flex flex-col gap-9">
             <div className="flex flex-col gap-3.5">
               {iconUrl && (
-                <div className="flex-center">
+                <div className="flex items-center justify-center">
                   <Image src={iconUrl} width={72} height={72} alt="icon" />
                 </div>
               )}

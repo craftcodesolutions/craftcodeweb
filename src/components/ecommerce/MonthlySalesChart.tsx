@@ -16,42 +16,86 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
-interface Payment {
+interface Project {
   _id: string;
-  amount: number;
+  title: string;
   status: string;
   createdAt: string;
+  milestones: Array<{
+    name: string;
+    completed: boolean;
+    date: string;
+  }>;
 }
 
 export default function MonthlySalesChart() {
-  const [monthlySales, setMonthlySales] = useState<number[]>(Array(12).fill(0));
+  const [monthlyProjectPercentages, setMonthlyProjectPercentages] = useState<number[]>(Array(12).fill(0));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMonthlySales = async () => {
+    const fetchMonthlyProjectData = async () => {
       setIsLoading(true);
       try {
-        const currentYear = new Date().getFullYear();
-        const startDate = new Date(currentYear, 0, 1);
-        const endDate = new Date();
-        const response = await fetch(`/api/payments?status=success&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&limit=10000`);
-        const data = await response.json();
-        if (data.payments) {
-          const months = Array(12).fill(0);
-          data.payments.forEach((payment: Payment) => {
-            const paymentDate = new Date(payment.createdAt);
-            const monthIdx = paymentDate.getMonth();
-            months[monthIdx] += 1;
-          });
-          setMonthlySales(months);
+        const response = await fetch('/api/projects?limit=1000');
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
         }
-      } catch {
-        setMonthlySales(Array(12).fill(0));
+        
+        const data = await response.json();
+        
+        if (data.projects && Array.isArray(data.projects)) {
+          const monthlyData = Array(12).fill(0);
+          const monthlyTotals = Array(12).fill(0);
+          
+          // Count total projects and completed projects per month with safe handling
+          data.projects.forEach((project: Project) => {
+            if (project && project.createdAt) {
+              try {
+                const projectDate = new Date(project.createdAt);
+                if (!isNaN(projectDate.getTime())) {
+                  const monthIdx = projectDate.getMonth();
+                  if (monthIdx >= 0 && monthIdx < 12) {
+                    monthlyTotals[monthIdx] += 1;
+                    
+                    // Count as completed if status is 'completed' or if all milestones are completed
+                    const isCompleted = project.status === 'completed' || 
+                      (project.milestones && Array.isArray(project.milestones) && project.milestones.length > 0 && 
+                       project.milestones.every(milestone => milestone && typeof milestone.completed === 'boolean' && milestone.completed));
+                    
+                    if (isCompleted) {
+                      monthlyData[monthIdx] += 1;
+                    }
+                  }
+                }
+              } catch (error) {
+                console.warn('Invalid project date:', project.createdAt, error);
+              }
+            }
+          });
+          
+          // Calculate percentages with safe math
+          const percentages = monthlyData.map((completed, index) => {
+            const total = monthlyTotals[index];
+            if (typeof completed !== 'number' || typeof total !== 'number' || total <= 0) {
+              return 0;
+            }
+            const percentage = Math.round((completed / total) * 100);
+            return isNaN(percentage) ? 0 : Math.min(percentage, 100);
+          });
+          
+          setMonthlyProjectPercentages(percentages);
+        } else {
+          setMonthlyProjectPercentages(Array(12).fill(0));
+        }
+      } catch (error) {
+        console.error('Error fetching monthly project data:', error);
+        setMonthlyProjectPercentages(Array(12).fill(0));
       } finally {
         setIsLoading(false);
       }
     };
-    fetchMonthlySales();
+    fetchMonthlyProjectData();
   }, []);
 
   const options: ApexOptions = {
@@ -143,15 +187,17 @@ export default function MonthlySalesChart() {
         show: false,
       },
       y: {
-        formatter: (val: number) => `${val}`,
+        formatter: (val: number) => `${val}%`,
       },
     },
   };
 
   const series = [
     {
-      name: "Sales",
-      data: monthlySales,
+      name: "Project Completion %",
+      data: Array.isArray(monthlyProjectPercentages) && monthlyProjectPercentages.length > 0 
+        ? monthlyProjectPercentages.map(val => typeof val === 'number' && !isNaN(val) ? val : 0)
+        : Array(12).fill(0),
     },
   ];
 
@@ -159,7 +205,7 @@ export default function MonthlySalesChart() {
     <div className="overflow-hidden rounded-sm border border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-950/90 px-5 pt-5 shadow-xl transition-all duration-300 sm:px-6 sm:pt-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Monthly Sales
+          Monthly Project Completion
         </h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -189,7 +235,7 @@ export default function MonthlySalesChart() {
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div
           className="-ml-5 min-w-[650px] xl:min-w-full pl-2"
-          aria-label="Monthly sales bar chart"
+          aria-label="Monthly project completion percentage chart"
         >
           {isLoading ? (
             <div className="flex items-center justify-center h-[180px]">
@@ -226,7 +272,7 @@ export default function MonthlySalesChart() {
           .apexcharts-gridline {
             stroke: #374151 !important; /* gray-700/50 */
           }
-          .apexcharts-series[seriesName="Sales"] {
+          .apexcharts-series[seriesName="Project Completion %"] {
             fill: #FBBF24 !important; /* amber-400 */
           }
         }

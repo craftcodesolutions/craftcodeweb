@@ -32,7 +32,7 @@ const HomeCard = ({ className, img, title, description, handleClick }: HomeCardP
       
       {/* Content */}
       <div className="relative z-10">
-        <div className="flex-center size-12 rounded-xl bg-white/20 dark:bg-white/25 backdrop-blur-sm border border-white/30 dark:border-white/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+        <div className="flex items-center justify-center size-12 rounded-xl bg-white/20 dark:bg-white/25 backdrop-blur-sm border border-white/30 dark:border-white/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
           <Image 
             src={img} 
             alt="meeting" 

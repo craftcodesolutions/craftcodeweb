@@ -79,7 +79,9 @@ interface ProjectForm {
     deliveryDate: string;
     description: string;
     techStack: string[];
+    techStackString?: string;
     tools: string[];
+    toolsString?: string;
     category: string;
     status: string;
     priority: string;
@@ -123,7 +125,9 @@ const Projects: React.FC = () => {
         deliveryDate: '',
         description: '',
         techStack: [],
+        techStackString: undefined,
         tools: [],
+        toolsString: undefined,
         category: '',
         status: 'ongoing',
         priority: 'medium',
@@ -310,6 +314,8 @@ const Projects: React.FC = () => {
                 slug: project.slug,
                 budget: project.budget || null,
                 milestones: project.milestones || [],
+                techStackString: undefined,
+                toolsString: undefined,
             });
             setUpdateProjectImagePreview(project.imageUrl);
             setIsUpdateModalOpen(true);
@@ -493,7 +499,9 @@ const Projects: React.FC = () => {
                     deliveryDate: '',
                     description: '',
                     techStack: [],
+                    techStackString: undefined,
                     tools: [],
+                    toolsString: undefined,
                     category: '',
                     status: 'ongoing',
                     priority: 'medium',
@@ -1078,8 +1086,23 @@ const Projects: React.FC = () => {
                                             </label>
                                             <input
                                                 type="text"
-                                                value={newProject.techStack.join(', ')}
-                                                onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value.split(',').map((item) => item.trim()).filter((item) => item) })}
+                                                value={newProject.techStackString ?? newProject.techStack.join(', ')}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setNewProject({
+                                                        ...newProject,
+                                                        techStackString: value,
+                                                        techStack: value.split(',').map(item => item.trim()).filter(item => item !== '')
+                                                    });
+                                                }}
+                                                onBlur={(e) => {
+                                                    const value = e.target.value;
+                                                    setNewProject({
+                                                        ...newProject,
+                                                        techStack: value.split(',').map(item => item.trim()).filter(item => item !== ''),
+                                                        techStackString: undefined
+                                                    });
+                                                }}
                                                 className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
                                                 placeholder="Enter tech stack (comma-separated)"
                                             />
@@ -1090,8 +1113,23 @@ const Projects: React.FC = () => {
                                             </label>
                                             <input
                                                 type="text"
-                                                value={newProject.tools.join(', ')}
-                                                onChange={(e) => setNewProject({ ...newProject, tools: e.target.value.split(',').map((item) => item.trim()).filter((item) => item) })}
+                                                value={newProject.toolsString ?? newProject.tools.join(', ')}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setNewProject({
+                                                        ...newProject,
+                                                        toolsString: value,
+                                                        tools: value.split(',').map(item => item.trim()).filter(item => item !== '')
+                                                    });
+                                                }}
+                                                onBlur={(e) => {
+                                                    const value = e.target.value;
+                                                    setNewProject({
+                                                        ...newProject,
+                                                        tools: value.split(',').map(item => item.trim()).filter(item => item !== ''),
+                                                        toolsString: undefined
+                                                    });
+                                                }}
                                                 className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
                                                 placeholder="Enter tools (comma-separated)"
                                             />
@@ -1815,13 +1853,23 @@ const Projects: React.FC = () => {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={selectedProject.techStack.join(', ')}
-                                                    onChange={(e) =>
+                                                    value={selectedProject.techStackString ?? selectedProject.techStack.join(', ')}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
                                                         setSelectedProject({
                                                             ...selectedProject,
-                                                            techStack: e.target.value.split(',').map((item) => item.trim()).filter((item) => item),
-                                                        })
-                                                    }
+                                                            techStackString: value,
+                                                            techStack: value.split(',').map(item => item.trim()).filter(item => item !== '')
+                                                        });
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value;
+                                                        setSelectedProject({
+                                                            ...selectedProject,
+                                                            techStack: value.split(',').map(item => item.trim()).filter(item => item !== ''),
+                                                            techStackString: undefined
+                                                        });
+                                                    }}
                                                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
                                                     placeholder="Enter tech stack (comma-separated)"
                                                 />
@@ -1832,13 +1880,23 @@ const Projects: React.FC = () => {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={selectedProject.tools.join(', ')}
-                                                    onChange={(e) =>
+                                                    value={selectedProject.toolsString ?? selectedProject.tools.join(', ')}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
                                                         setSelectedProject({
                                                             ...selectedProject,
-                                                            tools: e.target.value.split(',').map((item) => item.trim()).filter((item) => item),
-                                                        })
-                                                    }
+                                                            toolsString: value,
+                                                            tools: value.split(',').map(item => item.trim()).filter(item => item !== '')
+                                                        });
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value;
+                                                        setSelectedProject({
+                                                            ...selectedProject,
+                                                            tools: value.split(',').map(item => item.trim()).filter(item => item !== ''),
+                                                            toolsString: undefined
+                                                        });
+                                                    }}
                                                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
                                                     placeholder="Enter tools (comma-separated)"
                                                 />

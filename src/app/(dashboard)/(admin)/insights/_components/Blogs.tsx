@@ -53,6 +53,7 @@ interface BlogForm {
     date: string;
     content: Section[];
     tags: string[];
+    tagsString?: string;
     category: string;
     slug: string;
     image: string | null;
@@ -76,6 +77,7 @@ const Blogs: React.FC = () => {
         date: '',
         content: [],
         tags: [],
+        tagsString: undefined,
         category: '',
         slug: '',
         image: null,
@@ -157,6 +159,7 @@ const Blogs: React.FC = () => {
                 image: blog.image,
                 publicId: blog.publicId,
                 slug: blog.slug,
+                tagsString: undefined,
             });
             setUpdateBlogImagePreview(blog.image);
             setIsUpdateModalOpen(true);
@@ -474,6 +477,7 @@ const Blogs: React.FC = () => {
                     date: '',
                     content: [],
                     tags: [],
+                    tagsString: undefined,
                     category: '',
                     slug: '',
                     image: null,
@@ -1096,8 +1100,29 @@ const Blogs: React.FC = () => {
                                             </label>
                                             <input
                                                 type="text"
-                                                value={newBlog.tags.join(', ')}
-                                                onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value.split(',').map((tag) => tag.trim()).filter((tag) => tag) })}
+                                                value={newBlog.tagsString ?? newBlog.tags.join(', ')}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setNewBlog({
+                                                        ...newBlog,
+                                                        tagsString: value, // Store raw input for smooth typing
+                                                        tags: value
+                                                            .split(',')
+                                                            .map((item) => item.trim())
+                                                            .filter((item) => item !== ''), // Update array in sync
+                                                    });
+                                                }}
+                                                onBlur={(e) => {
+                                                    const value = e.target.value;
+                                                    setNewBlog({
+                                                        ...newBlog,
+                                                        tags: value
+                                                            .split(',')
+                                                            .map((item) => item.trim())
+                                                            .filter((item) => item !== ''), // Clean up array
+                                                        tagsString: undefined, // Clear temporary string
+                                                    });
+                                                }}
                                                 className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
                                                 placeholder="Enter tags (comma-separated)"
                                             />
@@ -1550,16 +1575,29 @@ const Blogs: React.FC = () => {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={selectedBlog.tags.join(', ')}
-                                                    onChange={(e) =>
+                                                    value={selectedBlog.tagsString ?? selectedBlog.tags.join(', ')}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
                                                         setSelectedBlog({
                                                             ...selectedBlog,
-                                                            tags: e.target.value
+                                                            tagsString: value, // Store raw input for smooth typing
+                                                            tags: value
                                                                 .split(',')
-                                                                .map((tag) => tag.trim())
-                                                                .filter((tag) => tag),
-                                                        })
-                                                    }
+                                                                .map((item) => item.trim())
+                                                                .filter((item) => item !== ''), // Update array in sync
+                                                        });
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        const value = e.target.value;
+                                                        setSelectedBlog({
+                                                            ...selectedBlog,
+                                                            tags: value
+                                                                .split(',')
+                                                                .map((item) => item.trim())
+                                                                .filter((item) => item !== ''), // Clean up array
+                                                            tagsString: undefined, // Clear temporary string
+                                                        });
+                                                    }}
                                                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-all duration-300 shadow-sm cursor-text"
                                                     placeholder="Enter tags (comma-separated)"
                                                 />

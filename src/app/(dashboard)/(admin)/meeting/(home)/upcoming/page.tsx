@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import CallList from '@/app/(dashboard)/(admin)/meeting/_components/CallList';
+
 import { useGetCalls } from '@/hooks/useGetCalls';
+import UserMeetingsList from '@/components/UserMeetingsList';
 import { Calendar, Clock, Users, Search, Plus, RefreshCw, Trash2, CheckSquare, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -282,7 +283,7 @@ const UpcomingPage = () => {
             <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
           </div>
         ) : processedCalls.length > 0 ? (
-          <CallList type="upcoming" />
+          <UserMeetingsList type="upcoming" />
         ) : (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">

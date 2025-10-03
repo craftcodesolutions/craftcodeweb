@@ -13,12 +13,14 @@ import Loader from '@/components/Loader';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { Input } from '@/components/ui/input';
+import EnhancedUserSelect from './EnhancedUserSelect';
 
 const initialValues = {
   dateTime: new Date().toISOString(),
   selectedTime: '',
   description: '',
   link: '',
+  participants: [] as string[],
 };
 
 const MeetingTypeList = () => {
@@ -31,11 +33,27 @@ const MeetingTypeList = () => {
   const client = useStreamVideoClient();
   const { user } = useAuth();
 
+  const resetForm = () => {
+    setValues(initialValues);
+    setCallDetail(undefined);
+  };
+
+  const handleModalClose = () => {
+    setMeetingState(undefined);
+    resetForm();
+  };
+
   const createMeeting = async () => {
     if (!client || !user) return;
+    
     try {
       if (!values.dateTime) {
         toast.error('Please select a date and time');
+        return;
+      }
+      
+      if (meetingState === 'isScheduleMeeting' && !values.selectedTime) {
+        toast.error('Please select a meeting time');
         return;
       }
       
@@ -46,35 +64,89 @@ const MeetingTypeList = () => {
         const [hours, minutes] = values.selectedTime.split(':');
         selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         finalDateTime = selectedDate.toISOString();
+        
+        // Validate future date for scheduled meetings
+        if (selectedDate.getTime() <= Date.now()) {
+          toast.error('Please select a future date and time');
+          return;
+        }
       }
       
-      const id = crypto.randomUUID();
-      const call = client.call('default', id);
-      if (!call) throw new Error('Failed to create meeting');
-      const startsAt = finalDateTime || new Date().toISOString();
-      const description = values.description || 'Instant Meeting';
-      await call.getOrCreate({
-        data: {
-          starts_at: startsAt,
-          custom: {
-            description,
-          },
+      const meetingType = meetingState === 'isScheduleMeeting' ? 'scheduled' : 'instant';
+      const title = values.description || (meetingType === 'scheduled' ? 'Scheduled Meeting' : 'Instant Meeting');
+      
+      // Create meeting via API
+      const response = await fetch('/api/meetings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          title,
+          description: values.description,
+          startsAt: finalDateTime,
+          participants: values.participants,
+          meetingType,
+        }),
       });
-      setCallDetail(call);
-      if (!values.description) {
-        router.push(`/meeting-area/${call.id}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create meeting');
       }
-      toast.success('Meeting Created');
+      
+      const { meeting } = await response.json();
+      
+      // Create a mock call object for compatibility with existing UI
+      const mockCall = {
+        id: meeting.id,
+        state: {
+          startsAt: meeting.startsAt,
+          custom: {
+            description: meeting.description,
+            participants: meeting.participants,
+            createdBy: meeting.createdBy,
+            meetingType: meeting.meetingType,
+          }
+        }
+      };
+      
+      setCallDetail(mockCall as unknown as Call);
+      
+      if (meetingState === 'isInstantMeeting') {
+        router.push(`/meeting-area/${meeting.id}`);
+        resetForm();
+      }
+      
+      const participantCount = meeting.participants.length;
+      toast.success(
+        `Meeting created successfully${participantCount > 1 ? ` with ${participantCount} participants` : ''}!`
+      );
+      
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to create Meeting');
+      console.error('Meeting creation error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create meeting';
+      toast.error(errorMessage);
     }
   };
 
   if (!client || !user) return <Loader />;
 
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting-area/${callDetail?.id}`;
+  
+  // Get meeting details for display
+  const getMeetingDetails = () => {
+    if (!callDetail) return null;
+    
+    const customData = callDetail.state?.custom || {};
+    return {
+      participants: customData.participants || [],
+      description: customData.description || '',
+      meetingType: customData.meetingType || 'instant',
+    };
+  };
+  
+  const meetingDetails = getMeetingDetails();
 
   return (
     <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -103,7 +175,7 @@ const MeetingTypeList = () => {
       {!callDetail ? (
         <MeetingModal
           isOpen={meetingState === 'isScheduleMeeting'}
-          onClose={() => setMeetingState(undefined)}
+          onClose={handleModalClose}
           title="Schedule Your Meeting"
           handleClick={createMeeting}
           buttonText="Schedule Meeting"
@@ -171,6 +243,31 @@ const MeetingTypeList = () => {
               </div>
             </div>
 
+            {/* Participants Selection */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-500 dark:bg-orange-400 rounded-full"></div>
+                <label className="text-sm font-medium text-white/90 dark:text-gray-100/90">
+                  Meeting Participants
+                </label>
+              </div>
+              <div className="relative">
+                <EnhancedUserSelect
+                  selectedUsers={values.participants}
+                  onUsersChange={(participants) => setValues({ ...values, participants })}
+                  placeholder="Select meeting participants (optional)"
+                  allowSearch={true}
+                  multiple={true}
+                  showSelectedCount={true}
+                  size="md"
+                  className=""
+                />
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-300">
+                You will be automatically added as the meeting host. Selected participants will receive meeting invitations.
+              </p>
+            </div>
+
             {/* Meeting Preview */}
             <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-400/15 dark:to-blue-400/15 border border-purple-500/20 dark:border-purple-400/30 rounded-xl p-4">
               <h4 className="text-sm font-medium text-white dark:text-gray-100 mb-2 flex items-center gap-2">
@@ -201,6 +298,21 @@ const MeetingTypeList = () => {
                     }
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Participants:</span>
+                  <span className="text-green-400">
+                    {values.participants.length + 1} {/* +1 for the creator */}
+                    {values.participants.length === 0 ? ' (You only)' : ` (Including you)`}
+                  </span>
+                </div>
+                {values.description && (
+                  <div className="flex justify-between">
+                    <span>Description:</span>
+                    <span className="text-gray-300 truncate max-w-32" title={values.description}>
+                      {values.description.length > 20 ? `${values.description.substring(0, 20)}...` : values.description}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -209,7 +321,7 @@ const MeetingTypeList = () => {
         /* Enhanced Meeting Success Modal */
         <MeetingModal
           isOpen={meetingState === 'isScheduleMeeting'}
-          onClose={() => setMeetingState(undefined)}
+          onClose={handleModalClose}
           title="Meeting Scheduled Successfully!"
           handleClick={() => {
             navigator.clipboard.writeText(meetingLink);
@@ -222,9 +334,16 @@ const MeetingTypeList = () => {
         >
           <div className="space-y-4">
             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
-              <p className="text-green-300 text-sm text-center">
-                Your meeting has been scheduled and is ready to share
-              </p>
+              <div className="text-center space-y-2">
+                <p className="text-green-300 text-sm">
+                  Your meeting has been scheduled and is ready to share
+                </p>
+                {meetingDetails && meetingDetails.participants.length > 1 && (
+                  <p className="text-green-400/80 text-xs">
+                    {meetingDetails.participants.length} participant{meetingDetails.participants.length > 1 ? 's' : ''} will be notified
+                  </p>
+                )}
+              </div>
             </div>
             
             <div className="bg-slate-800/50 border border-white/10 rounded-xl p-4">
@@ -244,11 +363,14 @@ const MeetingTypeList = () => {
       {/* Enhanced Join Meeting Modal */}
       <MeetingModal
         isOpen={meetingState === 'isJoiningMeeting'}
-        onClose={() => setMeetingState(undefined)}
+        onClose={handleModalClose}
         title="Join Meeting"
         buttonText="Join Meeting"
         buttonClassName="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-        handleClick={() => router.push(values.link)}
+        handleClick={() => {
+          router.push(values.link);
+          resetForm();
+        }}
       >
         <div className="space-y-6">
           {/* Meeting Link Input */}
@@ -312,7 +434,7 @@ const MeetingTypeList = () => {
       {/* Enhanced Instant Meeting Modal */}
       <MeetingModal
         isOpen={meetingState === 'isInstantMeeting'}
-        onClose={() => setMeetingState(undefined)}
+        onClose={handleModalClose}
         title="Start Instant Meeting"
         buttonText="Start Meeting Now"
         buttonClassName="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"

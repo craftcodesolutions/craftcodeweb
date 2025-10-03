@@ -29,7 +29,12 @@ export default function RootLayout({
       <body
         className={`${roboto.variable} antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider 
+          attribute="class" 
+          defaultTheme="system" 
+          enableSystem 
+          disableTransitionOnChange
+        >
           <AuthProvider>
             <GlobalChatProvider>
               {children}

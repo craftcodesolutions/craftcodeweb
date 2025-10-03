@@ -14,20 +14,22 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ),
 });
 
-interface Payment {
+interface Project {
   _id: string;
-  amount: number;
+  title: string;
   status: string;
   createdAt: string;
-  customer?: {
-    reference: string;
-  };
+  milestones: Array<{
+    name: string;
+    completed: boolean;
+    date: string;
+  }>;
 }
 
 interface MonthlyData {
   month: string;
-  sales: number;
-  revenue: number;
+  completedProjects: number;
+  totalProjects: number;
 }
 
 export default function StatisticsChart() {
@@ -35,46 +37,53 @@ export default function StatisticsChart() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<'monthly' | 'quarterly' | 'annually'>('monthly');
 
-  // Fetch payment data for statistics
+  // Fetch project data for statistics
   useEffect(() => {
     const fetchStatisticsData = async () => {
       setIsLoading(true);
       try {
         const currentYear = new Date().getFullYear();
-        const startDate = new Date(currentYear, 0, 1); // Start of current year
-        const endDate = new Date(); // Current date
 
-        // Fetch all successful payments for the current year
-        const response = await fetch(`/api/payments?status=success&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&limit=10000`);
+        // Fetch all projects for the current year
+        const response = await fetch('/api/projects?limit=1000');
         const data = await response.json();
 
-        if (data.payments) {
-          // Group payments by month
-          const monthlyStats = new Map<string, { sales: number; revenue: number }>();
+        if (data.projects) {
+          // Group projects by month
+          const monthlyStats = new Map<string, { completedProjects: number; totalProjects: number }>();
           
           // Initialize all months with 0 values
           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           months.forEach(month => {
-            monthlyStats.set(month, { sales: 0, revenue: 0 });
+            monthlyStats.set(month, { completedProjects: 0, totalProjects: 0 });
           });
 
-          // Process payments and group by month
-          data.payments.forEach((payment: Payment) => {
-            const paymentDate = new Date(payment.createdAt);
-            const monthName = months[paymentDate.getMonth()];
-            const current = monthlyStats.get(monthName) || { sales: 0, revenue: 0 };
+          // Process projects and group by month (filter by current year)
+          data.projects.forEach((project: Project) => {
+            const projectDate = new Date(project.createdAt);
             
-            monthlyStats.set(monthName, {
-              sales: current.sales + 1, // Count of sales
-              revenue: current.revenue + (payment.amount || 0) // Total revenue
-            });
+            // Only include projects from current year
+            if (projectDate.getFullYear() === currentYear) {
+              const monthName = months[projectDate.getMonth()];
+              const current = monthlyStats.get(monthName) || { completedProjects: 0, totalProjects: 0 };
+              
+              // Check if project is completed
+              const isCompleted = project.status === 'completed' || 
+                (project.milestones && project.milestones.length > 0 && 
+                 project.milestones.every(milestone => milestone.completed));
+              
+              monthlyStats.set(monthName, {
+                completedProjects: current.completedProjects + (isCompleted ? 1 : 0),
+                totalProjects: current.totalProjects + 1
+              });
+            }
           });
 
           // Convert to array format for chart
           const chartData = months.map(month => ({
             month,
-            sales: monthlyStats.get(month)?.sales || 0,
-            revenue: Math.round((monthlyStats.get(month)?.revenue || 0) / 100) // Convert to hundreds for better display
+            completedProjects: monthlyStats.get(month)?.completedProjects || 0,
+            totalProjects: monthlyStats.get(month)?.totalProjects || 0
           }));
 
           setMonthlyData(chartData);
@@ -83,18 +92,18 @@ export default function StatisticsChart() {
         console.error('Error fetching statistics data:', error);
         // Fallback to default data
         setMonthlyData([
-          { month: 'Jan', sales: 0, revenue: 0 },
-          { month: 'Feb', sales: 0, revenue: 0 },
-          { month: 'Mar', sales: 0, revenue: 0 },
-          { month: 'Apr', sales: 0, revenue: 0 },
-          { month: 'May', sales: 0, revenue: 0 },
-          { month: 'Jun', sales: 0, revenue: 0 },
-          { month: 'Jul', sales: 0, revenue: 0 },
-          { month: 'Aug', sales: 0, revenue: 0 },
-          { month: 'Sep', sales: 0, revenue: 0 },
-          { month: 'Oct', sales: 0, revenue: 0 },
-          { month: 'Nov', sales: 0, revenue: 0 },
-          { month: 'Dec', sales: 0, revenue: 0 }
+          { month: 'Jan', completedProjects: 0, totalProjects: 0 },
+          { month: 'Feb', completedProjects: 0, totalProjects: 0 },
+          { month: 'Mar', completedProjects: 0, totalProjects: 0 },
+          { month: 'Apr', completedProjects: 0, totalProjects: 0 },
+          { month: 'May', completedProjects: 0, totalProjects: 0 },
+          { month: 'Jun', completedProjects: 0, totalProjects: 0 },
+          { month: 'Jul', completedProjects: 0, totalProjects: 0 },
+          { month: 'Aug', completedProjects: 0, totalProjects: 0 },
+          { month: 'Sep', completedProjects: 0, totalProjects: 0 },
+          { month: 'Oct', completedProjects: 0, totalProjects: 0 },
+          { month: 'Nov', completedProjects: 0, totalProjects: 0 },
+          { month: 'Dec', completedProjects: 0, totalProjects: 0 }
         ]);
       } finally {
         setIsLoading(false);
@@ -110,13 +119,25 @@ export default function StatisticsChart() {
       position: "top",
       horizontalAlign: "left",
     },
-    colors: ["#F59E0B", "#4B5563"], // Sales: amber-500, Revenue: gray-600 (light mode)
+    colors: ["#F59E0B", "#4B5563"], // Completed: amber-500, Total: gray-600 (light mode)
     chart: {
       fontFamily: "Outfit, sans-serif",
       height: 310,
       type: "area",
       toolbar: {
         show: false,
+      },
+      animations: {
+        enabled: true,
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
       },
     },
     stroke: {
@@ -167,7 +188,7 @@ export default function StatisticsChart() {
     },
     xaxis: {
       type: "category",
-      categories: monthlyData.map(item => item.month),
+      categories: monthlyData && monthlyData.length > 0 ? monthlyData.map(item => item?.month || '') : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       axisBorder: {
         show: false,
       },
@@ -201,12 +222,12 @@ export default function StatisticsChart() {
 
   const series = [
     {
-      name: "Sales",
-      data: monthlyData.map(item => item.sales),
+      name: "Completed Projects",
+      data: monthlyData && monthlyData.length > 0 ? monthlyData.map(item => item?.completedProjects || 0) : Array(12).fill(0),
     },
     {
-      name: "Revenue",
-      data: monthlyData.map(item => item.revenue),
+      name: "Total Projects",
+      data: monthlyData && monthlyData.length > 0 ? monthlyData.map(item => item?.totalProjects || 0) : Array(12).fill(0),
     },
   ];
 
@@ -215,10 +236,10 @@ export default function StatisticsChart() {
       <div className="flex flex-col gap-4 mb-6">
         <div className="w-full">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Statistics
+            Project Statistics
           </h3>
           <p className="mt-1 text-gray-600 dark:text-gray-300 text-sm">
-            Monthly sales and revenue data from successful payments
+            Monthly project completion and total project data
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -239,12 +260,19 @@ export default function StatisticsChart() {
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[1000px] xl:min-w-full">
-          <ReactApexChart
-            options={options}
-            series={series}
-            type="area"
-            height={310}
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-center h-[310px]">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+            </div>
+          ) : (
+            <ReactApexChart
+              options={options}
+              series={series}
+              type="area"
+              height={310}
+              key={`chart-${monthlyData.length}`}
+            />
+          )}
         </div>
       </div>
 
@@ -262,18 +290,18 @@ export default function StatisticsChart() {
           .apexcharts-yaxis-label {
             fill: #D1D5DB !important; /* gray-300 */
           }
-          .apexcharts-series[seriesName="Sales"] {
-            fill: url(#sales-gradient-dark) !important;
+          .apexcharts-series[seriesName="Completed Projects"] {
+            fill: url(#completed-gradient-dark) !important;
           }
-          .apexcharts-series[seriesName="Revenue"] {
-            fill: url(#revenue-gradient-dark) !important;
+          .apexcharts-series[seriesName="Total Projects"] {
+            fill: url(#total-gradient-dark) !important;
           }
         }
-        #sales-gradient-dark {
+        #completed-gradient-dark {
           stop-color: #FBBF24; /* amber-400 */
           stop-opacity: 0.55;
         }
-        #revenue-gradient-dark {
+        #total-gradient-dark {
           stop-color: #D1D5DB; /* gray-300 */
           stop-opacity: 0.55;
         }

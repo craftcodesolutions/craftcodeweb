@@ -80,8 +80,8 @@ const EnhancedLoader = ({
   const classes = sizeClasses[size];
 
   return (
-    <div className="flex items-center justify-center min-h-[400px] w-full">
-      <div className={`flex flex-col items-center text-center max-w-md mx-auto ${classes.container}`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+      <div className={`flex flex-col items-center justify-center text-center max-w-md mx-auto ${classes.container}`}>
         {/* Animated Background */}
         <div className="relative mb-6">
           {/* Outer rotating ring */}

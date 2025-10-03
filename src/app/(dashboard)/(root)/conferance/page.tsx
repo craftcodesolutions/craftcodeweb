@@ -2,15 +2,16 @@
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useGetCalls } from '@/hooks/useGetCalls';
+import { StreamCallWithCustomState } from '@/types/StreamCall';
 import { useAuth } from '@/context/AuthContext';
 import { useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { toast } from 'react-toastify';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { getMeetingRoomUrl, extractMeetingId, getMeetingShareLink } from '@/app/(dashboard)/(admin)/meeting/_components/utils/meetingUtils';
+import { getMeetingRoomUrl, extractMeetingId } from '@/app/(dashboard)/(admin)/meeting/_components/utils/meetingUtils';
 import DatePickerComponent from '@/app/(dashboard)/(admin)/meeting/_components/DatePickerComponent';
-import { useGetCalls } from '@/hooks/useGetCalls';
-import CallList from '@/app/(dashboard)/(admin)/meeting/_components/CallList';
+
 import { 
   Calendar, 
   Clock, 
@@ -19,8 +20,6 @@ import {
   Link, 
   Settings,
   History,
-  UserCheck,
-  Lock,
   FileText,
   Plus,
   Sparkles,
@@ -32,9 +31,12 @@ import {
   CheckCircle,
   TrendingUp,
   Activity,
-  BarChart3
+  BarChart3,
+  Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AdminSelect from './_components/AdminSelect';
+import UserMeetingsList from '@/components/UserMeetingsList';
 
 // Inner Conference Page Component
 const ConferencePageContent = () => {
@@ -54,12 +56,12 @@ const ConferencePageContent = () => {
   // Render unauthenticated view with modern design
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-900 dark:via-purple-900/20 dark:to-slate-900 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-purple-500/30 to-pink-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-500/20 to-purple-500/20 dark:from-blue-500/30 dark:to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-purple-500/20 to-pink-500/20 dark:from-purple-500/30 dark:to-pink-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 dark:from-cyan-500/10 dark:to-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
         </div>
 
         <div className="relative z-10 flex flex-col min-h-screen p-6">
@@ -74,142 +76,324 @@ const ConferencePageContent = () => {
                     <Sparkles size={16} className="text-white" />
                   </div>
                 </div>
+                {/* Floating badges */}
+                <div className="absolute -top-4 -left-8 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                  🔥 TRENDING
+                </div>
+                <div className="absolute -bottom-4 -right-8 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-bounce">
+                  ⚡ INSTANT
+                </div>
               </div>
               
               <div className="space-y-6">
-                <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent leading-tight">
-                  Conference
-                  <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-                    Revolution
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                    <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-red-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">+</span>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Join 50,000+ professionals</span>
+                </div>
+                
+                <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-100 dark:to-purple-200 bg-clip-text text-transparent leading-tight">
+                  Meet Smarter,
+                  <span className="block bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 dark:from-purple-400 dark:via-pink-400 dark:to-blue-400 bg-clip-text text-transparent">
+                    Connect Better
                   </span>
                 </h1>
-                <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                  Experience the future of virtual meetings with AI-powered features, 
-                  <span className="text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text font-semibold"> crystal-clear video</span>, 
-                  and seamless collaboration tools.
+                <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
+                  Transform your meetings from boring to brilliant with 
+                  <span className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text font-semibold"> AI-powered insights</span>, 
+                  <span className="text-transparent bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text font-semibold"> crystal-clear HD video</span>, 
+                  and collaboration tools that actually work.
                 </p>
+                
+                {/* Social Proof */}
+                <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
+                  <div className="flex items-center gap-2 bg-gray-800/10 dark:bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-200/20 dark:border-white/10">
+                    <div className="flex text-yellow-500 dark:text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={16} fill="currentColor" />
+                      ))}
+                    </div>
+                    <span className="text-gray-900 dark:text-white font-semibold">4.9/5</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">(2,847 reviews)</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-gray-800/10 dark:bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-200/20 dark:border-white/10">
+                    <TrendingUp size={16} className="text-green-500 dark:text-green-400" />
+                    <span className="text-gray-900 dark:text-white font-semibold">98% satisfaction</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-gray-800/10 dark:bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-200/20 dark:border-white/10">
+                    <Users size={16} className="text-blue-500 dark:text-blue-400" />
+                    <span className="text-gray-900 dark:text-white font-semibold">1M+ meetings hosted</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Modern Feature Cards */}
+            {/* Enhanced Feature Cards with Benefits */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
               {[
                 {
                   icon: Link,
-                  title: "Instant Join",
-                  description: "One-click meeting access with smart link recognition",
+                  title: "Zero-Friction Joining",
+                  description: "Join any meeting in under 3 seconds. No downloads, no hassle.",
+                  benefit: "Save 5 minutes per meeting",
                   gradient: "from-blue-500 to-cyan-500",
-                  delay: "0s"
+                  delay: "0s",
+                  badge: "INSTANT"
                 },
                 {
                   icon: Calendar,
-                  title: "Smart Scheduling",
-                  description: "AI-powered scheduling with timezone intelligence",
+                  title: "AI Smart Scheduling",
+                  description: "Automatically finds the perfect time for everyone across timezones",
+                  benefit: "Reduce scheduling back-and-forth by 90%",
                   gradient: "from-purple-500 to-pink-500",
-                  delay: "0.2s"
+                  delay: "0.2s",
+                  badge: "AI-POWERED"
                 },
                 {
                   icon: TrendingUp,
-                  title: "Live Analytics",
-                  description: "Real-time meeting insights and engagement metrics",
+                  title: "Real-Time Insights",
+                  description: "See engagement levels, participation rates, and meeting effectiveness live",
+                  benefit: "Increase meeting productivity by 40%",
                   gradient: "from-green-500 to-emerald-500",
-                  delay: "0.4s"
+                  delay: "0.4s",
+                  badge: "ANALYTICS"
                 },
                 {
                   icon: Activity,
-                  title: "Meeting Intelligence",
-                  description: "Advanced recording and transcription capabilities",
+                  title: "Smart Transcription",
+                  description: "AI-powered meeting notes, action items, and searchable transcripts",
+                  benefit: "Never miss important details again",
                   gradient: "from-yellow-500 to-orange-500",
-                  delay: "0.6s"
+                  delay: "0.6s",
+                  badge: "AI-NOTES"
                 }
               ].map((feature, index) => (
                 <div 
                   key={index}
-                  className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20"
+                  className="group relative bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-3xl p-8 hover:bg-white/90 dark:hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-purple-500/20"
                   style={{ animationDelay: feature.delay }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-transparent dark:from-white/5 dark:to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  {/* Feature Badge */}
+                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+                    {feature.badge}
+                  </div>
                   
                   <div className="relative z-10">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                       <feature.icon size={32} className="text-white" />
                     </div>
                     
-                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 group-hover:bg-clip-text transition-all duration-300">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-700 dark:group-hover:from-white dark:group-hover:to-gray-300 group-hover:bg-clip-text transition-all duration-300">
                       {feature.title}
                     </h3>
                     
-                    <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300">
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300 mb-4">
                       {feature.description}
                     </p>
                     
-                    <div className="mt-6 flex items-center gap-2 text-orange-400 group-hover:text-orange-300 transition-colors duration-300">
-                      <Lock size={16} />
-                      <span className="text-sm font-medium">Premium Feature</span>
+                    {/* Benefit Highlight */}
+                    <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-3 mb-4">
+                      <div className="flex items-center gap-2 text-green-600 dark:text-green-300">
+                        <CheckCircle size={16} />
+                        <span className="text-sm font-semibold">{feature.benefit}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-300">
+                      <Sparkles size={16} />
+                      <span className="text-sm font-medium">Available in Pro Plan</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Enhanced CTA Section */}
+            {/* Testimonials Section */}
+            <div className="mb-16">
+              <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">
+                Loved by <span className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">50,000+</span> Teams Worldwide
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                  {
+                    quote: "This platform transformed our remote meetings. The AI insights helped us identify and fix communication gaps we didn't even know existed.",
+                    author: "Sarah Chen",
+                    role: "VP of Engineering",
+                    company: "Shopify",
+                    avatar: "from-blue-500 to-purple-500",
+                    rating: 5
+                  },
+                  {
+                    quote: "We've saved 15 hours per week on meeting coordination alone. The smart scheduling is a game-changer for our global team.",
+                    author: "Marcus Rodriguez",
+                    role: "Operations Director",
+                    company: "Atlassian",
+                    avatar: "from-green-500 to-emerald-500",
+                    rating: 5
+                  },
+                  {
+                    quote: "The transcription quality is incredible. I can focus on the conversation instead of taking notes. It's like having a personal assistant.",
+                    author: "Emily Watson",
+                    role: "Product Manager",
+                    company: "Notion",
+                    avatar: "from-pink-500 to-red-500",
+                    rating: 5
+                  }
+                ].map((testimonial, index) => (
+                  <div key={index} className="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl p-6 hover:bg-white/90 dark:hover:bg-white/10 transition-all duration-300 hover:scale-105">
+                    <div className="flex text-yellow-500 dark:text-yellow-400 mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} size={16} fill="currentColor" />
+                      ))}
+                    </div>
+                    
+                    <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed italic">
+                      &quot;{testimonial.quote}&quot;
+                    </p>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${testimonial.avatar} rounded-full flex items-center justify-center text-white font-bold text-lg`}>
+                        {testimonial.author.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <p className="text-gray-900 dark:text-white font-semibold">{testimonial.author}</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">{testimonial.role} at {testimonial.company}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats Section */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+              {[
+                { number: "50K+", label: "Active Users", icon: Users },
+                { number: "1M+", label: "Meetings Hosted", icon: Video },
+                { number: "99.9%", label: "Uptime", icon: Activity },
+                { number: "4.9/5", label: "User Rating", icon: Star }
+              ].map((stat, index) => (
+                <div key={index} className="text-center bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl p-6 hover:bg-white/90 dark:hover:bg-white/10 transition-all duration-300">
+                  <stat.icon size={32} className="text-purple-600 dark:text-purple-400 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stat.number}</div>
+                  <div className="text-gray-600 dark:text-gray-400 text-sm">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Enhanced CTA Section with Urgency */}
             <div className="text-center">
-              <div className="relative max-w-4xl mx-auto">
+              <div className="relative max-w-5xl mx-auto">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-xl"></div>
                 
-                <div className="relative bg-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-12">
-                  <div className="flex items-center justify-center gap-4 mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center animate-pulse">
-                      <Star size={32} className="text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h2 className="text-3xl font-bold text-white">Ready to Transform</h2>
-                      <p className="text-xl text-purple-300">Your Meeting Experience?</p>
+                <div className="relative bg-white/90 dark:bg-white/5 backdrop-blur-2xl border border-gray-200/50 dark:border-white/20 rounded-3xl p-12">
+                  {/* Limited Time Offer Banner */}
+                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-3 rounded-2xl mb-8 inline-block animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+                      <span className="font-bold text-sm">🔥 LIMITED TIME: 50% OFF PRO PLAN - ENDS IN 48 HOURS!</span>
                     </div>
                   </div>
                   
-                  <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-                    Join thousands of teams already using our platform to conduct more engaging, 
-                    productive, and memorable virtual meetings.
-                  </p>
+                  <div className="flex items-center justify-center gap-4 mb-8">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center animate-bounce shadow-2xl shadow-purple-500/50">
+                      <Zap size={40} className="text-white" />
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-4xl font-bold text-gray-900 dark:text-white">Don&apos;t Let Another</h2>
+                      <p className="text-2xl bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent font-bold">Bad Meeting Happen</p>
+                    </div>
+                  </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                  <p className="text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    <span className="text-red-600 dark:text-red-400 font-semibold">Stop wasting 37% of your time</span> in unproductive meetings. 
+                    Join <span className="text-green-600 dark:text-green-400 font-semibold">50,000+ professionals</span> who&apos;ve already transformed their meeting culture.
+                  </p>
+
+                  {/* Value Proposition */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">$2,400</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300">Average saved per employee per year</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl p-4">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">15 Hours</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300">Saved per week on coordination</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4">
+                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">40%</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300">Increase in meeting productivity</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
                     <Button
-                      onClick={() => router.push('/sign-in')}
-                      className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-bold px-10 py-4 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 text-lg"
+                      onClick={() => router.push('/sign-up')}
+                      className="group relative bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 hover:from-green-600 hover:via-emerald-600 hover:to-teal-600 text-white font-bold px-12 py-5 rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-green-500/50 text-xl overflow-hidden"
                     >
-                      <span className="flex items-center gap-3">
-                        <Play size={20} />
-                        Start Your Journey
-                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                      <span className="relative flex items-center gap-3">
+                        <Sparkles size={24} />
+                        Start FREE Trial Now
+                        <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform duration-300" />
                       </span>
                     </Button>
                     
                     <Button
-                      onClick={() => router.push('/sign-up')}
-                      className="group bg-white/10 hover:bg-white/20 text-white font-semibold px-10 py-4 rounded-2xl border border-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 backdrop-blur-xl text-lg"
+                      onClick={() => router.push('/sign-in')}
+                      className="group bg-white/10 hover:bg-white/20 text-white font-semibold px-10 py-5 rounded-2xl border border-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 backdrop-blur-xl text-lg"
                     >
                       <span className="flex items-center gap-3">
-                        <UserCheck size={20} />
-                        Create Account
-                        <Sparkles size={20} className="group-hover:rotate-12 transition-transform duration-300" />
+                        <Play size={20} />
+                        Watch Demo
+                        <Globe size={20} className="group-hover:rotate-12 transition-transform duration-300" />
                       </span>
                     </Button>
                   </div>
-                  
-                  <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle size={16} className="text-green-400" />
-                      <span>Free 14-day trial</span>
+
+                  {/* Enhanced Trust Signals */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
+                      <CheckCircle size={20} className="text-green-400" />
+                      <span className="text-white font-semibold">14-Day FREE Trial</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle size={16} className="text-green-400" />
-                      <span>No credit card required</span>
+                    <div className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
+                      <CheckCircle size={20} className="text-green-400" />
+                      <span className="text-white font-semibold">No Credit Card Required</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle size={16} className="text-green-400" />
-                      <span>Cancel anytime</span>
+                    <div className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
+                      <CheckCircle size={20} className="text-green-400" />
+                      <span className="text-white font-semibold">Cancel Anytime</span>
                     </div>
+                  </div>
+
+                  {/* Urgency Counter */}
+                  <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl p-4 mb-6">
+                    <div className="flex items-center justify-center gap-4 text-orange-300">
+                      <Clock size={20} className="animate-pulse" />
+                      <span className="font-semibold">⏰ Limited Time Offer Expires Soon!</span>
+                      <Clock size={20} className="animate-pulse" />
+                    </div>
+                  </div>
+
+                  {/* Risk Reversal */}
+                  <div className="text-center">
+                    <p className="text-lg text-gray-300 mb-4">
+                      <span className="text-green-400 font-semibold">100% Money-Back Guarantee</span> - 
+                      If you don&apos;t save at least 5 hours per week, we&apos;ll refund every penny.
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Join the meeting revolution. Your future self will thank you. 🚀
+                    </p>
                   </div>
                 </div>
               </div>
@@ -233,11 +417,11 @@ const ConferencePageContent = () => {
 
   // Authenticated user view with modern design
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900/10 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-900 dark:via-blue-900/10 dark:to-slate-900 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
       </div>
 
       <div className="relative z-10 p-6 space-y-8">
@@ -253,16 +437,16 @@ const ConferencePageContent = () => {
           </div>
           
           <div className="space-y-4">
-            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-100 dark:to-purple-200 bg-clip-text text-transparent leading-tight">
               Conference Hub
             </h1>
-            <div className="flex items-center justify-center gap-3 text-xl text-gray-300">
-              <Globe size={24} className="text-blue-400" />
+            <div className="flex items-center justify-center gap-3 text-xl text-gray-700 dark:text-gray-300">
+              <Globe size={24} className="text-blue-600 dark:text-blue-400" />
               <span>Welcome back, </span>
-              <span className="font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                 {user?.firstName || user?.email?.split('@')[0] || 'User'}
               </span>
-              <Sparkles size={20} className="text-yellow-400 animate-pulse" />
+              <Sparkles size={20} className="text-yellow-500 dark:text-yellow-400 animate-pulse" />
             </div>
           </div>
         </div>
@@ -271,7 +455,7 @@ const ConferencePageContent = () => {
         <div className="flex justify-center">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-xl"></div>
-            <div className="relative bg-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-3">
+            <div className="relative bg-white/80 dark:bg-white/5 backdrop-blur-2xl border border-gray-200/50 dark:border-white/20 rounded-3xl p-3">
               <div className="flex flex-wrap justify-center gap-3">
                 {[
                   { key: 'overview', label: 'Overview', icon: Settings, gradient: 'from-blue-500 to-cyan-500' },
@@ -286,7 +470,7 @@ const ConferencePageContent = () => {
                     className={`group relative flex items-center gap-3 px-6 py-4 rounded-2xl transition-all duration-300 ${
                       activeSection === key
                         ? `bg-gradient-to-r ${gradient} text-white shadow-2xl shadow-purple-500/25 scale-105`
-                        : 'text-gray-400 hover:text-white hover:bg-white/10 hover:scale-105'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-white/10 hover:scale-105'
                     }`}
                   >
                     <Icon size={20} className={activeSection === key ? 'animate-pulse' : 'group-hover:scale-110 transition-transform duration-300'} />
@@ -303,8 +487,8 @@ const ConferencePageContent = () => {
 
         {/* Enhanced Content Area */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-800/20 via-transparent to-slate-800/20 rounded-3xl blur-xl"></div>
-          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 min-h-[600px]">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-200/20 via-transparent to-gray-200/20 dark:from-slate-800/20 dark:via-transparent dark:to-slate-800/20 rounded-3xl blur-xl"></div>
+          <div className="relative bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-3xl p-8 min-h-[600px]">
             {activeSection === 'overview' && <OverviewSection setActiveSection={setActiveSection} />}
             {activeSection === 'join' && <JoinMeetingSection />}
             {activeSection === 'schedule' && <ScheduleMeetingSection />}
@@ -335,7 +519,7 @@ const OverviewSection = ({ setActiveSection }: { setActiveSection: (section: 'ov
   const quickStats = useMemo(() => {
     const totalUpcoming = upcomingCalls?.length || 0;
     const totalCompleted = endedCalls?.length || 0;
-    const todayMeetings = upcomingCalls?.filter(call => {
+    const todayMeetings = upcomingCalls?.filter((call: StreamCallWithCustomState) => {
       const callDate = new Date(call.state?.startsAt || '');
       return callDate.toDateString() === new Date().toDateString();
     }).length || 0;
@@ -787,6 +971,7 @@ const ScheduleMeetingSection = () => {
   const [formData, setFormData] = useState({
     dateTime: new Date(),
     description: '',
+    participants: [] as string[],
   });
 
   const handleScheduleMeeting = async () => {
@@ -800,32 +985,50 @@ const ScheduleMeetingSection = () => {
       return;
     }
 
+    // Validate future date
+    if (formData.dateTime.getTime() <= Date.now()) {
+      toast.error('Please select a future date and time');
+      return;
+    }
+
     setIsScheduling(true);
     try {
-      const id = crypto.randomUUID();
-      const call = client.call('default', id);
+      const meetingType = 'scheduled';
+      const title = formData.description || 'Conference Meeting';
       
-      if (!call) throw new Error('Failed to create meeting');
-      
-      const startsAt = formData.dateTime.toISOString();
-      const description = formData.description || 'Scheduled Meeting';
-      
-      await call.getOrCreate({
-        data: {
-          starts_at: startsAt,
-          custom: {
-            description,
-          },
+      // Create meeting via API
+      const response = await fetch('/api/meetings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          title,
+          description: formData.description,
+          startsAt: formData.dateTime.toISOString(),
+          participants: formData.participants,
+          meetingType,
+        }),
       });
-
-      const meetingLink = getMeetingShareLink(id);
-      setScheduledMeetingLink(meetingLink);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create meeting');
+      }
+      
+      const { meeting, meetingUrl } = await response.json();
+      
+      setScheduledMeetingLink(meetingUrl);
       setMeetingScheduled(true);
-      toast.success('Meeting scheduled successfully!');
+      
+      const participantCount = meeting.participants.length;
+      toast.success(
+        `Conference meeting scheduled successfully${participantCount > 1 ? ` with ${participantCount} admin participants` : ''}!`
+      );
     } catch (error) {
       console.error('Error scheduling meeting:', error);
-      toast.error('Failed to schedule meeting');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to schedule meeting';
+      toast.error(errorMessage);
     } finally {
       setIsScheduling(false);
     }
@@ -842,6 +1045,7 @@ const ScheduleMeetingSection = () => {
     setFormData({
       dateTime: new Date(),
       description: '',
+      participants: [],
     });
   };
 
@@ -896,6 +1100,18 @@ const ScheduleMeetingSection = () => {
                   </div>
                 </div>
               )}
+              <div className="flex items-center gap-3 text-gray-300">
+                <Crown size={16} className="text-yellow-400" />
+                <div>
+                  <p className="font-medium">Admin Participants</p>
+                  <p className="text-sm text-gray-400">
+                    {formData.participants.length > 0 
+                      ? `${formData.participants.length + 1} admin participant${formData.participants.length > 0 ? 's' : ''} will be notified`
+                      : 'Conference meeting for you only'
+                    }
+                  </p>
+                </div>
+              </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <Link size={16} className="text-yellow-400" />
                 <span className="text-sm font-mono bg-slate-800/50 px-3 py-2 rounded-lg truncate flex-1">
@@ -964,6 +1180,26 @@ const ScheduleMeetingSection = () => {
                 setFormData({ ...formData, description: e.target.value })
               }
             />
+          </div>
+
+          {/* Admin Participants */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-base font-medium text-white">
+              <Crown size={18} className="text-yellow-400" />
+              Admin Participants
+            </label>
+            <div className="bg-slate-700/30 border border-white/10 rounded-xl p-4">
+              <AdminSelect
+                selectedAdmins={formData.participants}
+                onAdminsChange={(participants) => setFormData({ ...formData, participants })}
+                placeholder="Select admin participants for conference"
+                allowSearch={true}
+                multiple={true}
+                showSelectedCount={true}
+                size="md"
+                className=""
+              />
+            </div>
           </div>
 
           {/* Date and Time */}
@@ -1052,6 +1288,18 @@ const ScheduleMeetingSection = () => {
                 </div>
               )}
               <div className="flex items-center gap-3 p-2 bg-slate-800/50 rounded-lg">
+                <Crown size={16} className="text-yellow-400" />
+                <div>
+                  <p className="text-sm font-medium text-white">Admin Participants</p>
+                  <p className="text-xs text-gray-400">
+                    {formData.participants.length > 0 
+                      ? `${formData.participants.length + 1} participant${formData.participants.length > 0 ? 's' : ''} (Including you)`
+                      : 'You only'
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-2 bg-slate-800/50 rounded-lg">
                 <Clock size={16} className="text-green-400" />
                 <div>
                   <p className="text-sm font-medium text-white">Duration</p>
@@ -1093,7 +1341,7 @@ const ScheduleMeetingSection = () => {
 };
 // Upcoming Meetings Section Component
 const UpcomingMeetingsSection = ({ setActiveSection }: { setActiveSection: (section: 'overview' | 'join' | 'schedule' | 'upcoming' | 'previous') => void }) => {
-  const { upcomingCalls, isLoading } = useGetCalls();
+  const { upcomingCalls } = useGetCalls();
 
   const statistics = useMemo(() => {
     if (!upcomingCalls) return { total: 0, today: 0, thisWeek: 0, totalParticipants: 0 };
@@ -1107,7 +1355,7 @@ const UpcomingMeetingsSection = ({ setActiveSection }: { setActiveSection: (sect
     let thisWeekCount = 0;
     let totalParticipants = 0;
     
-    upcomingCalls.forEach(call => {
+    upcomingCalls.forEach((call: StreamCallWithCustomState) => {
       const callDate = new Date(call.state?.startsAt || '');
       if (callDate.toDateString() === todayString) {
         todayCount++;
@@ -1191,36 +1439,17 @@ const UpcomingMeetingsSection = ({ setActiveSection }: { setActiveSection: (sect
           Your Upcoming Meetings
         </h3>
         
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full"></div>
-          </div>
-        ) : upcomingCalls && upcomingCalls.length > 0 ? (
-          <CallList type="upcoming" />
-        ) : (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Calendar size={48} className="text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2">No upcoming meetings</h3>
-            <p className="text-gray-400 mb-6">Schedule your first meeting to get started</p>
-            <Button
-              onClick={() => setActiveSection('schedule')}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105"
-            >
-              <Plus size={20} className="mr-2" />
-              Schedule Your First Meeting
-            </Button>
-          </div>
-        )}
+        <UserMeetingsList type="upcoming" />
       </div>
     </div>
   );
 };
 
 // Previous Meetings Section Component
-const PreviousMeetingsSection = ({ setActiveSection }: { setActiveSection: (section: 'overview' | 'join' | 'schedule' | 'upcoming' | 'previous') => void }) => {
-  const { endedCalls, isLoading } = useGetCalls();
+const PreviousMeetingsSection = ({ setActiveSection }: { 
+  setActiveSection: React.Dispatch<React.SetStateAction<'overview' | 'join' | 'schedule' | 'upcoming' | 'previous'>> 
+}) => {
+  const { endedCalls } = useGetCalls();
 
   const statistics = useMemo(() => {
     if (!endedCalls) return { totalMeetings: 0, totalDuration: 0, avgDuration: 0, totalParticipants: 0 };
@@ -1228,7 +1457,7 @@ const PreviousMeetingsSection = ({ setActiveSection }: { setActiveSection: (sect
     let totalDuration = 0;
     let totalParticipants = 0;
     
-    endedCalls.forEach(call => {
+    endedCalls.forEach((call: StreamCallWithCustomState) => {
       const startTime = call.state?.startsAt ? new Date(call.state.startsAt) : null;
       const endTime = call.state?.endedAt ? new Date(call.state.endedAt) : null;
       
@@ -1265,6 +1494,17 @@ const PreviousMeetingsSection = ({ setActiveSection }: { setActiveSection: (sect
           <h2 className="text-3xl font-bold text-white mb-2">Meeting History</h2>
           <p className="text-gray-400">Review your past meetings and analyze your meeting patterns</p>
         </div>
+      </div>
+
+      {/* Navigation Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={() => setActiveSection('overview')}
+          className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-semibold px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105"
+        >
+          <ArrowRight size={16} className="mr-2" />
+          Back to Overview
+        </Button>
       </div>
 
       {/* Statistics Dashboard */}
@@ -1306,28 +1546,7 @@ const PreviousMeetingsSection = ({ setActiveSection }: { setActiveSection: (sect
           Your Meeting History
         </h3>
         
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
-          </div>
-        ) : endedCalls && endedCalls.length > 0 ? (
-          <CallList type="ended" />
-        ) : (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <History size={48} className="text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2">No meeting history</h3>
-            <p className="text-gray-400 mb-6">Your completed meetings will appear here</p>
-            <Button
-              onClick={() => setActiveSection('schedule')}
-              className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105"
-            >
-              <Calendar size={20} className="mr-2" />
-              Schedule a Meeting
-            </Button>
-          </div>
-        )}
+        <UserMeetingsList type="ended" />
       </div>
     </div>
   );

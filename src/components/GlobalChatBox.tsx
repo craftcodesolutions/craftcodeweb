@@ -147,9 +147,10 @@ function GlobalChatBox() {
                         isMyMessage ? "text-cyan-100/80" : "text-slate-400/80"
                       }`}>
                         <span className="text-xs">
-                          {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString(undefined, {
+                          {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('en-US', {
                             hour: "2-digit",
                             minute: "2-digit",
+                            hour12: false,
                           }) : 'Sending...'}
                         </span>
                         {isMyMessage && (

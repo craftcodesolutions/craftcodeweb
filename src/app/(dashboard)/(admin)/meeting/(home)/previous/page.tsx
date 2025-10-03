@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CallList from '@/app/(dashboard)/(admin)/meeting/_components/CallList';
+
 import { useGetCalls } from '@/hooks/useGetCalls';
+import UserMeetingsList from '@/components/UserMeetingsList';
 import { History, Clock, Users, Search, Calendar, BarChart3, Download, RefreshCw, Archive, CheckSquare, Square, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -335,7 +336,7 @@ const PreviousPage = () => {
             <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
           </div>
         ) : sortedCalls.length > 0 ? (
-          <CallList type="ended" />
+          <UserMeetingsList type="ended" />
         ) : (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">

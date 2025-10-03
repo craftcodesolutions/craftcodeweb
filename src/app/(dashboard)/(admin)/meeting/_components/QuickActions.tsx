@@ -159,10 +159,15 @@ const QuickActions = ({
             action.disabled && 'opacity-50 cursor-not-allowed hover:scale-100'
           )}
         >
-          {/* Loading spinner */}
+          {/* Enhanced Loading spinner */}
           {isLoading === action.id && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl sm:rounded-2xl">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl sm:rounded-2xl">
+              <div className="relative">
+                {/* Outer glow */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-40 animate-pulse scale-150"></div>
+                {/* Spinner */}
+                <div className="relative w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin shadow-lg" style={{ animationDuration: '1s' }}></div>
+              </div>
             </div>
           )}
 

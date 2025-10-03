@@ -362,7 +362,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Connect socket - equivalent to connectSocket from Zustand
    */
   const connectSocket = () => {
-    if (!user || socket?.connected) return;
+    if (!user || socket?.connected || typeof window === 'undefined') return;
 
     try {
       const newSocket = io(BASE_URL, {

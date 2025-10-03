@@ -134,17 +134,36 @@ const MeetingRoom = () => {
           className="transition-all duration-700 ease-in-out"
         />
         
-        {/* Camera Transition Overlay */}
+        {/* Enhanced Camera Transition Overlay */}
         {cameraTransitioning && (
-          <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm rounded-2xl flex items-center justify-center z-20">
-            <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-2xl">
-              <div className="flex items-center gap-3 text-white">
-                <div className="animate-spin">
-                  <Camera size={24} className="text-blue-400" />
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-lg rounded-2xl flex items-center justify-center z-20">
+            <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl">
+              <div className="flex flex-col items-center gap-6 text-white">
+                {/* Enhanced animated icon */}
+                <div className="relative">
+                  {/* Outer glow */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-xl opacity-40 animate-pulse scale-150"></div>
+                  {/* Spinning ring */}
+                  <div className="absolute inset-0 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" style={{ animationDuration: '1.5s' }}></div>
+                  {/* Icon container */}
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <Camera size={28} className="text-white drop-shadow-lg" />
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Adjusting camera...</p>
-                  <p className="text-sm text-gray-400">Please wait</p>
+                
+                {/* Enhanced text */}
+                <div className="text-center space-y-2">
+                  <p className="text-xl font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Adjusting Camera
+                  </p>
+                  <p className="text-sm text-gray-400">Please wait while we optimize your video</p>
+                  
+                  {/* Loading dots */}
+                  <div className="flex items-center justify-center gap-1 mt-4">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
                 </div>
               </div>
             </div>

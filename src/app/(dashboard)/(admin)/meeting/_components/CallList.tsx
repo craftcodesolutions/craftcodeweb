@@ -1,7 +1,7 @@
 'use client';
 
-import { Call } from '@stream-io/video-react-sdk';
 import { useState, useMemo, useCallback } from 'react';
+import { StreamCallWithCustomState } from '@/types/StreamCall';
 
 import Loader from './Loader';
 import { useGetCalls } from '@/hooks/useGetCalls';
@@ -10,6 +10,7 @@ import { Calendar, Clock, Users, Video, MoreVertical, Copy, Trash2, Edit } from 
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import { getMeetingRoomUrl, getMeetingShareLink } from './utils/meetingUtils';
+import ParticipantDisplay from './ParticipantDisplay';
 
 const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
   const router = useRouter();
@@ -54,7 +55,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
   if (isLoading) return <Loader />;
 
 
-  const getMeetingDuration = (meeting: Call) => {
+  const getMeetingDuration = (meeting: StreamCallWithCustomState) => {
     if (type === 'ended') {
       const startTime = meeting.state?.startsAt ? new Date(meeting.state.startsAt) : null;
       const endTime = meeting.state?.endedAt ? new Date(meeting.state.endedAt) : null;
@@ -66,23 +67,39 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
       }
       return '45 min'; // Fallback
     } else {
-      // For upcoming meetings, show estimated duration from custom data or default
       const customDuration = meeting.state?.custom?.duration;
       return customDuration ? `${customDuration} min` : '60 min';
     }
   };
 
-  const getParticipantCount = (meeting: Call) => {
-    if (type === 'ended') {
-      const actualParticipants = meeting.state?.members?.length || 0;
-      return `${actualParticipants} joined`;
-    } else {
-      const maxParticipants = meeting.state?.custom?.maxParticipants || 100;
-      return `Up to ${maxParticipants}`;
-    }
+  const getParticipantCount = (meeting: StreamCallWithCustomState): string => {
+    // First try to get from database data, then fallback to Stream data
+    const dbData = meeting._dbData;
+    const participants = dbData?.participants || meeting.state?.custom?.participants || [];
+    const memberCount = meeting.state?.members?.length || 0;
+    const totalCount = Math.max(participants.length, memberCount);
+    return totalCount > 0 ? `${totalCount} participant${totalCount > 1 ? 's' : ''}` : 'No participants';
   };
 
-  const getMeetingStatus = (meeting: Call) => {
+  const getParticipantIds = (meeting: StreamCallWithCustomState): string[] => {
+    // First try to get from database data, then fallback to Stream custom data
+    const dbData = meeting._dbData;
+    if (dbData?.participants) {
+      return dbData.participants;
+    }
+    return meeting.state?.custom?.participants || [];
+  };
+
+  const getMeetingDescription = (meeting: StreamCallWithCustomState): string => {
+    // First try to get from database data, then fallback to Stream custom data
+    const dbData = meeting._dbData;
+    if (dbData?.description) {
+      return dbData.description;
+    }
+    return meeting.state?.custom?.description || 'Untitled Meeting';
+  };
+
+  const getMeetingStatus = (meeting: StreamCallWithCustomState): string => {
     if (type === 'ended') return 'Completed';
     
     const startTime = new Date(meeting.state?.startsAt || '');
@@ -108,7 +125,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-3 mt-6">
       {calls && calls.length > 0 ? (
-        calls.map((meeting: Call) => {
+        calls.map((meeting: StreamCallWithCustomState) => {
           const status = getMeetingStatus(meeting);
           const isExpanded = expandedCard === meeting.id;
           const meetingDate = new Date(meeting.state?.startsAt || '');
@@ -151,7 +168,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                   
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-white dark:text-gray-100 mb-3 truncate">
-                      {meeting.state?.custom?.description || 'Untitled Meeting'}
+                      {getMeetingDescription(meeting)}
                     </h3>
                     
                     {/* Date and Time Display */}
@@ -238,16 +255,28 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                 </div>
                 
                 <div className="bg-slate-700/30 dark:bg-slate-600/30 backdrop-blur-sm rounded-xl p-4 border border-white/5 dark:border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500/20 dark:bg-green-400/20 rounded-xl flex items-center justify-center">
-                      <Users size={18} className="text-green-400 dark:text-green-300" />
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500/20 dark:bg-green-400/20 rounded-xl flex items-center justify-center">
+                        <Users size={18} className="text-green-400 dark:text-green-300" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-1">Participants</p>
+                        <p className="text-sm font-semibold text-white dark:text-gray-100">
+                          {getParticipantCount(meeting)}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-1">Participants</p>
-                      <p className="text-sm font-semibold text-white dark:text-gray-100">
-                        {getParticipantCount(meeting)}
-                      </p>
-                    </div>
+                    {getParticipantIds(meeting).length > 0 && (
+                      <div className="mt-2">
+                        <ParticipantDisplay 
+                          participantIds={getParticipantIds(meeting)}
+                          maxDisplay={3}
+                          size="sm"
+                          showNames={false}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
