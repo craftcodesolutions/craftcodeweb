@@ -97,7 +97,6 @@ export async function middleware(request: NextRequest) {
   // Define route groups
   const protectedRoutes = [
     '/profile', 
-    '/reset-password', 
     '/conferance',    // Conference system requires authentication
     '/messenger',     // Messaging system requires authentication
     '/dashboard'      // Main dashboard requires authentication (but not admin)
