@@ -4,9 +4,11 @@ import clientPromise from '@/config/mongodb';
 import { sendWelcomeEmail, sendAdminNotification } from '@/lib/emailService';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
+import jwt from 'jsonwebtoken';
 
 const DB_NAME = 'CraftCode';
 const COLLECTION = 'users';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(req: NextRequest) {
   try {
@@ -190,13 +192,58 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Convert _id to string
-    const updatedUser = {
+    // Convert _id to string and ensure proper typing
+    const updatedUser: any = {
       ...result,
       _id: result._id.toString(),
     };
 
-    return NextResponse.json(updatedUser, { status: 200 });
+    // Create response object
+    const response = NextResponse.json(updatedUser, { status: 200 });
+
+    // If admin status was changed, regenerate JWT token for the user
+    // This ensures the JWT stays synchronized with the database
+    if (field === 'isAdmin') {
+      try {
+        const newToken = jwt.sign(
+          {
+            userId: updatedUser._id,
+            email: updatedUser.email || '',
+            isAdmin: updatedUser.isAdmin || false,
+          },
+          JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
+        // Set the new JWT token as an HTTP-only cookie
+        response.cookies.set('authToken', newToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+          path: '/',
+        });
+
+        // Also update the userEmail cookie if email exists
+        if (updatedUser.email) {
+          response.cookies.set('userEmail', updatedUser.email, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60, // 7 days
+            path: '/',
+          });
+        }
+
+        console.log(`JWT token regenerated for user ${userId} due to admin status change to ${value}`);
+      } catch (tokenError) {
+        console.error('Failed to regenerate JWT token:', tokenError);
+        // Don't fail the request if token generation fails
+        // The database update was successful, which is the primary operation
+      }
+    }
+
+    return response;
   } catch (error) {
     console.error('Update user error:', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
