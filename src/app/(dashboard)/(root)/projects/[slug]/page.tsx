@@ -86,7 +86,7 @@ export default function DemoProjectPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [viewCount, setViewCount] = useState(0);
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = params?.slug as string;
 
   // Function to validate image URL
   const isValidImageUrl = useCallback((url: string | null | undefined): boolean => {

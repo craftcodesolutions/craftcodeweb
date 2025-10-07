@@ -7,7 +7,15 @@ export interface Message {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
+export interface MessageType {
+  _id: string;
+  senderId: string;
+  receiverId: string;
+  text?: string;
+  image?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
 export interface Chat {
   _id?: string;
   participants: string[]; // Array of user IDs

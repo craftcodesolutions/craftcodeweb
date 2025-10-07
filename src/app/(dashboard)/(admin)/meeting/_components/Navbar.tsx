@@ -27,13 +27,19 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+ 
+
+
   const getPageTitle = () => {
+    if (!pathname) return 'YOOM Meeting'; // fallback
+  
     if (pathname.includes('/upcoming')) return 'Upcoming Meetings';
     if (pathname.includes('/previous')) return 'Previous Meetings';
     if (pathname.includes('/personal-room')) return 'Personal Room';
     if (pathname === '/meeting') return 'Meeting Hub';
     return 'YOOM Meeting';
   };
+  
 
   return (
     <nav className="flex items-center justify-between w-full bg-dark-1/95 backdrop-blur-xl border-b border-dark-3/20 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-8 shadow-2xl z-30">

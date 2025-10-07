@@ -3,9 +3,11 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
+import { DisabledAccountsProvider } from "@/context/DisabledAccountsContext";
 import { GlobalChatProvider } from "@/context/GlobalChatContext";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import GlobalChatBox from "@/components/GlobalChatBox";
+import NotificationPermission from "@/components/NotificationPermission";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -36,23 +38,26 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <GlobalChatProvider>
-              {children}
-              <FloatingChatButton />
-              <GlobalChatBox />
-              <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="dark"
-              />
-            </GlobalChatProvider>
+            <DisabledAccountsProvider>
+              <GlobalChatProvider>
+                {children}
+                <FloatingChatButton />
+                <GlobalChatBox />
+                <NotificationPermission />
+                <ToastContainer
+                  position="top-right"
+                  autoClose={3000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme="dark"
+                />
+              </GlobalChatProvider>
+            </DisabledAccountsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

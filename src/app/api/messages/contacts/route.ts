@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/auth';
-import { getAllContacts } from '@/controllers/messageService';
+import { getAllContacts } from '@/lib/messageService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(contacts);
   } catch (error) {
-    console.error('Error in GET /api/messages/contacts:', error);
+    console.error('Error in GET /api/messages/contacts:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }

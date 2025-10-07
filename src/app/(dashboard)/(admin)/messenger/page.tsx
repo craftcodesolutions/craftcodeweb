@@ -5,9 +5,10 @@ import BorderAnimatedContainer from "./_components/BorderAnimatedContainer";
 import ProfileHeader from "./_components/ProfileHeader";
 import ActiveTabSwitch from "./_components/ActiveTabSwitch";
 import ChatsList from "./_components/ChatsList";
-import ContactList from "./_components/ContactList";
+import AllContactsList from "./_components/AllContactsList";
 import ChatContainer from "./_components/ChatContainer";
 import NoConversationPlaceholder from "./_components/NoConversationPlaceholder";
+
 
 function ChatPage() {
   const { activeTab, selectedUser } = useChat();
@@ -20,9 +21,13 @@ function ChatPage() {
           <ProfileHeader />
           <ActiveTabSwitch />
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {activeTab === "chats" && <ChatsList />}
-            {activeTab === "contacts" && <ContactList />}
+          <div className="flex-1 overflow-y-auto scrollbar-hide">
+            {activeTab === "chats" && (
+              <div className="p-4 space-y-2">
+                <ChatsList />
+              </div>
+            )}
+            {activeTab === "contacts" && <AllContactsList />}
           </div>
         </div>
 
@@ -31,6 +36,8 @@ function ChatPage() {
           {selectedUser ? <ChatContainer /> : <NoConversationPlaceholder />}
         </div>
       </BorderAnimatedContainer>
+      
+
     </div>
   );
 }

@@ -62,7 +62,7 @@ const MobileNav = () => {
               <section className="flex h-full flex-col gap-3 pt-16 text-white">
                 {sidebarLinks.map((item) => {
                   const isActive = pathname === item.route || 
-                    (item.route !== '/meeting' && pathname.startsWith(`${item.route}/`)) ||
+                    (item.route !== '/meeting' && pathname?.startsWith(`${item.route}/`)) ||
                     (item.route === '/meeting' && pathname === '/meeting');
 
                   return (

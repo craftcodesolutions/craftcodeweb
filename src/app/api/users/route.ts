@@ -5,9 +5,12 @@ import { sendWelcomeEmail, sendAdminNotification } from '@/lib/emailService';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
+import { emitTokenUpdate, emitUserStatusChange } from '@/lib/socketServer';
 
 const DB_NAME = 'CraftCode';
 const COLLECTION = 'users';
+const SESSIONS_COLLECTION = 'user_sessions';
+const DISABLED_ACCOUNTS_COLLECTION = 'disabled_accounts';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(req: NextRequest) {
@@ -35,11 +38,21 @@ export async function POST(req: NextRequest) {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const usersCollection = db.collection(COLLECTION);
+    const disabledAccountsCollection = db.collection(DISABLED_ACCOUNTS_COLLECTION);
 
     // Check if user already exists
     const existingUser = await usersCollection.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
+    }
+
+    // Check if email is in disabled accounts
+    const disabledAccount = await disabledAccountsCollection.findOne({ email: email.toLowerCase() });
+    if (disabledAccount) {
+      return NextResponse.json({ 
+        error: 'This email address is associated with a disabled account. Please contact support to reactivate your account.',
+        disabled: true 
+      }, { status: 403 });
     }
 
     // Hash password
@@ -50,10 +63,10 @@ export async function POST(req: NextRequest) {
       name: `${firstName} ${lastName}`,
       email: email.toLowerCase(),
       password: hashedPassword,
-      picture: picture || '', // Optional picture field
-      bio: bio || '', // Optional bio field
+      picture: picture || '',
+      bio: bio || '',
       isAdmin: false,
-      status: true, // Default status to true (active)
+      status: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -79,7 +92,19 @@ export async function POST(req: NextRequest) {
       console.error('Failed to send admin notification:', adminEmailError);
     }
 
-    return NextResponse.json({ success: true, message: 'User created successfully' }, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'User created successfully',
+      userId: result.insertedId.toString(),
+      firstName,
+      lastName,
+      email: email.toLowerCase(),
+      isAdmin: false,
+      profileImage: picture || '',
+      bio: bio || '',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }, { status: 201 });
   } catch (error) {
     console.error('User creation error:', error);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
@@ -101,7 +126,6 @@ export async function GET(req: NextRequest) {
     const db = client.db(DB_NAME);
     const usersCollection = db.collection(COLLECTION);
 
-    // Build query for search
     const query: any = {};
     if (search) {
       const searchRegex = new RegExp(search, 'i');
@@ -112,11 +136,9 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Get total count for pagination
     const totalUsers = await usersCollection.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    // Fetch users with pagination and search
     const users = await usersCollection
       .find(query, {
         projection: {
@@ -129,7 +151,6 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .toArray();
 
-    // Convert _id to string for compatibility with the frontend
     const formattedUsers = users.map((user) => ({
       ...user,
       _id: user._id.toString(),
@@ -163,11 +184,24 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid field or value' }, { status: 400 });
     }
 
+    // Get current admin user from JWT token
+    const authToken = req.cookies.get('authToken')?.value;
+    let currentAdminUserId: string | null = null;
+    
+    if (authToken) {
+      try {
+        const decoded = jwt.verify(authToken, JWT_SECRET) as any;
+        currentAdminUserId = decoded.userId;
+      } catch (error) {
+        console.error('Failed to decode admin token:', error);
+      }
+    }
+
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const usersCollection = db.collection(COLLECTION);
+    const sessionsCollection = db.collection(SESSIONS_COLLECTION);
 
-    // Update the specified field
     const update: any = {
       $set: {
         [field]: value,
@@ -192,17 +226,14 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Convert _id to string and ensure proper typing
     const updatedUser: any = {
       ...result,
       _id: result._id.toString(),
     };
 
-    // Create response object
     const response = NextResponse.json(updatedUser, { status: 200 });
 
-    // If admin status was changed, regenerate JWT token for the user
-    // This ensures the JWT stays synchronized with the database
+    // If admin status was changed, regenerate JWT tokens for ALL user sessions
     if (field === 'isAdmin') {
       try {
         const newToken = jwt.sign(
@@ -215,32 +246,56 @@ export async function PATCH(req: NextRequest) {
           { expiresIn: '7d' }
         );
 
-        // Set the new JWT token as an HTTP-only cookie
-        response.cookies.set('authToken', newToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-          path: '/',
-        });
+        const sessionUpdateResult = await sessionsCollection.updateMany(
+          { 
+            userId: updatedUser._id,
+            isActive: true,
+            expiresAt: { $gt: new Date() }
+          },
+          {
+            $set: {
+              token: newToken,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+              updatedAt: new Date(),
+            },
+          }
+        );
 
-        // Also update the userEmail cookie if email exists
-        if (updatedUser.email) {
+        console.log(`Updated ${sessionUpdateResult.modifiedCount} active sessions for user ${userId} due to admin status change to ${value}`);
+
+        const isUpdatingOwnAccount = currentAdminUserId === updatedUser._id;
+
+        if (isUpdatingOwnAccount) {
+          response.cookies.set('authToken', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60,
+            path: '/',
+          });
+
           response.cookies.set('userEmail', updatedUser.email, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60, // 7 days
+            maxAge: 7 * 24 * 60 * 60,
             path: '/',
           });
+
+          console.log(`Admin updated their own account - session cookies refreshed`);
+        } else {
+          console.log(`Admin ${currentAdminUserId} updated user ${updatedUser._id} - admin session preserved`);
         }
 
-        console.log(`JWT token regenerated for user ${userId} due to admin status change to ${value}`);
+        emitTokenUpdate(updatedUser._id, newToken);
+
       } catch (tokenError) {
-        console.error('Failed to regenerate JWT token:', tokenError);
-        // Don't fail the request if token generation fails
-        // The database update was successful, which is the primary operation
+        console.error('Failed to regenerate JWT tokens for user sessions:', tokenError);
       }
+    }
+
+    if (field === 'status') {
+      emitUserStatusChange(updatedUser._id, value);
     }
 
     return response;

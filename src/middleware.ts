@@ -18,6 +18,7 @@ interface User {
   lastName: string | null;
   isAdmin: boolean;
   profileImage: string;
+  status?: boolean; // Add status for account active/inactive
 }
 
 export async function middleware(request: NextRequest) {
@@ -43,7 +44,7 @@ export async function middleware(request: NextRequest) {
         throw new Error('Invalid token structure');
       }
 
-      // Use JWT data directly (now synchronized with database changes)
+      // Use JWT data directly (synchronized with OAuth system)
       user = {
         userId: decoded.userId,
         email: decoded.email,
@@ -52,6 +53,7 @@ export async function middleware(request: NextRequest) {
         firstName: null, // Not needed for middleware decisions
         lastName: null, // Not needed for middleware decisions
         profileImage: '', // Not needed for middleware decisions
+        status: true, // Assume active if JWT is valid
       };
 
       console.log(`Middleware using JWT data for user ${decoded.userId}: isAdmin=${decoded.isAdmin}`);
@@ -69,6 +71,7 @@ export async function middleware(request: NextRequest) {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${authToken}`,
+            Cookie: request.headers.get('cookie') || '', // Forward cookies for session validation
           },
           signal: controller.signal,
         });
@@ -77,8 +80,16 @@ export async function middleware(request: NextRequest) {
         if (res.ok) {
           const freshUser = await res.json();
           if (freshUser && freshUser.userId && typeof freshUser.isAdmin === 'boolean') {
+            // Check if user account is active
+            if (freshUser.status === false) {
+              console.log(`⚠️ User ${freshUser.userId} account is deactivated`);
+              const loginUrl = new URL('/login', request.url);
+              loginUrl.searchParams.set('error', 'account_deactivated');
+              return NextResponse.redirect(loginUrl);
+            }
+            
             user = freshUser;
-            console.log(`Middleware fallback: Using fresh data for user ${freshUser.userId}`);
+            console.log(`✅ Middleware fallback auth: user ${freshUser.userId}`);
           } else {
             throw new Error('Invalid fresh user data');
           }
@@ -86,31 +97,32 @@ export async function middleware(request: NextRequest) {
           throw new Error(`Fallback API call failed: ${res.status}`);
         }
       } catch (fallbackErr) {
-        console.error('Middleware fallback also failed:', fallbackErr);
+        console.error('❌ Middleware fallback failed:', fallbackErr);
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('redirect', encodeURIComponent(pathname));
+        loginUrl.searchParams.set('error', 'session_expired');
         return NextResponse.redirect(loginUrl);
       }
     }
   }
 
-  // Define route groups
+  // Updated route definitions for OAuth system
   const protectedRoutes = [
+    '/dashboard',     // Main dashboard (non-admin users can access)
     '/profile', 
     '/conferance',    // Conference system requires authentication
     '/messenger',     // Messaging system requires authentication
-    '/dashboard'      // Main dashboard requires authentication (but not admin)
+    '/reset-password',
+    '/forgot-password'
   ];
   const adminRoutes = [
-    '/admin', 
-    '/dashboard',
-    '/users',           // User management
-    '/insights',        // Analytics
-    '/deployments',     // Deployment management
-    '/professionals',   // Professional management
-    '/reviews',
-    "/messenger",         // Review management
-    "/meeting"         // Review management
+    '/dashboard/admin',           // Only admin dashboard routes
+    '/dashboard/(admin)',         // Admin folder routes  
+    '/dashboard/users',           // User management
+    '/dashboard/insights',        // Analytics
+    '/dashboard/deployments',     // Deployment management
+    '/dashboard/professionals',   // Professional management
+    '/dashboard/reviews'          // Review management
   ];
   const authRoutes = ['/login', '/register'];
 
@@ -120,44 +132,52 @@ export async function middleware(request: NextRequest) {
 
   // Protected route: require authenticated user
   if (isProtectedRoute && !user) {
+    console.log(`🔒 Protected route access denied: ${pathname}`);
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', encodeURIComponent(pathname));
     return NextResponse.redirect(loginUrl);
   }
 
-  // Admin route: require authenticated user with isAdmin: true
+  // Admin route: require authenticated admin user
   if (isAdminRoute) {
     if (!user) {
+      console.log(`🔒 Admin route - no auth: ${pathname}`);
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', encodeURIComponent(pathname));
       return NextResponse.redirect(loginUrl);
     }
     if (!user.isAdmin) {
-      return NextResponse.redirect(new URL('/', request.url));
+      console.log(`🔒 Admin route - insufficient privileges: ${pathname} (user: ${user.userId})`);
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    console.log(`✅ Admin route access granted: ${pathname} (user: ${user.userId})`);
   }
 
-  // Auth route: redirect authenticated users to /profile
+  // Auth route: redirect authenticated users
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/', request.url));
+    console.log(`🔄 Auth route redirect: ${pathname} -> dashboard (user: ${user.userId})`);
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Proceed with request
+  // Performance logging
   const duration = Date.now() - startTime;
-  console.log(`Middleware completed for ${pathname} in ${duration}ms - User: ${user ? `${user.userId} (admin: ${user.isAdmin})` : 'none'}`);
+  console.log(`⚡ Middleware: ${pathname} (${duration}ms) - User: ${user ? `${user.userId} (admin: ${user.isAdmin})` : 'anonymous'}`);
   
-  // Create response with user headers for components to access
+  // Enhanced response headers for OAuth compatibility
   const response = NextResponse.next();
   
   if (user) {
     response.headers.set('x-user-id', user.userId);
     response.headers.set('x-user-email', user.email);
     response.headers.set('x-user-admin', user.isAdmin.toString());
+    response.headers.set('x-user-status', (user.status ?? true).toString());
   }
   
   return response;
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|public/.*).*)'],
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|public/.*|sounds/.*|images/.*).*)' 
+  ],
 };

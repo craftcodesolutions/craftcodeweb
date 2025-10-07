@@ -7,7 +7,8 @@ import { sidebarLinks } from '@/constants';
 import { cn } from '@/lib/utils';
 
 const Sidebar = () => {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
+
   const router = useRouter();
 
   const handleNavigation = useCallback(async (route: string) => {

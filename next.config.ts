@@ -41,6 +41,38 @@ const nextConfig = {
       config.resolve.extensionAlias = {};
     }
     config.resolve.extensionAlias['.js'] = ['.js', '.mjs'];
+    
+    // Exclude server-side Socket.IO modules from client-side bundle
+    if (!config.resolve.fallback) {
+      config.resolve.fallback = {};
+    }
+    
+    // Prevent Node.js modules from being bundled on client-side
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      stream: false,
+      url: false,
+      zlib: false,
+      http: false,
+      https: false,
+      assert: false,
+      os: false,
+      path: false,
+    };
+    
+    // Exclude socket.io server from client bundle
+    if (config.isServer === false) {
+      config.externals = config.externals || [];
+      config.externals.push({
+        'socket.io': 'socket.io',
+        'socket.io-adapter': 'socket.io-adapter',
+      });
+    }
+    
     return config;
   },
 };

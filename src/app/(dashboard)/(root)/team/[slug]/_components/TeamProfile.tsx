@@ -226,7 +226,9 @@ const HobbyBadge: React.FC<{ hobby: string }> = ({ hobby }) => {
 
 const TeamProfile: React.FC = () => {
     const params = useParams();
-    const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug || '';
+    const slug = params && typeof params === 'object' && 'slug' in params
+        ? (Array.isArray(params.slug) ? params.slug[0] : params.slug || '')
+        : '';
     const { user, isAuthenticated, isLoading: authLoading } = useAuth() as AuthContextType;
     const [teamMember, setTeamMember] = useState<TeamMember | null>(null);
     const [blogs, setBlogs] = useState<Blog[]>([]);

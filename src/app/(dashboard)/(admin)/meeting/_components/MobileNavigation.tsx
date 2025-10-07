@@ -115,7 +115,7 @@ const MobileNavigation = () => {
       <div className="grid grid-cols-2 gap-4">
         {sidebarLinks.map((item, index) => {
           const isActive = pathname === item.route || 
-            (item.route !== '/meeting' && pathname.startsWith(`${item.route}/`)) ||
+            (item.route !== '/meeting' && pathname?.startsWith(`${item.route}/`)) ||
             (item.route === '/meeting' && pathname === '/meeting');
           
           return (

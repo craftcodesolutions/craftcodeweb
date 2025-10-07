@@ -3,33 +3,63 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useDisabledAccounts } from '@/context/DisabledAccountsContext';
 import { useRouter } from 'next/navigation';
 import Modal from '@/components/common/Modal';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
-const bgGradient = 'bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900';
-const cardShadow = 'shadow-2xl';
-const cardBorder = 'border border-gray-200 dark:border-gray-800';
-const cardRadius = 'rounded-3xl';
-const cardPadding = 'p-10';
-const cardTransition = 'transition-all duration-300 ease-in-out';
+// Modern design system
+const modernGradient = 'bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-blue-950/20';
+const glassCard = 'backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20 dark:border-slate-700/50';
+const modernShadow = 'shadow-2xl shadow-blue-500/5 dark:shadow-blue-500/10';
+const modernRadius = 'rounded-2xl';
+const modernPadding = 'p-8';
+const hoverTransform = 'hover:scale-[1.02] transition-all duration-500 ease-out';
+const gradientText = 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent';
 
-const WavePattern = () => (
-  <svg className="absolute inset-0 w-full h-full opacity-5 dark:opacity-10" viewBox="0 0 1000 500" preserveAspectRatio="none">
-    <path d="M0,250 C150,150 350,350 500,250 C650,150 850,350 1000,250 L1000,500 L0,500 Z" fill="currentColor" />
-  </svg>
+const ModernPattern = () => (
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" />
+    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-400/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-500" />
+  </div>
 );
 
-const CirclePattern = () => (
-  <svg className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 opacity-10 dark:opacity-20" viewBox="0 0 200 200">
-    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="5,5" />
-    <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-  </svg>
+const FloatingElements = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <motion.div 
+      animate={{ 
+        y: [-20, 20, -20],
+        rotate: [0, 180, 360],
+        scale: [1, 1.1, 1]
+      }}
+      transition={{ 
+        duration: 8, 
+        repeat: Infinity, 
+        ease: "easeInOut" 
+      }}
+      className="absolute top-8 right-8 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-60"
+    />
+    <motion.div 
+      animate={{ 
+        y: [20, -20, 20],
+        rotate: [360, 180, 0],
+        scale: [1.1, 1, 1.1]
+      }}
+      transition={{ 
+        duration: 6, 
+        repeat: Infinity, 
+        ease: "easeInOut",
+        delay: 2
+      }}
+      className="absolute bottom-8 left-8 w-4 h-4 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full opacity-40"
+    />
+  </div>
 );
 
 const ProfileSkeleton = () => (
-  <div className={`w-full lg:w-2/5 flex flex-col items-center ${cardShadow} ${cardBorder} ${cardRadius} ${cardPadding} bg-white dark:bg-gray-950 relative overflow-hidden`}>
+  <div className={`w-full lg:w-2/5 flex flex-col items-center ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} relative overflow-hidden`}>
     <div className="relative w-40 h-40 mb-6 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse"></div>
     <div className="h-8 w-3/4 mb-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
     <div className="h-6 w-2/3 mb-6 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
@@ -45,7 +75,7 @@ const ProfileSkeleton = () => (
 );
 
 const ActionsSkeleton = () => (
-  <div className={`w-full lg:w-3/5 flex flex-col ${cardShadow} ${cardBorder} ${cardRadius} ${cardPadding} bg-white dark:bg-gray-950 relative overflow-hidden`}>
+  <div className={`w-full lg:w-3/5 flex flex-col ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} relative overflow-hidden`}>
     <div className="h-10 w-1/2 mb-8 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
     <div className="mb-8 p-6 rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse h-24"></div>
     <div className="space-y-4">
@@ -58,26 +88,52 @@ const ActionsSkeleton = () => (
 );
 
 const AccountSettingsPage = () => {
-  const { user, isLoading: authLoading,} = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
+  const { disableAccount } = useDisabledAccounts();
   const router = useRouter();
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isDisabling, setIsDisabling] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleDisableAccount = () => {
-    setShowDisableModal(false);
-    setTimeout(() => {
-      setShowThankYouModal(true);
-    }, 500);
+  const handleDisableAccount = async () => {
+    if (!user) return;
+    
+    setIsDisabling(true);
+    
+    try {
+      const result = await disableAccount(user.userId, user.email, 'Account disabled by user request');
+      
+      if (result.success) {
+        setShowDisableModal(false);
+        setTimeout(() => {
+          setShowThankYouModal(true);
+        }, 500);
+        
+        // Logout the user after a short delay
+        setTimeout(async () => {
+          await logout();
+          router.push('/login?message=Account has been disabled successfully');
+        }, 3000);
+      } else {
+        console.error('Failed to disable account:', result.error);
+        alert('Failed to disable account: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error disabling account:', error);
+      alert('An error occurred while disabling your account. Please try again.');
+    } finally {
+      setIsDisabling(false);
+    }
   };
 
   if (!isClient || authLoading) {
     return (
-      <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 ${bgGradient} relative overflow-hidden`}>
+      <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 ${modernGradient} relative overflow-hidden`}>
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <div className="h-12 w-1/3 mx-auto bg-gray-200 dark:bg-gray-800 rounded animate-pulse mb-4"></div>
@@ -102,7 +158,7 @@ const AccountSettingsPage = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, type: 'spring' }}
-          className={`w-full max-w-md ${bgGradient} ${cardShadow} ${cardBorder} ${cardRadius} ${cardPadding} flex flex-col items-center ${cardTransition} relative z-10 backdrop-blur-sm bg-white/80 dark:bg-gray-900/80`}
+          className={`w-full max-w-md ${glassCard} ${modernShadow} ${modernRadius} ${modernPadding} flex flex-col items-center ${hoverTransform} relative z-10`}
         >
           <motion.div 
             animate={{ rotate: [0, 10, -10, 0] }}
@@ -131,7 +187,7 @@ const AccountSettingsPage = () => {
   }
 
   return (
-    <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 ${bgGradient} relative overflow-hidden`}>
+    <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 ${modernGradient} relative overflow-hidden`}>
       <div className="absolute top-0 left-0 w-full h-full opacity-10 dark:opacity-5">
         <div className="absolute top-0 left-0 w-full h-full bg-[url('/images/dotted-pattern.svg')] bg-repeat opacity-30"></div>
       </div>
@@ -143,12 +199,30 @@ const AccountSettingsPage = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-            Account Settings
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Manage your profile information, security settings, and account preferences
-          </p>
+          <div className="relative">
+            <motion.div
+              animate={{ 
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+              }}
+              transition={{ 
+                duration: 8, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 via-indigo-600 to-blue-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-[length:200%_100%] blur-xl opacity-30 rounded-2xl"
+            />
+            <h1 className={`relative text-5xl md:text-6xl font-black mb-6 ${gradientText} tracking-tight`}>
+              Account Settings
+            </h1>
+          </div>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed"
+          >
+            Customize your experience with advanced settings, security controls, and personalization options
+          </motion.p>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -156,10 +230,10 @@ const AccountSettingsPage = () => {
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, type: 'spring', stiffness: 120 }}
-            className={`w-full lg:w-2/5 flex flex-col items-center ${cardShadow} ${cardBorder} ${cardRadius} ${cardPadding} bg-white dark:bg-gray-950 ${cardTransition} relative overflow-hidden`}
+            className={`w-full lg:w-2/5 flex flex-col items-center ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} ${hoverTransform} relative overflow-hidden`}
           >
-            <WavePattern />
-            <CirclePattern />
+            <ModernPattern />
+            <FloatingElements />
             
             <div className="relative w-40 h-40 mb-6 group">
               {user.profileImage ? (
@@ -179,18 +253,26 @@ const AccountSettingsPage = () => {
             </div>
             
             <div className="text-center mb-6 z-10 relative">
-              <div className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2 tracking-tight flex items-center justify-center gap-3">
-                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {user.firstName} {user.lastName}
+              <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight flex items-center justify-center gap-3">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </motion.div>
+                <span className={gradientText}>{user.firstName} {user.lastName}</span>
               </div>
               
-              <div className="text-lg text-gray-500 dark:text-gray-400 mb-4 flex items-center justify-center gap-3">
-                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                {user.email}
+              <div className="text-lg text-slate-500 dark:text-slate-400 mb-6 flex items-center justify-center gap-3">
+                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <span className="font-medium">{user.email}</span>
               </div>
               
               <div className="flex justify-center gap-3 mb-6">
@@ -247,7 +329,7 @@ const AccountSettingsPage = () => {
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, type: 'spring', stiffness: 120, delay: 0.2 }}
-            className={`w-full lg:w-3/5 flex flex-col ${cardShadow} ${cardBorder} ${cardRadius} ${cardPadding} bg-white dark:bg-gray-950 ${cardTransition} relative overflow-hidden`}
+            className={`w-full lg:w-3/5 flex flex-col ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} ${hoverTransform} relative overflow-hidden`}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full filter blur-3xl opacity-10 dark:opacity-20"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-10 dark:opacity-20"></div>
@@ -275,12 +357,12 @@ const AccountSettingsPage = () => {
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push('/profile')}
-                  className="w-full py-4 cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg flex items-center justify-center gap-3 group"
+                  className="w-full py-5 cursor-pointer bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
                 >
                   <svg className="w-6 h-6 text-white group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -292,7 +374,7 @@ const AccountSettingsPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push('/account-settings/security')}
-                  className="w-full py-4 bg-gradient-to-r cursor-pointer from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg flex items-center justify-center gap-3 group"
+                  className="w-full py-5 bg-gradient-to-r cursor-pointer from-purple-500 via-purple-600 to-pink-600 hover:from-purple-600 hover:via-purple-700 hover:to-pink-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
                 >
                   <svg className="w-6 h-6 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -304,7 +386,7 @@ const AccountSettingsPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push('/privacy')}
-                  className="w-full py-4 bg-gradient-to-r cursor-pointer from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg flex items-center justify-center gap-3 group"
+                  className="w-full py-5 bg-gradient-to-r cursor-pointer from-slate-600 via-slate-700 to-slate-800 hover:from-slate-700 hover:via-slate-800 hover:to-slate-900 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
                 >
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -316,7 +398,7 @@ const AccountSettingsPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowDisableModal(true)}
-                  className="w-full py-4 cursor-pointer bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg flex items-center justify-center gap-3 group mt-8"
+                  className="w-full py-5 cursor-pointer bg-gradient-to-r from-red-500 via-red-600 to-rose-600 hover:from-red-600 hover:via-red-700 hover:to-rose-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group mt-8 relative overflow-hidden border border-red-400/20"
                 >
                   <svg className="w-6 h-6 text-white group-hover:animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -349,10 +431,21 @@ const AccountSettingsPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
-                className="px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg"
+                className="px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 onClick={handleDisableAccount}
+                disabled={isDisabling}
               >
-                Confirm Disable
+                {isDisabling ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Disabling...
+                  </>
+                ) : (
+                  'Confirm Disable'
+                )}
               </button>
               <button
                 className="px-8 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold rounded-xl shadow transition-all duration-300 text-lg"

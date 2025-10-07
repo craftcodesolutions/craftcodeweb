@@ -13,7 +13,13 @@ import EnhancedLoader from '@/app/(dashboard)/(admin)/meeting/_components/Enhanc
 import { isValidMeetingId } from '@/app/(dashboard)/(admin)/meeting/_components/utils/meetingUtils';
 
 const MeetingPage = () => {
-  const { id } = useParams();
+  const params = useParams();
+  const id =
+    typeof params?.id === 'string'
+      ? params.id
+      : Array.isArray(params?.id)
+      ? params.id[0]
+      : undefined;
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { call, isCallLoading, callError } = useGetCallById(id as string);

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import useKeyboardSound from "./hooks/useKeyboardSound";
 import { useChat } from "@/context/ChatContext";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 import Image from "next/image";
@@ -14,8 +15,54 @@ function MessageInput() {
   const [isTyping, setIsTyping] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { sendMessage, isSoundEnabled } = useChat();
+  const { sendMessage, isSoundEnabled, selectedUser } = useChat();
+  const { socket, isSocketConnected } = useAuth();
+
+  // Send typing indicator via Socket.IO
+  const sendTypingIndicator = useCallback((isTyping: boolean) => {
+    if (socket && selectedUser && isSocketConnected) {
+      socket.emit('typing', {
+        receiverId: selectedUser._id,
+        isTyping,
+      });
+    }
+  }, [socket, selectedUser, isSocketConnected]);
+
+  // Handle typing indicator with debounce
+  const handleTypingIndicator = useCallback(() => {
+    if (!selectedUser) return;
+
+    // Send typing start
+    sendTypingIndicator(true);
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set timeout to send typing stop
+    typingTimeoutRef.current = setTimeout(() => {
+      sendTypingIndicator(false);
+    }, 2000); // Stop typing indicator after 2 seconds of inactivity
+  }, [sendTypingIndicator, selectedUser]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      // Send typing stop when component unmounts
+      if (socket && selectedUser) {
+        socket.emit('typing', {
+          receiverId: selectedUser._id,
+          isTyping: false,
+        });
+      }
+    };
+  }, [socket, selectedUser]);
 
   // Enable audio context on first user interaction
   const enableAudio = () => {
@@ -40,6 +87,12 @@ function MessageInput() {
     setText("");
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    
+    // Stop typing indicator when message is sent
+    sendTypingIndicator(false);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +144,8 @@ function MessageInput() {
             value={text}
             onChange={(e) => {
               setText(e.target.value);
+              // Send typing indicator when user types
+              handleTypingIndicator();
             }}
             onKeyDown={(e) => {
               // Enable audio on first interaction

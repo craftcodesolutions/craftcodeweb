@@ -98,7 +98,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
           <Link
             href="/dashboard"
             className={`inline-flex items-center justify-center w-10 h-10 rounded-md transition-all duration-300 ease-in-out
-    ${pathname.includes('/dashboard')
+    ${pathname?.includes('/dashboard')
                 ? 'bg-gradient-to-r from-teal-500 to-emerald-600 shadow-lg text-white'
                 : 'bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:shadow-md'
               }`}
@@ -121,7 +121,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
             <ul className="mt-2">
               {/* Dashboard */}
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('/dashboard') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('/dashboard') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/dashboard"
@@ -131,7 +131,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('/dashboard') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('/dashboard') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -152,7 +152,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('messenger') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('messenger') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/messenger"
@@ -162,7 +162,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('messenger') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('messenger') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -182,7 +182,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('reviews') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('reviews') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/reviews"
@@ -192,7 +192,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('reviews') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('reviews') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -212,7 +212,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('meeting')
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('meeting')
                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
                     : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'
                   }`}
@@ -225,7 +225,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('meeting')
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('meeting')
                               ? 'text-indigo-600'
                               : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
                             }`}
@@ -249,16 +249,16 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
               </li>
 
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('professionals')
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('professionals')
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
                   : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'
-                  } ${pathname.includes('professionals') &&
+                  } ${pathname?.includes('professionals') &&
                   'from-emerald-500/[0.12] dark:from-emerald-500/[0.24] to-emerald-500/[0.04]'
                   }`}
               >
                 <Link
                   href="/professionals"
-                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes('professionals')
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname?.includes('professionals')
                     ? ''
                     : 'hover:text-gray-900 dark:hover:text-white'
                     }`}
@@ -267,7 +267,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('professionals')
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('professionals')
                             ? 'text-indigo-600'
                             : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
                             }`}
@@ -293,7 +293,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
 
 
 
-              <li className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('/deployments') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
+              <li className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('/deployments') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
                 <Link
                   href="/deployments"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
@@ -302,7 +302,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('products') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('products') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -322,7 +322,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
               </li>
 
 
-              <li className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('insights') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
+              <li className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('insights') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
                 <Link
                   href="/insights"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
@@ -331,7 +331,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('blogs') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('blogs') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -350,7 +350,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname.includes('users') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('users') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/users"
@@ -360,7 +360,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     <div className="grow flex items-center">
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
                         <svg
-                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname.includes('users') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
+                          className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('users') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
@@ -381,15 +381,15 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
               </li>
 
 
-              {/* <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${pathname.includes('reviews') && 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'}`}>
+              {/* <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${pathname?.includes('reviews') && 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'}`}>
                 <Link
                   href="/admin/reviews"
-                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes('reviews') ? '' : 'hover:text-gray-900 dark:hover:text-white'}`}
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname?.includes('reviews') ? '' : 'hover:text-gray-900 dark:hover:text-white'}`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="grow flex items-center">
                       <svg
-                        className={`shrink-0 fill-current ${pathname.includes('reviews') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500'}`}
+                        className={`shrink-0 fill-current ${pathname?.includes('reviews') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500'}`}
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"

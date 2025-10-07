@@ -47,7 +47,7 @@ const ConferencePageContent = () => {
 
   // Handle URL parameters for section navigation
   useEffect(() => {
-    const section = searchParams.get('section');
+    const section = searchParams?.get('section');
     if (section && ['overview', 'join', 'schedule', 'upcoming', 'previous'].includes(section)) {
       setActiveSection(section as 'overview' | 'join' | 'schedule' | 'upcoming' | 'previous');
     }

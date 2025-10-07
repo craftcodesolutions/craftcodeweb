@@ -19,7 +19,7 @@ export default function Login() {
   const [success, setSuccess] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
+  const redirectTo = searchParams?.get('redirect') || '/';
   const { login, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
