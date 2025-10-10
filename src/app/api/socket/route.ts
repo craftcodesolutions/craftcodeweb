@@ -15,7 +15,7 @@ import { NextResponse } from 'next/server';
        console.error('❌ Error in /api/socket:', err);
        let message = 'Unknown error';
        if (err && typeof err === 'object' && err !== null && 'message' in err) {
-         message = (err as any).message;
+         message = (err as { message: string }).message;
        }
        return NextResponse.json({ error: `Internal server error: ${message}` }, { status: 500 });
      }

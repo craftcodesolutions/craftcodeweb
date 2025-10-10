@@ -272,8 +272,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       let message = 'Unknown error';
       let stack: unknown = undefined;
       if (error && typeof error === 'object') {
-        message = (error as any).message ?? message;
-        stack = (error as any).stack;
+        message = (error as { message?: string }).message ?? message;
+        stack = (error as { stack?: unknown }).stack;
       }
       console.error(`❌ Socket connection failed: ${message}`, {
         error,

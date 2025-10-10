@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 let io: SocketIOServer | null = null;
-let httpServer: any = null;
+let httpServer: ReturnType<typeof createServer> | null = null;
 let isServerListening = false;
 
 const userConnections = new Map<string, Set<string>>();
@@ -262,7 +262,12 @@ export const initializeSocketIO = (): SocketIOServer => {
           return;
         }
 
-        httpServer.listen(port, () => {
+        if (!httpServer) {
+          console.error('❌ HTTP server is null, cannot listen');
+          return;
+        }
+
+        httpServer!.listen(port, () => {
           isServerListening = true;
           console.log(`✅ Socket.IO HTTP server running on port ${port}`);
         }).on('error', (error: Error & { code?: string }) => {
