@@ -1,10 +1,15 @@
 import { createServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
+// Optional: Uncomment for Redis adapter in production
+// import { createAdapter } from '@socket.io/redis-adapter';
+// import { createClient } from 'redis';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 let io: SocketIOServer | null = null;
+let httpServer: any = null;
+let isServerListening = false;
 
 const userConnections = new Map<string, Set<string>>();
 const socketUsers = new Map<string, string>();
@@ -21,15 +26,24 @@ function parseCookies(header: string | undefined): Record<string, string> {
 
 export const initializeSocketIO = (): SocketIOServer => {
   try {
-    if (io) {
-      console.log('✅ Socket.IO server already initialized');
+    if (io && isServerListening) {
+      console.log('✅ Socket.IO server already initialized and listening');
       return io;
     }
 
-    const httpServer = createServer((req, res) => {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Socket.IO server');
-    });
+    // If we have an existing server but it's not listening, clean it up first
+    if (httpServer && !isServerListening) {
+      console.log('🔄 Cleaning up existing non-listening server...');
+      httpServer.close();
+      httpServer = null;
+    }
+
+    if (!httpServer) {
+      httpServer = createServer((req, res) => {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Socket.IO server');
+      });
+    }
 
     io = new SocketIOServer(httpServer, {
       path: '/api/socket',
@@ -43,7 +57,20 @@ export const initializeSocketIO = (): SocketIOServer => {
       },
       transports: ['websocket', 'polling'],
       allowEIO3: true,
+      pingTimeout: process.env.NODE_ENV === 'production' ? 20000 : 10000,
+      pingInterval: process.env.NODE_ENV === 'production' ? 25000 : 15000,
+      connectTimeout: process.env.NODE_ENV === 'production' ? 30000 : 20000,
     });
+
+    // Optional: Enable Redis adapter for production scaling
+    /*
+    if (process.env.NODE_ENV === 'production') {
+      const pubClient = createClient({ url: 'redis://your-redis-host:6379' });
+      const subClient = pubClient.duplicate();
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log('📡 Redis adapter initialized for Socket.IO');
+    }
+    */
 
     io.use((socket: Socket, next) => {
       try {
@@ -58,7 +85,7 @@ export const initializeSocketIO = (): SocketIOServer => {
         const userId = decoded.userId;
         const userEmail = decoded.email;
 
-        if (!userId) {
+        if (!userId || !userEmail) {
           return next(new Error('Authentication error: Invalid token'));
         }
 
@@ -74,9 +101,9 @@ export const initializeSocketIO = (): SocketIOServer => {
     });
 
     io.on('connection', (socket: Socket) => {
-      const userId = socket.data.userId;
-      const userEmail = socket.data.userEmail;
-      console.log(`Socket connected: ${socket.id} for user ${userEmail} (${userId})`);
+      const userId = socket.data.userId as string;
+      const userEmail = socket.data.userEmail as string;
+      console.log(`✅ Socket connected: ${socket.id} for user ${userEmail} (${userId})`);
 
       if (!userConnections.has(userId)) {
         userConnections.set(userId, new Set());
@@ -90,52 +117,68 @@ export const initializeSocketIO = (): SocketIOServer => {
       console.log(`📊 User ${userId} now has ${userConnectionCount} active connection(s)`);
 
       socket.on('tokenUpdateReceived', (data: { timestamp: string; reason: string }) => {
+        if (!data?.timestamp || !data?.reason) {
+          console.warn(`⚠️ Invalid tokenUpdateReceived data from ${userId}`);
+          return;
+        }
         console.log(`Token update acknowledged by user ${userId} (Socket: ${socket.id}):`, data);
       });
 
       socket.on('statusUpdateReceived', (data: { status: boolean; timestamp: string }) => {
+        if (typeof data?.status !== 'boolean' || !data?.timestamp) {
+          console.warn(`⚠️ Invalid statusUpdateReceived data from ${userId}`);
+          return;
+        }
         console.log(`Status update acknowledged by user ${userId} (Socket: ${socket.id}):`, data);
       });
 
       socket.on('typing', (data: { receiverId: string; isTyping: boolean }) => {
-        if (userId && data.receiverId) {
-          sendToUser(data.receiverId, 'userTyping', {
-            userId: userId,
-            isTyping: data.isTyping,
-            timestamp: new Date().toISOString(),
-          });
-          console.log(`⌨️ Typing indicator: ${userId} -> ${data.receiverId} (${data.isTyping ? 'typing' : 'stopped'})`);
+        if (!userId || !data?.receiverId || typeof data?.isTyping !== 'boolean') {
+          console.warn(`⚠️ Invalid typing event data from ${userId}`);
+          return;
         }
+        sendToUser(data.receiverId, 'userTyping', {
+          userId,
+          isTyping: data.isTyping,
+          timestamp: new Date().toISOString(),
+        });
+        console.log(`⌨️ Typing indicator: ${userId} -> ${data.receiverId} (${data.isTyping ? 'typing' : 'stopped'})`);
       });
 
       socket.on('joinChatRoom', (data: { chatId: string }) => {
-        if (userId && data.chatId) {
-          socket.join(`chat_${data.chatId}`);
-          console.log(`💬 User ${userId} joined chat room: chat_${data.chatId}`);
+        if (!userId || !data?.chatId) {
+          console.warn(`⚠️ Invalid joinChatRoom data from ${userId}`);
+          return;
         }
+        socket.join(`chat_${data.chatId}`);
+        console.log(`💬 User ${userId} joined chat room: chat_${data.chatId}`);
       });
 
       socket.on('leaveChatRoom', (data: { chatId: string }) => {
-        if (userId && data.chatId) {
-          socket.leave(`chat_${data.chatId}`);
-          console.log(`👋 User ${userId} left chat room: chat_${data.chatId}`);
+        if (!userId || !data?.chatId) {
+          console.warn(`⚠️ Invalid leaveChatRoom data from ${userId}`);
+          return;
         }
+        socket.leave(`chat_${data.chatId}`);
+        console.log(`👋 User ${userId} left chat room: chat_${data.chatId}`);
       });
 
       socket.on('messageRead', (data: { messageId: string; senderId: string }) => {
-        if (userId && data.senderId) {
-          sendToUser(data.senderId, 'messageReadReceipt', {
-            messageId: data.messageId,
-            readBy: userId,
-            readAt: new Date().toISOString(),
-          });
-          console.log(`✅ Message read receipt: ${data.messageId} read by ${userId}`);
+        if (!userId || !data?.messageId || !data?.senderId) {
+          console.warn(`⚠️ Invalid messageRead data from ${userId}`);
+          return;
         }
+        sendToUser(data.senderId, 'messageReadReceipt', {
+          messageId: data.messageId,
+          readBy: userId,
+          readAt: new Date().toISOString(),
+        });
+        console.log(`✅ Message read receipt: ${data.messageId} read by ${userId}`);
       });
 
       socket.on('disconnect', (reason: string) => {
         console.log(`🔌 Socket disconnected: ${socket.id}, reason: ${reason}`);
-        
+
         if (userId) {
           const userSockets = userConnections.get(userId);
           if (userSockets) {
@@ -153,23 +196,23 @@ export const initializeSocketIO = (): SocketIOServer => {
         } else {
           console.log(`ℹ️ Unauthenticated socket ${socket.id} disconnected`);
         }
-        
+
         socket.removeAllListeners();
       });
 
       socket.on('test', (data: Record<string, unknown>) => {
         console.log(`🧪 Test event received from user ${userId} (Socket: ${socket.id}):`, data);
-        socket.emit('testResponse', { 
-          message: 'Test successful!', 
-          userId, 
+        socket.emit('testResponse', {
+          message: 'Test successful!',
+          userId,
           socketId: socket.id,
-          timestamp: new Date().toISOString() 
+          timestamp: new Date().toISOString(),
         });
       });
 
       socket.on('error', (error: Error) => {
         console.error(`❌ Socket error for ${socket.id} (User: ${userId || 'unauthenticated'}):`, error);
-        
+
         if (userId) {
           const userSockets = userConnections.get(userId);
           if (userSockets) {
@@ -193,7 +236,7 @@ export const initializeSocketIO = (): SocketIOServer => {
         } else {
           clearInterval(pingInterval);
         }
-      }, 30000);
+      }, process.env.NODE_ENV === 'production' ? 25000 : 15000);
 
       socket.on('pong', () => {
         if (userId) {
@@ -206,29 +249,42 @@ export const initializeSocketIO = (): SocketIOServer => {
       });
     });
 
-    const basePort = parseInt(process.env.SOCKET_PORT || '3001');
-    let port = basePort;
-    const maxPortRetries = 5;
+    // Only start listening if the server is not already listening
+    if (!isServerListening) {
+      const basePort = parseInt(process.env.SOCKET_PORT || '3001');
+      let port = basePort;
+      const maxPortRetries = 5;
 
-    const tryListen = (attempt: number = 0) => {
-      httpServer.listen(port, () => {
-        console.log(`✅ Socket.IO HTTP server running on port ${port}`);
-      }).on('error', (error: Error & { code?: string }) => {
-        if (error.code === 'EADDRINUSE' && attempt < maxPortRetries) {
-          console.warn(`⚠️ Port ${port} in use, trying port ${port + 1}`);
-          port += 1;
-          tryListen(attempt + 1);
-        } else {
-          console.error('❌ Failed to start Socket.IO server:', {
-            message: error.message,
-            stack: error.stack,
-          });
-          throw error;
+      const tryListen = (attempt: number = 0) => {
+        // Check if server is already listening before attempting to listen
+        if (isServerListening) {
+          console.log('✅ Server is already listening, skipping listen attempt');
+          return;
         }
-      });
-    };
 
-    tryListen();
+        httpServer.listen(port, () => {
+          isServerListening = true;
+          console.log(`✅ Socket.IO HTTP server running on port ${port}`);
+        }).on('error', (error: Error & { code?: string }) => {
+          if (error.code === 'EADDRINUSE' && attempt < maxPortRetries) {
+            console.warn(`⚠️ Port ${port} in use, trying port ${port + 1}`);
+            port += 1;
+            setTimeout(() => tryListen(attempt + 1), 100); // Add small delay to prevent rapid retries
+          } else {
+            console.error('❌ Failed to start Socket.IO server:', {
+              message: error.message,
+              stack: error.stack,
+            });
+            isServerListening = false;
+            throw error;
+          }
+        });
+      };
+
+      tryListen();
+    } else {
+      console.log('✅ HTTP server already listening, skipping listen setup');
+    }
 
     console.log('✅ Socket.IO server initialized successfully');
     return io;
@@ -251,16 +307,26 @@ export const getSocketIO = (): SocketIOServer | null => {
   return io;
 };
 
+export const getServerStatus = () => {
+  return {
+    isInitialized: !!io,
+    isListening: isServerListening,
+    hasHttpServer: !!httpServer,
+    connectedUsers: userConnections.size,
+    totalConnections: Array.from(userConnections.values()).reduce((total, connections) => total + connections.size, 0)
+  };
+};
+
 export const emitTokenUpdate = (userId: string, newToken: string) => {
   if (io) {
     const room = `user_${userId}`;
     const connectedSockets = userConnections.get(userId);
-    
+
     if (connectedSockets && connectedSockets.size > 0) {
-      io.to(room).emit('tokenUpdated', { 
+      io.to(room).emit('tokenUpdated', {
         newToken,
         timestamp: new Date().toISOString(),
-        reason: 'User data updated by admin'
+        reason: 'User data updated by admin',
       });
       console.log(`✅ Token update emitted to user ${userId} (${connectedSockets.size} devices)`);
     } else {
@@ -275,12 +341,12 @@ export const emitUserStatusChange = (userId: string, status: boolean) => {
   if (io) {
     const room = `user_${userId}`;
     const connectedSockets = userConnections.get(userId);
-    
+
     if (connectedSockets && connectedSockets.size > 0) {
-      io.to(room).emit('userStatusChanged', { 
+      io.to(room).emit('userStatusChanged', {
         status,
         timestamp: new Date().toISOString(),
-        reason: status ? 'Account activated by admin' : 'Account deactivated by admin'
+        reason: status ? 'Account activated by admin' : 'Account deactivated by admin',
       });
       console.log(`✅ User status change emitted to user ${userId}: ${status} (${connectedSockets.size} devices)`);
     } else {
@@ -339,7 +405,7 @@ export const notifyNewMessage = (userId: string, messageData: Record<string, unk
   if (io) {
     const room = `user_${userId}`;
     const connectedSockets = userConnections.get(userId);
-    
+
     if (connectedSockets && connectedSockets.size > 0) {
       io.to(room).emit('newMessage', {
         ...messageData,
@@ -380,7 +446,7 @@ export const isUserOnline = (userId: string): boolean => {
 
 export const getOnlineUsersStatus = (userIds: string[]): { [userId: string]: boolean } => {
   const status: { [userId: string]: boolean } = {};
-  userIds.forEach(userId => {
+  userIds.forEach((userId) => {
     status[userId] = userConnections.has(userId);
   });
   return status;
@@ -391,25 +457,25 @@ export const forceDisconnectUser = (userId: string, reason: string = 'User logge
     const userSockets = userConnections.get(userId);
     if (userSockets && userSockets.size > 0) {
       console.log(`🚫 Force disconnecting ${userSockets.size} socket(s) for user ${userId}`);
-      
+
       io.to(`user_${userId}`).emit('force_logout', {
         reason,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
-      userSockets.forEach(socketId => {
+
+      userSockets.forEach((socketId) => {
         const socket = io!.sockets.sockets.get(socketId);
         if (socket) {
           socket.disconnect(true);
           console.log(`🔌 Disconnected socket ${socketId} for user ${userId}`);
         }
       });
-      
+
       userConnections.delete(userId);
-      userSockets.forEach(socketId => {
+      userSockets.forEach((socketId) => {
         socketUsers.delete(socketId);
       });
-      
+
       emitOnlineUsers();
       console.log(`✅ Successfully disconnected all sessions for user ${userId}`);
     } else {
@@ -423,17 +489,29 @@ export const forceDisconnectUser = (userId: string, reason: string = 'User logge
 export const cleanupSocketIO = () => {
   if (io) {
     console.log('🔄 Cleaning up Socket.IO connections...');
-    
+
     io.emit('server_shutdown', {
       message: 'Server is shutting down',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     setTimeout(() => {
       userConnections.clear();
       socketUsers.clear();
+      
+      // Close Socket.IO server
       io!.close();
       io = null;
+      
+      // Close HTTP server and reset state
+      if (httpServer) {
+        httpServer.close(() => {
+          console.log('✅ HTTP server closed');
+        });
+        httpServer = null;
+      }
+      
+      isServerListening = false;
       console.log('✅ Socket.IO cleanup completed');
     }, 1000);
   }

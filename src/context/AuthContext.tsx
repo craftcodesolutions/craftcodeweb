@@ -214,13 +214,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       newSocket.on('newMessage', (msg: { from: string; content: string; timestamp: string; notification: boolean }) => {
         console.log(`📩 New message received:`, msg);
         if (msg.notification) {
-          // Show browser notification instead of toast
           if (document.hidden || !document.hasFocus()) {
             showMessageNotification(msg.from, msg.content, () => {
-              // Focus the window when notification is clicked
               window.focus();
               if (document.hidden) {
-                // Try to bring the tab to focus
                 if ('focus' in window) {
                   window.focus();
                 }
@@ -275,9 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       let message = 'Unknown error';
       let stack: unknown = undefined;
       if (error && typeof error === 'object') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         message = (error as any).message ?? message;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stack = (error as any).stack;
       }
       console.error(`❌ Socket connection failed: ${message}`, {
@@ -338,7 +333,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkAuth();
     
-    // Initialize notifications when AuthContext loads (check support only)
     initializeNotifications().then(success => {
       if (success) {
         console.log('✅ Notification service initialized in AuthContext');
