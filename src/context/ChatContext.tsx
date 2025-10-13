@@ -219,7 +219,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        let errorText = `Failed to send message (HTTP ${response.status})`;
+        try {
+          const data = await response.json();
+          if (data?.error || data?.details) {
+            errorText = `${data.error || 'Error'}: ${data.details || ''}`.trim();
+          }
+        } catch {}
+        console.error('Send message API error:', errorText);
+        throw new Error(errorText);
       }
 
       const sentMessage: Message = await response.json();
