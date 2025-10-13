@@ -31,7 +31,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const client = new MongoClient(MONGODB_URI);
+  let client: MongoClient | null = null;
   try {
     // Verify authentication
     const authResult = await verifyAuth(request);
@@ -40,38 +40,46 @@ export async function POST(
     }
     const { userId: receiverId } = await params;
 
-    // Parse request body
-    const { text, image } = await request.json();
-
-    // Validation
-    if (!text && !image) {
-      return NextResponse.json({ message: 'Text or image is required.' }, { status: 400 });
+    // Validate receiverId
+    if (!receiverId) {
+      return NextResponse.json({ error: 'Receiver ID is required' }, { status: 400 });
     }
-
     if (!ObjectId.isValid(receiverId)) {
-      return NextResponse.json({ message: 'Invalid receiver ID.' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid receiver ID format' }, { status: 400 });
+    }
+    if (authResult.userId === receiverId) {
+      return NextResponse.json({ error: 'Cannot send messages to yourself' }, { status: 400 });
     }
 
-    if (authResult.userId === receiverId) {
-      return NextResponse.json({ message: 'Cannot send messages to yourself.' }, { status: 400 });
+    // Parse request body
+    const body = await request.json().catch(() => ({}));
+    const { text, image } = body;
+
+    // Validate payload
+    if (!text && !image) {
+      return NextResponse.json({ error: 'Text or image is required' }, { status: 400 });
     }
+
+    // Initialize MongoDB client
+    client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    const db = client.db(DB_NAME);
 
     // Check if receiver exists
     const receiverExists = await checkUserExists(receiverId);
     if (!receiverExists) {
-      return NextResponse.json({ message: 'Receiver not found.' }, { status: 404 });
+      return NextResponse.json({ error: 'Receiver not found' }, { status: 404 });
     }
 
     // Check for duplicate message
-    await client.connect();
-    const db = client.db(DB_NAME);
     const messagesCollection = db.collection('messages');
+    const fiveSecondsAgo = new Date(Date.now() - 5000);
     const existingMessage = await messagesCollection.findOne({
       senderId: new ObjectId(authResult.userId),
       receiverId: new ObjectId(receiverId),
       text: text || undefined,
       image: image ? undefined : { $exists: false },
-      createdAt: { $gte: new Date(Date.now() - 5000) },
+      createdAt: { $gte: fiveSecondsAgo },
     });
 
     if (existingMessage) {
@@ -86,7 +94,7 @@ export async function POST(
         _id: existingMessage._id.toString(),
         senderId: existingMessage.senderId.toString(),
         receiverId: existingMessage.receiverId.toString(),
-      });
+      }, { status: 200 });
     }
 
     let imageUrl: string | undefined;
@@ -98,11 +106,12 @@ export async function POST(
         });
         imageUrl = uploadResponse.secure_url;
 
+        // Check for duplicate image
         const imageDuplicate = await messagesCollection.findOne({
           senderId: new ObjectId(authResult.userId),
           receiverId: new ObjectId(receiverId),
           image: imageUrl,
-          createdAt: { $gte: new Date(Date.now() - 5000) },
+          createdAt: { $gte: fiveSecondsAgo },
         });
 
         if (imageDuplicate) {
@@ -116,67 +125,74 @@ export async function POST(
             _id: imageDuplicate._id.toString(),
             senderId: imageDuplicate.senderId.toString(),
             receiverId: imageDuplicate.receiverId.toString(),
-          });
+          }, { status: 200 });
         }
       } catch (uploadError) {
-        console.error('Error uploading image to Cloudinary:', uploadError);
-        return NextResponse.json({ message: 'Failed to upload image.' }, { status: 500 });
+        console.error('Error uploading image to Cloudinary:', {
+          error: uploadError instanceof Error ? uploadError.message : String(uploadError),
+          stack: uploadError instanceof Error ? uploadError.stack : undefined,
+        });
+        return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
       }
     }
 
     // Create message using the service
     const savedMessage: Message = await createMessage({
       senderId: authResult.userId,
-      receiverId: receiverId,
+      receiverId,
       text,
       image: imageUrl,
     });
 
     // Real-time Socket.IO integration
     let io = getSocketIO();
-    
     if (!io) {
-      console.warn('⚠️ Socket.IO server not initialized, attempting to initialize...');
+      console.warn('Socket.IO server not initialized, attempting to initialize...');
       try {
-        const initResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/socket`);
+        const initResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/socket`, {
+          method: 'GET',
+        });
         if (initResponse.ok) {
-          console.log('✅ Socket.IO server initialization attempted');
+          console.log('Socket.IO server initialization attempted');
           io = getSocketIO();
+        } else {
+          console.warn('Failed to initialize Socket.IO server:', initResponse.status);
         }
       } catch (error) {
-        console.error('❌ Failed to initialize Socket.IO server:', error);
+        console.error('Failed to initialize Socket.IO server:', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
       }
     }
-    
+
     if (io) {
-      console.log(`🚀 Attempting to send real-time message from ${authResult.userId} to ${receiverId}`);
-      
       const messageData: MessageResponse = {
         ...savedMessage,
+        _id: savedMessage._id.toString(),
         senderId: savedMessage.senderId.toString(),
         receiverId: savedMessage.receiverId.toString(),
         timestamp: new Date().toISOString(),
       };
 
-      // Send real-time message to receiver
+      // Send real-time message to receiver and sender
       sendToUser(receiverId, 'newMessage', { ...messageData });
-
-      // Also send to sender for multi-device sync
       sendToUser(authResult.userId, 'messageSent', { ...messageData });
 
-      console.log(`📨 Real-time message broadcasted: ${authResult.userId} -> ${receiverId}`);
-      console.log('📋 Message data:', { 
-        messageId: savedMessage._id, 
-        text: savedMessage.text?.substring(0, 50) + '...',
+      console.log('Real-time message broadcasted:', {
+        messageId: savedMessage._id,
+        text: savedMessage.text?.substring(0, 50),
         senderId: savedMessage.senderId.toString(),
         receiverId: savedMessage.receiverId.toString(),
       });
     } else {
-      console.warn('⚠️ Socket.IO server still not available - message saved to database only');
+      console.warn('Socket.IO server unavailable - message saved to database only');
     }
-    
+
+    // Return response
     return NextResponse.json({
       ...savedMessage,
+      _id: savedMessage._id.toString(),
       senderId: savedMessage.senderId.toString(),
       receiverId: savedMessage.receiverId.toString(),
     }, { status: 201 });
@@ -184,9 +200,13 @@ export async function POST(
     console.error('Error in sendMessage:', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      userId: (await params).userId,
+      authUserId: (await verifyAuth(request)).userId,
     });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send message', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   } finally {
-    await client.close();
+    if (client) {
+      await client.close().catch((err) => console.error('Error closing MongoDB client:', err));
+    }
   }
 }

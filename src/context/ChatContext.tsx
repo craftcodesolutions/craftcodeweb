@@ -65,8 +65,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return false;
   });
 
-  // const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com'; // Removed - not used
-
   useEffect(() => {
     console.log('📨 Messenger opened - initializing socket connection...');
     if (authUser && !isSocketConnected) {
@@ -88,7 +86,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch contacts');
+        throw new Error(`Failed to fetch contacts: ${response.status}`);
       }
 
       const contacts: Contact[] = await response.json();
@@ -126,7 +124,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch contacts');
+        throw new Error(`Failed to fetch contacts: ${response.status}`);
       }
 
       const data = await response.json();
@@ -149,7 +147,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch chats');
+        throw new Error(`Failed to fetch chats: ${response.status}`);
       }
 
       const data = await response.json();
@@ -171,7 +169,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch messages');
+        throw new Error(`Failed to fetch messages: ${response.status}`);
       }
 
       const data: MessageType[] = await response.json();
@@ -187,7 +185,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const sendMessage = async (messageData: { text?: string; image?: string }) => {
+  const sendMessage = async (messageData: { text?: string; image?: string }, retries = 3) => {
     if (!selectedUser || !authUser) {
       console.warn('Cannot send message: Missing selectedUser or authUser');
       return;
@@ -210,47 +208,63 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return [...filteredMessages, optimisticMessage];
     });
 
-    try {
-      const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messageData),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      const sentMessage: Message = await response.json();
-
-      setMessages((prevMessages) => {
-        const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
-        const messageExists = filteredMessages.some((msg) => msg._id === sentMessage._id);
-        if (messageExists) {
-          console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
-          return filteredMessages;
-        }
-        return [...filteredMessages, sentMessage];
-      });
-
-      if (isSoundEnabled && typeof Audio !== 'undefined') {
-        const notificationSound = new Audio('/sounds/notification.mp3');
-        notificationSound.currentTime = 0;
-        notificationSound.play().catch((e) => console.log('Audio play failed:', e));
-      }
-
-      if (document.hidden || !document.hasFocus()) {
-        const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email);
-        const messageText = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
-        debouncedShowSentNotification(receiverName, messageText, () => {
-          window.focus();
-          setSelectedUser(selectedUser);
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(messageData),
+          credentials: 'include',
         });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.details || `Failed to send message: ${response.status}`);
+        }
+
+        const sentMessage: Message = await response.json();
+
+        setMessages((prevMessages) => {
+          const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
+          const messageExists = filteredMessages.some((msg) => msg._id === sentMessage._id);
+          if (messageExists) {
+            console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+            return filteredMessages;
+          }
+          return [...filteredMessages, sentMessage];
+        });
+
+        if (isSoundEnabled && typeof Audio !== 'undefined') {
+          const notificationSound = new Audio('/sounds/notification.mp3');
+          notificationSound.currentTime = 0;
+          notificationSound.play().catch((e) => console.log('Audio play failed:', e));
+        }
+
+        if (document.hidden || !document.hasFocus()) {
+          const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email);
+          const messageText = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
+          debouncedShowSentNotification(receiverName, messageText, () => {
+            window.focus();
+            setSelectedUser(selectedUser);
+          });
+        }
+        return; // Success, exit the retry loop
+      } catch (error) {
+        console.error(`Send message attempt ${attempt} failed:`, {
+          error: error instanceof Error ? error.message : String(error),
+          userId: selectedUser._id,
+        });
+        if (attempt === retries) {
+          setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
+          console.error('Send message failed after retries:', error);
+          // Optionally notify the user
+          if (typeof window !== 'undefined') {
+            alert('Failed to send message after multiple attempts. Please try again later.');
+          }
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        }
       }
-    } catch (error) {
-      setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
-      console.error('Send message error:', error);
     }
   };
 
@@ -345,39 +359,35 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Check if message is to selected user
       if (!selectedUser || sentMessage.receiverId !== selectedUser._id) {
         console.log('Message sent confirmation not for selected user');
         return;
       }
 
-      const isMessageToSelectedUser = selectedUser && sentMessage.receiverId === selectedUser._id;
-      if (isMessageToSelectedUser) {
-        setMessages((prevMessages) => {
-          const messageExists = prevMessages.some((msg) => msg._id === sentMessage._id);
-          if (messageExists) {
-            console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
-            return prevMessages;
+      setMessages((prevMessages) => {
+        const messageExists = prevMessages.some((msg) => msg._id === sentMessage._id);
+        if (messageExists) {
+          console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+          return prevMessages;
+        }
+        return [...prevMessages, sentMessage];
+      });
+
+      setChats((prevChats) => {
+        const updatedChats = prevChats.map((chat) => {
+          const otherParticipant = chat.participants?.[0] || chat;
+          if (otherParticipant._id === selectedUser._id) {
+            return {
+              ...chat,
+              lastMessage: sentMessage,
+              updatedAt: new Date().toISOString(),
+            };
           }
-          return [...prevMessages, sentMessage];
+          return chat;
         });
 
-        setChats((prevChats) => {
-          const updatedChats = prevChats.map((chat) => {
-            const otherParticipant = chat.participants?.[0] || chat;
-            if (otherParticipant._id === selectedUser._id) {
-              return {
-                ...chat,
-                lastMessage: sentMessage,
-                updatedAt: new Date().toISOString(),
-              };
-            }
-            return chat;
-          });
-
-          return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        });
-      }
+        return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      });
     });
   }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification]);
 
