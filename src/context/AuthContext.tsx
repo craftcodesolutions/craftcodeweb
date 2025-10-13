@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     : '/';
 
     const SOCKET_URL = process.env.SOCKET_URL || 
-    (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://your-service-name.onrender.com');
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://server-wp4r.onrender.com');
 
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);

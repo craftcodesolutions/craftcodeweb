@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { UserStatusChangeData } from '../types/socket';
 
 const SOCKET_URL = process.env.SOCKET_URL || 
-  (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://your-service-name.onrender.com');
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://server-wp4r.onrender.com');
 const MAX_RECONNECT_ATTEMPTS = 3;
 const RECONNECT_DELAY = 5000; // 5 seconds
 
