@@ -2,21 +2,10 @@
 'use client';
 
 import * as React from 'react';
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { Message as MessageType } from '@/types/Message';
-import {
-  showMessageNotification,
-  showSentMessageNotification,
-} from '@/lib/notificationService';
+import { showMessageNotification, showSentMessageNotification } from '@/lib/notificationService';
 import { debounce } from 'lodash';
 import { Contact } from '@/lib/contacts';
 
@@ -75,9 +64,196 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
     return false;
   });
-  const messagesSubscribedRef = useRef(false);
 
-  // ------------------ Notifications ------------------
+  // const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com'; // Removed - not used
+
+  useEffect(() => {
+    console.log('📨 Messenger opened - initializing socket connection...');
+    if (authUser && !isSocketConnected) {
+      connectSocket();
+    }
+  }, [authUser, connectSocket, isSocketConnected]);
+  useEffect(() => {
+    setSelectedUser(null);
+    setMessages([]);
+  }, [authUser]);
+
+  const initializeTargetUser = useCallback(async (email: string): Promise<Contact | null> => {
+    console.log('🔍 Initializing target user:', email);
+    try {
+      const response = await fetch('/api/messages/contacts', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contacts');
+      }
+
+      const contacts: Contact[] = await response.json();
+      const targetUser = contacts.find((contact) => contact.email.toLowerCase() === email.toLowerCase());
+
+      if (!targetUser) {
+        console.error(`Target user with email ${email} not found in contacts`);
+        return null;
+      }
+
+      setSelectedUser(targetUser);
+      console.log('✅ Target user set:', { _id: targetUser._id, email: targetUser.email });
+      return targetUser;
+    } catch (error) {
+      console.error('Initialize target user error:', error);
+      return null;
+    }
+  }, [authUser]);
+
+  const toggleSound = () => {
+    const newSoundState = !isSoundEnabled;
+    setIsSoundEnabled(newSoundState);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('isSoundEnabled', JSON.stringify(newSoundState));
+    }
+  };
+
+  const getAllContacts = useCallback(async () => {
+    setIsUsersLoading(true);
+    try {
+      const response = await fetch('/api/messages/contacts', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contacts');
+      }
+
+      const data = await response.json();
+      setAllContacts(data);
+      console.log(`📋 Fetched ${data.length} contacts`);
+    } catch (error) {
+      console.error('Get contacts error:', error);
+    } finally {
+      setIsUsersLoading(false);
+    }
+  }, []);
+
+  const getMyChatPartners = useCallback(async () => {
+    setIsUsersLoading(true);
+    try {
+      const response = await fetch('/api/messages/chats', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch chats');
+      }
+
+      const data = await response.json();
+      setChats(data);
+    } catch (error) {
+      console.error('Get chat partners error:', error);
+    } finally {
+      setIsUsersLoading(false);
+    }
+  }, []);
+
+  const getMessagesByUserId = useCallback(async (userId: string) => {
+    setIsMessagesLoading(true);
+    try {
+      const response = await fetch(`/api/messages/${userId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+
+      const data: MessageType[] = await response.json();
+      const uniqueMessages = Array.from(
+        new Map(data.map((msg) => [msg._id, msg])).values()
+      ) as Message[];
+      setMessages(uniqueMessages);
+      console.log(`📬 Fetched ${uniqueMessages.length} unique messages for user ${userId}`);
+    } catch (error) {
+      console.error('Get messages error:', error);
+    } finally {
+      setIsMessagesLoading(false);
+    }
+  }, []);
+
+  const sendMessage = async (messageData: { text?: string; image?: string }) => {
+    if (!selectedUser || !authUser) {
+      console.warn('Cannot send message: Missing selectedUser or authUser');
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2)}`;
+
+    const optimisticMessage: Message = {
+      _id: tempId,
+      senderId: authUser.userId,
+      receiverId: selectedUser._id,
+      text: messageData.text,
+      image: messageData.image,
+      createdAt: new Date(),
+      isOptimistic: true,
+    };
+
+    setMessages((prevMessages) => {
+      const filteredMessages = prevMessages.filter((msg) => !msg.isOptimistic || msg._id !== tempId);
+      return [...filteredMessages, optimisticMessage];
+    });
+
+    try {
+      const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messageData),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      const sentMessage: Message = await response.json();
+
+      setMessages((prevMessages) => {
+        const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
+        const messageExists = filteredMessages.some((msg) => msg._id === sentMessage._id);
+        if (messageExists) {
+          console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+          return filteredMessages;
+        }
+        return [...filteredMessages, sentMessage];
+      });
+
+      if (isSoundEnabled && typeof Audio !== 'undefined') {
+        const notificationSound = new Audio('/sounds/notification.mp3');
+        notificationSound.currentTime = 0;
+        notificationSound.play().catch((e) => console.log('Audio play failed:', e));
+      }
+
+      if (document.hidden || !document.hasFocus()) {
+        const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email);
+        const messageText = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
+        debouncedShowSentNotification(receiverName, messageText, () => {
+          window.focus();
+          setSelectedUser(selectedUser);
+        });
+      }
+    } catch (error) {
+      setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
+      console.error('Send message error:', error);
+    }
+  };
+
   const debouncedShowNotification = useCallback(
     debounce((senderName: string, messageText: string, onClick: () => void) => {
       showMessageNotification(senderName, messageText, onClick);
@@ -92,61 +268,125 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  // ------------------ Socket Handling ------------------
   const subscribeToMessages = useCallback(() => {
-    if (!socket || !isSocketConnected || !authUser) return;
-    if (messagesSubscribedRef.current) return;
-    console.log('📡 Subscribing to messages for user:', authUser.email);
-    const handleMessage = (msg: Message) => {
-      if (!msg._id || !selectedUser) return;
-      const isRelevant = msg.senderId === selectedUser._id || msg.receiverId === selectedUser._id;
-      if (!isRelevant) return;
-      // Update messages
-      setMessages((prev) => {
-        if (prev.some((m) => m._id === msg._id)) return prev;
-        return [...prev, msg];
+    if (!socket || !isSocketConnected) {
+      console.log('⚠️ Cannot subscribe to messages:', {
+        socket: !!socket,
+        isSocketConnected,
       });
-      // Update chats
-      setChats((prevChats) =>
-        prevChats
-          .map((chat) => {
-            const other = chat.participants?.[0] || chat;
-            if (other._id === selectedUser._id) {
-              return { ...chat, lastMessage: msg, updatedAt: new Date().toISOString() };
+      return;
+    }
+
+    console.log('📡 Subscribing to messages for user:', authUser?.email);
+
+    socket.on('newMessage', (newMessage: Message) => {
+      console.log('📨 Received new message:', newMessage);
+
+      if (!newMessage._id) {
+        console.warn('Received message without _id, skipping:', newMessage);
+        return;
+      }
+
+      const isMessageForSelectedUser = selectedUser && newMessage.senderId === selectedUser._id;
+
+      if (!isMessageForSelectedUser) {
+        console.log('Message not for selected user:', newMessage.senderId);
+        return;
+      }
+
+      if (isMessageForSelectedUser) {
+        setMessages((prevMessages) => {
+          const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
+          if (messageExists) {
+            console.warn(`Message with _id ${newMessage._id} already exists, skipping`, newMessage);
+            return prevMessages;
+          }
+          return [...prevMessages, newMessage];
+        });
+
+        setChats((prevChats) => {
+          const updatedChats = prevChats.map((chat) => {
+            const otherParticipant = chat.participants?.[0] || chat;
+            if (otherParticipant._id === selectedUser._id) {
+              return {
+                ...chat,
+                lastMessage: newMessage,
+                updatedAt: new Date().toISOString(),
+              };
             }
             return chat;
-          })
-          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      );
-      // Sound
-      if (isSoundEnabled && typeof Audio !== 'undefined') {
-        const sound = new Audio('/sounds/notification.mp3');
-        sound.play().catch(() => {});
-      }
-      // Browser notifications
-      if (document.hidden || !document.hasFocus()) {
-        const name = selectedUser.isAdmin
-          ? 'Support'
-          : selectedUser.firstName || selectedUser.email;
-        const text = msg.text || (msg.image ? 'Sent an image' : 'New message');
-        debouncedShowNotification(name, text, () => {
-          window.focus();
-          setSelectedUser(selectedUser);
+          });
+
+          return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         });
       }
-    };
-    socket.on('newMessage', handleMessage);
-    socket.on('messageSent', handleMessage);
-    messagesSubscribedRef.current = true;
-  }, [socket, isSocketConnected, selectedUser, isSoundEnabled, debouncedShowNotification, authUser]);
+
+      if (isSoundEnabled && typeof Audio !== 'undefined') {
+        const notificationSound = new Audio('/sounds/notification.mp3');
+        notificationSound.currentTime = 0;
+        notificationSound.play().catch((e) => console.log('Audio play failed:', e));
+      }
+
+      if (document.hidden || !document.hasFocus()) {
+        const senderName = selectedUser?.isAdmin ? 'Support' : (selectedUser?.firstName || selectedUser?.email || 'Unknown');
+        const messageText = newMessage.text || (newMessage.image ? 'Sent an image' : 'New message');
+        debouncedShowNotification(senderName, messageText, () => {
+          window.focus();
+          if (selectedUser) setSelectedUser(selectedUser);
+        });
+      }
+    });
+
+    socket.on('messageSent', (sentMessage: Message) => {
+      console.log('📤 Received message sent confirmation:', sentMessage);
+
+      if (!sentMessage._id) {
+        console.warn('Received messageSent without _id, skipping:', sentMessage);
+        return;
+      }
+
+      // Check if message is to selected user
+      if (!selectedUser || sentMessage.receiverId !== selectedUser._id) {
+        console.log('Message sent confirmation not for selected user');
+        return;
+      }
+
+      const isMessageToSelectedUser = selectedUser && sentMessage.receiverId === selectedUser._id;
+      if (isMessageToSelectedUser) {
+        setMessages((prevMessages) => {
+          const messageExists = prevMessages.some((msg) => msg._id === sentMessage._id);
+          if (messageExists) {
+            console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+            return prevMessages;
+          }
+          return [...prevMessages, sentMessage];
+        });
+
+        setChats((prevChats) => {
+          const updatedChats = prevChats.map((chat) => {
+            const otherParticipant = chat.participants?.[0] || chat;
+            if (otherParticipant._id === selectedUser._id) {
+              return {
+                ...chat,
+                lastMessage: sentMessage,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return chat;
+          });
+
+          return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
+      }
+    });
+  }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification]);
 
   const unsubscribeFromMessages = useCallback(() => {
     if (!socket) return;
-    socket.removeAllListeners('newMessage');
-    socket.removeAllListeners('messageSent');
-    socket.removeAllListeners('userTyping');
-    socket.removeAllListeners('userOnlineStatus');
-    messagesSubscribedRef.current = false;
+    socket.off('newMessage');
+    socket.off('messageSent');
+    socket.off('userTyping');
+    socket.off('userOnlineStatus');
     console.log('📴 Unsubscribed from socket events');
   }, [socket]);
 
@@ -154,168 +394,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (socket && isSocketConnected) {
       subscribeToMessages();
     }
-    return () => unsubscribeFromMessages();
+
+    return () => {
+      unsubscribeFromMessages();
+    };
   }, [socket, isSocketConnected, subscribeToMessages, unsubscribeFromMessages]);
 
-  // ------------------ Auth & Initialization ------------------
   useEffect(() => {
-    console.log('📨 Messenger opened - initializing socket connection...');
-    if (authUser && !isSocketConnected) connectSocket();
-  }, [authUser, connectSocket, isSocketConnected]);
-
-  useEffect(() => {
-    setSelectedUser(null);
-    setMessages([]);
-  }, [authUser]);
-
-  const initializeTargetUser = useCallback(
-    async (email: string): Promise<Contact | null> => {
-      console.log('🔍 Initializing target user:', email);
-      try {
-        const res = await fetch('/api/messages/contacts', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('Failed to fetch contacts');
-        const contacts: Contact[] = await res.json();
-        const targetUser = contacts.find(
-          (c) => c.email.toLowerCase() === email.toLowerCase()
-        );
-        if (!targetUser) {
-          console.error(`Target user with email ${email} not found in contacts`);
-          return null;
-        }
-        setSelectedUser(targetUser);
-        console.log('✅ Target user set:', { _id: targetUser._id, email: targetUser.email });
-        return targetUser;
-      } catch (error) {
-        console.error('Initialize target user error:', error);
-        return null;
-      }
-    },
-    [authUser]
-  );
-
-  // ------------------ Contacts & Chats ------------------
-  const getAllContacts = useCallback(async () => {
-    setIsUsersLoading(true);
-    try {
-      const res = await fetch('/api/messages/contacts', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to fetch contacts');
-      const data: Contact[] = await res.json();
-      setAllContacts(data);
-      console.log(`📋 Fetched ${data.length} contacts`);
-    } catch (error) {
-      console.error('Get contacts error:', error);
-    } finally {
-      setIsUsersLoading(false);
+    if (authUser) {
+      getAllContacts();
     }
-  }, []);
-
-  const getMyChatPartners = useCallback(async () => {
-    setIsUsersLoading(true);
-    try {
-      const res = await fetch('/api/messages/chats', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to fetch chats');
-      const data: Chat[] = await res.json();
-      setChats(data);
-    } catch (error) {
-      console.error('Get chat partners error:', error);
-    } finally {
-      setIsUsersLoading(false);
-    }
-  }, []);
-
-  const getMessagesByUserId = useCallback(async (userId: string) => {
-    setIsMessagesLoading(true);
-    try {
-      const res = await fetch(`/api/messages/${userId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to fetch messages');
-      const data: MessageType[] = await res.json();
-      const uniqueMessages = Array.from(
-        new Map(data.map((msg) => [msg._id, msg])).values()
-      ) as Message[];
-      setMessages(uniqueMessages);
-      console.log(`📬 Fetched ${uniqueMessages.length} messages for user ${userId}`);
-    } catch (error) {
-      console.error('Get messages error:', error);
-    } finally {
-      setIsMessagesLoading(false);
-    }
-  }, []);
-
-  // ------------------ Send Message ------------------
-  const sendMessage = async (messageData: { text?: string; image?: string }) => {
-    if (!selectedUser || !authUser) {
-      console.warn('Cannot send message: Missing selectedUser or authUser');
-      return;
-    }
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2)}`;
-    const optimistic: Message = {
-      _id: tempId,
-      senderId: authUser.userId,
-      receiverId: selectedUser._id,
-      text: messageData.text,
-      image: messageData.image,
-      createdAt: new Date(),
-      isOptimistic: true,
-    };
-    setMessages((prev) => [...prev, optimistic]);
-    try {
-      const res = await fetch(`/api/messages/send/${selectedUser._id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messageData),
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to send message');
-      const sent: Message = await res.json();
-      setMessages((prev) => prev.filter((m) => m._id !== tempId).concat(sent));
-      if (isSoundEnabled && typeof Audio !== 'undefined') {
-        const sound = new Audio('/sounds/notification.mp3');
-        sound.play().catch(() => {});
-      }
-      if (document.hidden || !document.hasFocus()) {
-        const name = selectedUser.isAdmin
-          ? 'Support'
-          : selectedUser.firstName || selectedUser.email;
-        const text = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
-        debouncedShowSentNotification(name, text, () => {
-          window.focus();
-          setSelectedUser(selectedUser);
-        });
-      }
-    } catch (error) {
-      setMessages((prev) => prev.filter((m) => m._id !== tempId));
-      console.error('Send message error:', error);
-    }
-  };
-
-  // ------------------ Sound Toggle ------------------
-  const toggleSound = () => {
-    const newState = !isSoundEnabled;
-    setIsSoundEnabled(newState);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('isSoundEnabled', JSON.stringify(newState));
-    }
-  };
-
-  // ------------------ Load contacts on auth ------------------
-  useEffect(() => {
-    if (authUser) getAllContacts();
   }, [authUser, getAllContacts]);
 
   return (
