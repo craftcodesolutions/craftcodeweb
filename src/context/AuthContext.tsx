@@ -197,7 +197,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
     console.log(`🔌 AuthContext[${authInstanceId.current}] Connecting socket for ${user.email}`);
   
-    const authToken = getCookie('authToken');
+    const res = await fetch('/api/auth/token', { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to fetch token');
+    const { token: authToken } = await res.json();
     if (!authToken) {
       console.error(`AuthContext[${authInstanceId.current}] ❌ No authToken found, cannot connect socket`);
       return;
