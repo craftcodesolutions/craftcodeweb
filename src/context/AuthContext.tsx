@@ -181,186 +181,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const connectSocket = async () => {
-    if (!user || socket?.connected || socket || isConnecting || typeof window === 'undefined') {
+    if (!user || isConnecting || typeof window === 'undefined') {
       console.log(`AuthContext[${authInstanceId.current}] Skipping socket connection:`, {
         hasUser: !!user,
-        socketConnected: socket?.connected,
-        socketExists: !!socket,
         isConnecting,
-        isClient: typeof window !== 'undefined'
+        isClient: typeof window !== 'undefined',
       });
       return;
     }
-    if (retryCount >= MAX_RETRIES) {
-      console.error(`AuthContext[${authInstanceId.current}] Max retries (${MAX_RETRIES}) reached for socket connection`);
-      console.error('Failed to connect to server after multiple attempts');
-      setIsConnecting(false);
+  
+    if (socket && socket.connected) {
+      console.log(`AuthContext[${authInstanceId.current}] Socket already connected: ${socket.id}`);
       return;
     }
-    console.log(`🔌 AuthContext[${authInstanceId.current}] Initiating socket connection for user: ${user.email} (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+  
+    console.log(`🔌 AuthContext[${authInstanceId.current}] Connecting socket for ${user.email}`);
+  
+    const authToken = getCookie('authToken');
+    if (!authToken) {
+      console.error(`AuthContext[${authInstanceId.current}] ❌ No authToken found, cannot connect socket`);
+      return;
+    }
+  
     setIsConnecting(true);
-
+  
     try {
-      console.log(`AuthContext[${authInstanceId.current}] Triggering Socket.IO server initialization`);
-      const initResponse = await fetch(`/api/socket`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-      if (!initResponse.ok) {
-        const errorData = await initResponse.json();
-        throw new Error(`Failed to initialize Socket.IO server: ${errorData.error || initResponse.statusText}`);
-      }
-      const initData = await initResponse.json();
-      console.log(`AuthContext[${authInstanceId.current}] Socket.IO server initialization response:`, initData);
-
-      if (initData.message.includes('not initialized')) {
-        console.log(`AuthContext[${authInstanceId.current}] Socket.IO server not ready, retrying in 2s`);
-        setRetryCount(prev => prev + 1);
-        setTimeout(connectSocket, 2000);
-        return;
-      }
-
-      const authToken = getCookie('authToken');
-      console.log(`AuthContext[${authInstanceId.current}] Auth token for socket:`, authToken ? 'Present' : 'Missing');
-
       const newSocket = io(SOCKET_URL, {
         path: '/api/socket',
+        transports: ['websocket'],
         withCredentials: true,
-        transports: ['websocket', 'polling'],
         forceNew: true,
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         timeout: 20000,
-        auth: {
-          token: authToken
-        },
-        extraHeaders: authToken ? {
-          cookie: `authToken=${authToken}`
-        } : {}
+        auth: { token: authToken }, // ✅ THIS IS WHAT SERVER READS
       });
-
+  
       newSocket.on('connect', () => {
         console.log(`✅ AuthContext[${authInstanceId.current}] Socket connected: ${newSocket.id}`);
+        setSocket(newSocket);
         setIsSocketConnected(true);
         setIsConnecting(false);
-        setRetryCount(0);
       });
-
-      newSocket.on('tokenUpdated', async (data: { newToken: string; timestamp: string; reason: string }) => {
-        console.log(`Token updated for user ${user?.userId}:`, data);
-        await refreshUser();
-        newSocket.emit('tokenUpdateReceived', { timestamp: data.timestamp, reason: data.reason });
-        console.log('Your account has been updated. Session refreshed automatically.');
-      });
-
-      newSocket.on('userStatusChanged', async (data: { status: boolean; timestamp: string; reason: string }) => {
-        newSocket.emit('statusUpdateReceived', { status: data.status, timestamp: data.timestamp });
-        if (!data.status) {
-          console.error('Your account has been deactivated. Logging out...');
-          setTimeout(() => logout(), 3000);
-        } else {
-          console.log('Your account has been reactivated.');
-          await refreshUser();
-        }
-      });
-
-      newSocket.on('designationsUpdated', async (data: { designations: string[]; timestamp: string; reason: string }) => {
-        console.log(`Designations updated for user ${user?.userId}:`, data);
-        await refreshUser();
-        newSocket.emit('designationsUpdateReceived', { timestamp: data.timestamp, reason: data.reason });
-        console.log('Your designations have been updated. Session refreshed automatically.');
-      });
-
-      newSocket.on('force_logout', (data: { reason: string; timestamp: string }) => {
-        console.log(`Force logout received:`, data);
-        console.warn(`You have been logged out: ${data.reason}`);
-        logout();
-      });
-
-      newSocket.on('getOnlineUsers', (users: string[]) => {
-        console.log(`📊 AuthContext[${authInstanceId.current}] Online users updated:`, users);
-        setOnlineUsers(users);
-      });
-
-      newSocket.on('newMessage', (msg: { from: string; content: string; timestamp: string; notification: boolean }) => {
-        console.log(`📩 New message received:`, msg);
-        if (msg.notification) {
-          if (document.hidden || !document.hasFocus()) {
-            showMessageNotification(msg.from, msg.content, () => {
-              window.focus();
-              if (document.hidden) {
-                if ('focus' in window) {
-                  window.focus();
-                }
-              }
-            });
-          }
-        }
-      });
-
-      newSocket.on('userTyping', (data: { userId: string; isTyping: boolean; timestamp: string }) => {
-        console.log(`⌨️ Typing indicator received from ${data.userId}: ${data.isTyping ? 'typing' : 'stopped'}`);
-      });
-
-      newSocket.on('messageReadReceipt', (data: { messageId: string; readBy: string; readAt: string }) => {
-        console.log(`✅ Message read receipt received: ${data.messageId} read by ${data.readBy}`);
-      });
-
-      newSocket.on('connect_error', (error) => {
-        console.error(`❌ Socket connection error: ${error.message}`);
+  
+      newSocket.on('connect_error', (err) => {
+        console.error(`❌ Socket connection error: ${err.message}`);
         setIsSocketConnected(false);
         setIsConnecting(false);
         setSocket(null);
-        setRetryCount(prev => prev + 1);
-        console.error(`Socket connection failed: ${error.message}`);
-        setTimeout(connectSocket, 2000);
       });
-
+  
       newSocket.on('disconnect', (reason) => {
-        console.log(`🔌 Socket disconnected: ${newSocket.id}, reason: ${reason}`);
+        console.log(`🔌 Socket disconnected: ${reason}`);
         setIsSocketConnected(false);
       });
-
-      newSocket.on('reconnect', () => {
-        console.log(`🔄 Socket reconnected: ${newSocket.id}`);
-        setIsSocketConnected(true);
-        setRetryCount(0);
+  
+      newSocket.on('userStatusChanged', (data) => {
+        console.log(`👤 User status changed:`, data);
+        if (!data.status) logout();
       });
-
-      newSocket.on('reconnect_failed', () => {
-        console.error('❌ Socket reconnection failed after all attempts');
-        setIsSocketConnected(false);
-        console.error('Failed to reconnect to server');
-      });
-
-      newSocket.on('ping', (data: { timestamp: string }) => {
-        newSocket.emit('pong', { timestamp: data.timestamp });
-      });
-
-      setSocket(newSocket);
+  
     } catch (err) {
-      const error = err as unknown;
-      let message = 'Unknown error';
-      let stack: unknown = undefined;
-      if (error && typeof error === 'object') {
-        message = (error as { message?: string }).message ?? message;
-        stack = (error as { stack?: unknown }).stack;
-      }
-      console.error(`❌ Socket connection failed: ${message}`, {
-        error,
-        socketUrl: SOCKET_URL,
-        userId: user?.userId,
-        stack,
-      });
-      setIsSocketConnected(false);
+      console.error(`❌ Failed to connect socket:`, err);
       setIsConnecting(false);
-      setSocket(null);
-      setRetryCount(prev => prev + 1);
-      console.error(`Failed to connect to server: ${message}`);
-      setTimeout(connectSocket, 2000);
     }
   };
+  
 
   const disconnectSocket = () => {
     if (socket) {
