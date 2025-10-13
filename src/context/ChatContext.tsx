@@ -279,6 +279,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     console.log('📡 Subscribing to messages for user:', authUser?.email);
 
+    // Load current conversation messages once when subscribing
+    if (selectedUser?._id) {
+      getMessagesByUserId(selectedUser._id);
+    }
+
+    // Ensure we don't accumulate duplicate listeners across re-subscribes
+    socket.off('newMessage');
+    socket.off('messageSent');
+
     socket.on('newMessage', (newMessage: Message) => {
       console.log('📨 Received new message:', newMessage);
 
@@ -379,7 +388,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
       }
     });
-  }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification]);
+  }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification, getMessagesByUserId]);
 
   const unsubscribeFromMessages = useCallback(() => {
     if (!socket) return;
@@ -390,15 +399,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     console.log('📴 Unsubscribed from socket events');
   }, [socket]);
 
-  useEffect(() => {
-    if (socket && isSocketConnected) {
-      subscribeToMessages();
-    }
-
-    return () => {
-      unsubscribeFromMessages();
-    };
-  }, [socket, isSocketConnected, subscribeToMessages, unsubscribeFromMessages]);
+  // Removed global auto-subscribe to avoid duplicate subscriptions.
 
   useEffect(() => {
     if (authUser) {

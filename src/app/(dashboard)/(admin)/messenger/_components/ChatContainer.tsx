@@ -12,7 +12,6 @@ import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 function ChatContainer() {
   const {
     selectedUser,
-    getMessagesByUserId,
     messages,
     isMessagesLoading,
     subscribeToMessages,
@@ -25,13 +24,13 @@ function ChatContainer() {
 
   useEffect(() => {
     if (selectedUser?._id) {
-      getMessagesByUserId(selectedUser._id);
+      // Subscribe (will internally load messages once)
       subscribeToMessages();
 
       // clean up
       return () => unsubscribeFromMessages();
     }
-  }, [selectedUser?._id, getMessagesByUserId, subscribeToMessages, unsubscribeFromMessages]);
+  }, [selectedUser?._id, subscribeToMessages, unsubscribeFromMessages]);
 
   // Listen for typing indicators
   useEffect(() => {
