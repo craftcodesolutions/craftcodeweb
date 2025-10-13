@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
 import { DisabledAccountsProvider } from "@/context/DisabledAccountsContext";
 import { GlobalChatProvider } from "@/context/GlobalChatContext";
-import FloatingChatButton from "@/components/FloatingChatButton";
+// import FloatingChatButton from "@/components/FloatingChatButton";
 import GlobalChatBox from "@/components/GlobalChatBox";
 import NotificationPermission from "@/components/NotificationPermission";
 import { ToastContainer } from "react-toastify";
@@ -41,7 +41,7 @@ export default function RootLayout({
             <DisabledAccountsProvider>
               <GlobalChatProvider>
                 {children}
-                <FloatingChatButton />
+                {/* <FloatingChatButton /> */}
                 <GlobalChatBox />
                 <NotificationPermission />
                 <ToastContainer

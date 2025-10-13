@@ -116,13 +116,13 @@ export async function middleware(request: NextRequest) {
     '/forgot-password'
   ];
   const adminRoutes = [
-    '/dashboard/admin',           // Only admin dashboard routes
-    '/dashboard/(admin)',         // Admin folder routes  
-    '/dashboard/users',           // User management
-    '/dashboard/insights',        // Analytics
-    '/dashboard/deployments',     // Deployment management
-    '/dashboard/professionals',   // Professional management
-    '/dashboard/reviews'          // Review management
+    '/dashboard',           // Only admin dashboard routes
+    '/messenger',         // Admin folder routes  
+    '/users',           // User management
+    '/insights',        // Analytics
+    '/deployments',     // Deployment management
+    '/professionals',   // Professional management
+    '/reviews'          // Review management
   ];
   const authRoutes = ['/login', '/register'];
 

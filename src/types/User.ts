@@ -11,6 +11,7 @@ export interface User {
   status?: boolean;
   name?: string;
   picture?: string;
+  designations?: string[];
   resetToken?: string;
   resetTokenExpiry?: Date;
   createdAt?: Date;

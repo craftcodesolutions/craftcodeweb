@@ -4,7 +4,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { toast } from 'react-toastify';
 import RightSidebar from './Sidebar';
 import ModeToggle from '@/components/ModeToggle';
@@ -34,6 +34,7 @@ function Header() {
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname(); // Get the current pathname
   const [isUserPanelOpen, setIsUserPanelOpen] = useState<boolean>(false);
   const [showPanel, setShowPanel] = useState<boolean>(false);
   const [panelAnimation, setPanelAnimation] = useState<string>('animate-userpanel-in');
@@ -444,11 +445,20 @@ function Header() {
               <Link
                 key={href}
                 href={href}
-                className="relative px-4 py-2 rounded-sm text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-amber-500 dark:hover:text-amber-400 transition-all duration-300 group cursor-pointer"
+                className={`relative px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 group cursor-pointer
+                  ${
+                    pathname === href
+                      ? 'text-amber-500 dark:text-amber-400'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-amber-500 dark:hover:text-amber-400'
+                  }`}
                 aria-label={`Navigate to ${label}`}
+                aria-current={pathname === href ? 'page' : undefined}
               >
                 {label}
-                <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-amber-500 dark:bg-amber-400 transition-all duration-300 group-hover:w-full"></span>
+                <span
+                  className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-amber-500 dark:bg-amber-400 transition-all duration-300
+                    ${pathname === href ? 'w-full' : 'w-0 group-hover:w-full'}`}
+                ></span>
               </Link>
             ))}
           </div>

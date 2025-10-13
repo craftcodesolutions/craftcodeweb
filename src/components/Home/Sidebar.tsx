@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Home, Users, FileText, Archive, MessageSquare } from 'lucide-react';
+import { Home, Users, FileText, Archive, MessageSquare, HelpCircle, Phone, Calendar } from 'lucide-react';
 
 // Define props interface
 interface RightSidebarProps {
@@ -19,14 +20,16 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
   const trigger = useRef<HTMLButtonElement | null>(null);
   const sidebar = useRef<HTMLDivElement | null>(null);
 
-  // Remove all user/db logic, just static links
+  // Main navigation links
   const navLinks = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/team', label: 'Team', icon: Users },
-    { path: '/blog', label: 'Blog', icon: FileText },
     { path: '/projects', label: 'Projects', icon: Archive },
-    { path: '/faqs', label: 'FAQs', icon: MessageSquare },
-    { path: '/contact', label: 'Contacts', icon: MessageSquare },
+    { path: '/conferance', label: 'Conference', icon: Calendar },
+    { path: '/blog', label: 'Blog', icon: FileText },
+    { path: '/faqs', label: 'FAQs', icon: HelpCircle },
+    { path: '/contact', label: 'Contact', icon: Phone },
+    { path: '/support', label: 'Support', icon: MessageSquare },
   ];
 
   const storedSidebarExpanded = typeof window !== 'undefined' ? localStorage.getItem('right-sidebar-expanded') : null;
@@ -77,7 +80,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
       setSidebarOpen(false);
     };
     document.addEventListener('click', clickHandler);
-    return () => document.addEventListener('click', clickHandler);
+    return () => document.removeEventListener('click', clickHandler);
   }, [sidebarOpen, isLargeScreen]);
 
   useLayoutEffect(() => {
@@ -155,7 +158,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
 
       {/* Sidebar Overlay */}
       <div
-        className={`fixed inset-0 bg-gray-900/40 z-60 transition-opacity duration-300 ease-in-out
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] transition-opacity duration-300 ease-in-out
           ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden="true"
         onClick={toggleSidebar}
@@ -165,10 +168,9 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
       <div
         id="sidebar"
         ref={sidebar}
-        className={`flex flex-col fixed z-60 right-0 top-0 h-[100dvh] bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e]
-          p-3 transition-all duration-300 ease-in-out overflow-hidden
-          ${sidebarOpen ? 'translate-x-0 opacity-100 w-64' : 'translate-x-full opacity-0 w-0'}
-          ${variant === 'v2' ? 'border-l border-white/10' : 'rounded-l-xl shadow-lg'}`}
+        className={`flex flex-col fixed z-[61] right-0 top-0 h-[100dvh] bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e]
+          p-3 transition-all duration-300 ease-in-out overflow-hidden border-l border-white/10 shadow-2xl
+          ${sidebarOpen ? 'translate-x-0 opacity-100 w-72 sm:w-80' : 'translate-x-full opacity-0 w-0'}`}
       >
         <div className="flex justify-between mb-3 pl-2">
           <Link href="/" className="block">
@@ -193,35 +195,28 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
           </button>
         </div>
 
-        <div className="space-y-6">
-          <ul className="mt-2">
-            {navLinks.map((item, index) => (
-              <li
-                key={item.path}
-                className={`pl-3 pr-2 py-1.5 rounded-lg mb-0.5 last:mb-0
-                  border border-amber-400 dark:border-amber-600 transition-all duration-200 animate-slide-in
-                  ${isActive(item.path)
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-transparent text-neutral-900 dark:text-white hover:bg-amber-600 dark:hover:bg-amber-700 hover:text-white'}
-                `}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <Link
-                  href={item.path}
-                  className="block truncate transition duration-200 w-full h-full"
-                  aria-label={`Navigate to ${item.label}`}
-                >
-                  <span className={`inline-flex items-center gap-2
-    ${isActive(item.path) ? 'text-white' : 'text-amber-500 dark:text-amber-400'}
-  `}>
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
-                  </span>
-                </Link>
-
-              </li>
-            ))}
-          </ul>
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-amber-500 scrollbar-track-transparent">
+          <nav className="mt-2">
+            <ul className="space-y-1">
+              {navLinks.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    href={item.path}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group
+                      ${isActive(item.path)
+                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg border border-blue-400/50'
+                        : 'text-gray-300 hover:bg-amber-600/20 hover:text-amber-400'}
+                    `}
+                    aria-label={`Navigate to ${item.label}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-white' : 'text-amber-400'}`} />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </div>
     </>

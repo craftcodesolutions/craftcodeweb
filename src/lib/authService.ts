@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'hG8v$L1^r!eX9@dP2z&Bt7WfKmQsVjE3cYuT6nMwAoLjR5xZ';
 
 export async function signToken(payload: { userId: string }) {
   return new Promise<string>((resolve, reject) => {

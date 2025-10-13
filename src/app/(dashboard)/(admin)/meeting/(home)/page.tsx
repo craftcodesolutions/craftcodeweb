@@ -96,21 +96,23 @@ const Home = () => {
 
   // Main content with fade-in animation
   return (
-    <section className="flex size-full flex-col gap-4 sm:gap-6 text-white dark:text-white px-2 sm:px-0 animate-in fade-in duration-700 slide-in-from-bottom-4">
+    <section className="flex size-full flex-col gap-4 sm:gap-6 text-white dark:text-white animate-in fade-in duration-700 slide-in-from-bottom-4">
       {/* Mobile Navigation - Only visible on small devices */}
-      <MobileNavigation />
+      <div className="lg:hidden">
+        <MobileNavigation />
+      </div>
       
-      {/* Enhanced Hero Section */}
-      <div className="relative h-[200px] sm:h-[240px] lg:h-[280px] w-full rounded-xl sm:rounded-2xl bg-hero bg-cover overflow-hidden animate-in fade-in duration-700 slide-in-from-top-4" style={{ animationDelay: '0.1s' }}>
+      {/* Enhanced Hero Section - Responsive */}
+      <div className="relative h-[180px] sm:h-[200px] md:h-[240px] lg:h-[280px] w-full rounded-lg sm:rounded-xl lg:rounded-2xl bg-hero bg-cover overflow-hidden animate-in fade-in duration-700 slide-in-from-top-4" style={{ animationDelay: '0.1s' }}>
         {/* Enhanced Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 via-purple-900/40 to-transparent dark:from-blue-900/60 dark:via-purple-900/50"></div>
         
-        {/* Enhanced Animated Background Elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-gradient-to-br from-blue-500/15 to-purple-500/15 dark:from-blue-400/20 dark:to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-48 sm:h-48 bg-gradient-to-tr from-purple-500/15 to-blue-500/15 dark:from-purple-400/20 dark:to-blue-400/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-32 sm:h-32 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 dark:from-cyan-400/15 dark:to-blue-400/15 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        {/* Enhanced Animated Background Elements - Responsive */}
+        <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 bg-gradient-to-br from-blue-500/15 to-purple-500/15 dark:from-blue-400/20 dark:to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-20 h-20 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-48 lg:h-48 bg-gradient-to-tr from-purple-500/15 to-blue-500/15 dark:from-purple-400/20 dark:to-blue-400/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 dark:from-cyan-400/15 dark:to-blue-400/15 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         
-        <div className="relative flex h-full flex-col justify-between p-4 sm:p-6 lg:p-8">
+        <div className="relative flex h-full flex-col justify-between p-3 sm:p-4 md:p-6 lg:p-8">
           {/* Real Upcoming Meeting Badge */}
           <NextMeetingBadge />
           
@@ -119,30 +121,30 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Enhanced Meeting Actions */}
+      {/* Enhanced Meeting Actions - Responsive */}
       <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-700 slide-in-from-bottom-4" style={{ animationDelay: '0.3s' }}>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-gray-300 dark:from-gray-100 dark:via-blue-200 dark:to-white bg-clip-text text-transparent">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="text-center lg:text-left">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-gray-300 dark:from-gray-100 dark:via-blue-200 dark:to-white bg-clip-text text-transparent">
               Start Your Meeting
             </h2>
             <p className="text-gray-400 dark:text-gray-300 mt-2 text-sm sm:text-base">Choose how you&apos;d like to connect with others</p>
           </div>
-          <div className="flex justify-center sm:justify-end">
-            <div className="flex items-center gap-3 bg-gradient-to-r from-slate-800/40 to-slate-700/40 dark:from-slate-900/60 dark:to-slate-800/60 backdrop-blur-sm rounded-xl sm:rounded-2xl px-4 py-3 border border-white/10 dark:border-white/20 shadow-lg">
+          <div className="flex justify-center lg:justify-end">
+            <div className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-slate-800/40 to-slate-700/40 dark:from-slate-900/60 dark:to-slate-800/60 backdrop-blur-sm rounded-lg sm:rounded-xl lg:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 border border-white/10 dark:border-white/20 shadow-lg">
               <div className="relative">
                 <div className="w-2.5 h-2.5 bg-green-500 dark:bg-green-400 rounded-full animate-pulse"></div>
                 <div className="absolute inset-0 w-2.5 h-2.5 bg-green-500 dark:bg-green-400 rounded-full animate-ping opacity-30"></div>
               </div>
-              <div className="text-center sm:text-left">
-                <span className="text-sm font-semibold text-white dark:text-gray-100 block">System Status</span>
+              <div className="text-center lg:text-left">
+                <span className="text-xs sm:text-sm font-semibold text-white dark:text-gray-100 block">System Status</span>
                 <span className="text-xs text-green-400 dark:text-green-300">All systems operational</span>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="mt-6 sm:mt-8 animate-in fade-in duration-700 slide-in-from-bottom-4" style={{ animationDelay: '0.5s' }}>
+        <div className="mt-4 sm:mt-6 lg:mt-8 animate-in fade-in duration-700 slide-in-from-bottom-4" style={{ animationDelay: '0.5s' }}>
           <MeetingTypeList />
         </div>
       </div>

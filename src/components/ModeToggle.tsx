@@ -12,7 +12,7 @@ export default function ModeToggle() {
       variant="outline"
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="group relative h-10 w-10 rounded-lg transition-all duration-300 ease-in-out
+      className="group relative h-10 w-10 rounded-lg transition-all duration-300 ease-in-out cursor-pointer
         bg-amber-50 dark:bg-amber-950/50
         border-2 border-amber-200 dark:border-amber-800
         hover:bg-amber-100 dark:hover:bg-amber-900/60 

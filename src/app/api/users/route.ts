@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
@@ -5,13 +6,110 @@ import { sendWelcomeEmail, sendAdminNotification } from '@/lib/emailService';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
-import { emitTokenUpdate, emitUserStatusChange } from '@/lib/socketServer';
+import { Server as SocketIOServer, Socket } from 'socket.io';
+import { createServer } from 'http';
+import { parse } from 'cookie';
 
+// Constants
 const DB_NAME = 'CraftCode';
 const COLLECTION = 'users';
 const SESSIONS_COLLECTION = 'user_sessions';
 const DISABLED_ACCOUNTS_COLLECTION = 'disabled_accounts';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const SOCKET_URL = process.env.SOCKET_URL || 'http://localhost:3008';
+
+// Note: Run these indexes in MongoDB for performance:
+// db.users.createIndex({ name: 1, email: 1, isAdmin: 1, status: 1, createdAt: -1, designations: 1 });
+
+// Socket.IO server setup
+let io: SocketIOServer | null = null;
+
+// Initialize Socket.IO server
+const initSocketServer = () => {
+  if (!io) {
+    const httpServer = createServer();
+    io = new SocketIOServer(httpServer, {
+      path: '/api/socket',
+      cors: {
+        origin: '*', // Adjust for production
+        methods: ['GET', 'POST'],
+      },
+    });
+
+    io.use((socket: Socket, next) => {
+      const cookieHeader = socket.handshake.headers.cookie;
+      if (!cookieHeader) {
+        return next(new Error('Authentication token required'));
+      }
+      const cookies = parse(cookieHeader);
+      const token = cookies.authToken;
+      if (!token) {
+        return next(new Error('Authentication token required'));
+      }
+
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        socket.data.userId = decoded.userId;
+        next();
+      } catch (error) {
+        next(new Error('Authentication error'));
+      }
+    });
+
+    io.on('connection', (socket: Socket) => {
+      socket.join(socket.data.userId); // Join user-specific room
+    });
+
+    httpServer.listen(new URL(SOCKET_URL).port || 3008, () => {});
+  }
+  return io;
+};
+
+// Emit token update to all sessions of a user
+export const emitTokenUpdate = (userId: string, newToken: string) => {
+  const socketServer = initSocketServer();
+  const timestamp = new Date().toISOString();
+  const reason = 'Admin status updated';
+
+  socketServer.to(userId).emit('tokenUpdated', { newToken, timestamp, reason });
+};
+
+// Emit user status change to all clients
+export const emitUserStatusChange = (userId: string, status: boolean) => {
+  const socketServer = initSocketServer();
+  const data: UserStatusChangeData = {
+    userId,
+    status,
+    reason: status ? 'User account enabled' : 'User account disabled',
+    timestamp: new Date().toISOString(),
+    forcedDisconnect: !status,
+  };
+
+  socketServer.emit('userStatusChanged', data);
+};
+
+// Emit designations update to all sessions of a user
+export const emitDesignationsUpdate = (userId: string, designations: string[]) => {
+  const socketServer = initSocketServer();
+  const timestamp = new Date().toISOString();
+  const reason = 'Designations updated by admin';
+
+  socketServer.to(userId).emit('designationsUpdated', { designations, timestamp, reason });
+};
+
+// Type definition for UserStatusChangeData
+interface UserStatusChangeData {
+  userId: string;
+  status: boolean;
+  reason: string;
+  timestamp: string;
+  forcedDisconnect?: boolean;
+}
+
+// Escape regex for safe search
+const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -67,6 +165,7 @@ export async function POST(req: NextRequest) {
       bio: bio || '',
       isAdmin: false,
       status: true,
+      designations: [], // Initialize designations
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -81,16 +180,12 @@ export async function POST(req: NextRequest) {
     // Send welcome email
     try {
       await sendWelcomeEmail(email, firstName);
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
-    }
+    } catch (emailError) {}
 
     // Send admin notification
     try {
       await sendAdminNotification(email, firstName);
-    } catch (adminEmailError) {
-      console.error('Failed to send admin notification:', adminEmailError);
-    }
+    } catch (adminEmailError) {}
 
     return NextResponse.json({ 
       success: true, 
@@ -102,11 +197,11 @@ export async function POST(req: NextRequest) {
       isAdmin: false,
       profileImage: picture || '',
       bio: bio || '',
+      designations: [],
       createdAt: new Date(),
       updatedAt: new Date()
     }, { status: 201 });
   } catch (error) {
-    console.error('User creation error:', error);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
 }
@@ -117,6 +212,11 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '6', 10);
     const search = searchParams.get('search') || '';
+    const isAdminFilter = searchParams.get('isAdmin');
+    const statusFilter = searchParams.get('status');
+    const sortField = searchParams.get('sortField') || '';
+    const sortOrder = searchParams.get('sortOrder') || '';
+    const lastId = searchParams.get('lastId') || '';
 
     if (page < 1 || limit < 1) {
       return NextResponse.json({ error: 'Invalid page or limit parameters' }, { status: 400 });
@@ -127,18 +227,50 @@ export async function GET(req: NextRequest) {
     const usersCollection = db.collection(COLLECTION);
 
     const query: any = {};
+
+    // Search filter
     if (search) {
-      const searchRegex = new RegExp(search, 'i');
+      const searchRegex = new RegExp(escapeRegExp(search), 'i');
       query.$or = [
         { name: searchRegex },
         { email: searchRegex },
         { bio: searchRegex },
+        { designations: { $elemMatch: { $regex: searchRegex } } },
       ];
     }
 
-    const totalUsers = await usersCollection.countDocuments(query);
-    const totalPages = Math.ceil(totalUsers / limit);
+    // Admin filter
+    if (isAdminFilter === 'true' || isAdminFilter === 'false') {
+      query.isAdmin = isAdminFilter === 'true';
+    }
 
+    // Status filter
+    if (statusFilter === 'true' || statusFilter === 'false') {
+      query.status = statusFilter === 'true';
+    }
+
+    // Cursor-based pagination
+    if (lastId && ObjectId.isValid(lastId)) {
+      query._id = { $gt: new ObjectId(lastId) };
+    }
+
+    // Count total users
+    const totalUsers = await usersCollection.countDocuments(query);
+    const totalPages = Math.max(1, Math.ceil(totalUsers / limit));
+
+    // Adjust if requested page is greater than totalPages
+    const validPage = Math.min(page, totalPages);
+    const skip = lastId ? 0 : (validPage - 1) * limit;
+
+    // Sorting
+    const sort: any = {};
+    if (sortField === 'name' || sortField === 'email') {
+      sort[sortField] = sortOrder === 'asc' ? 1 : -1;
+    } else {
+      sort.createdAt = -1; // Default sort
+    }
+
+    // Fetch users
     const users = await usersCollection
       .find(query, {
         projection: {
@@ -147,7 +279,8 @@ export async function GET(req: NextRequest) {
           resetTokenExpiry: 0,
         },
       })
-      .skip((page - 1) * limit)
+      .sort(sort)
+      .skip(skip)
       .limit(limit)
       .toArray();
 
@@ -156,16 +289,29 @@ export async function GET(req: NextRequest) {
       _id: user._id.toString(),
     }));
 
+    // Get lastId for next page (cursor-based)
+    const nextLastId = formattedUsers.length > 0 ? formattedUsers[formattedUsers.length - 1]._id : '';
+
     return NextResponse.json(
       {
         users: formattedUsers,
+        totalUsers,
         totalPages,
-        currentPage: page,
+        currentPage: validPage,
+        nextLastId,
+        filters: {
+          search,
+          isAdmin: isAdminFilter,
+          status: statusFilter,
+        },
+        sort: {
+          field: sortField,
+          order: sortOrder,
+        },
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Get users error:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }
@@ -180,8 +326,17 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    if (!['isAdmin', 'status'].includes(field) || typeof value !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid field or value' }, { status: 400 });
+    if (!['isAdmin', 'status', 'designations'].includes(field)) {
+      return NextResponse.json({ error: 'Invalid field' }, { status: 400 });
+    }
+
+    // Validate value types based on field
+    if ((field === 'isAdmin' || field === 'status') && typeof value !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid value type for boolean field' }, { status: 400 });
+    }
+
+    if (field === 'designations' && (!Array.isArray(value) || !value.every((d: any) => typeof d === 'string'))) {
+      return NextResponse.json({ error: 'Designations must be an array of strings' }, { status: 400 });
     }
 
     // Get current admin user from JWT token
@@ -192,9 +347,7 @@ export async function PATCH(req: NextRequest) {
       try {
         const decoded = jwt.verify(authToken, JWT_SECRET) as any;
         currentAdminUserId = decoded.userId;
-      } catch (error) {
-        console.error('Failed to decode admin token:', error);
-      }
+      } catch (error) {}
     }
 
     const client = await clientPromise;
@@ -261,8 +414,6 @@ export async function PATCH(req: NextRequest) {
           }
         );
 
-        console.log(`Updated ${sessionUpdateResult.modifiedCount} active sessions for user ${userId} due to admin status change to ${value}`);
-
         const isUpdatingOwnAccount = currentAdminUserId === updatedUser._id;
 
         if (isUpdatingOwnAccount) {
@@ -281,26 +432,22 @@ export async function PATCH(req: NextRequest) {
             maxAge: 7 * 24 * 60 * 60,
             path: '/',
           });
-
-          console.log(`Admin updated their own account - session cookies refreshed`);
-        } else {
-          console.log(`Admin ${currentAdminUserId} updated user ${updatedUser._id} - admin session preserved`);
         }
 
         emitTokenUpdate(updatedUser._id, newToken);
-
-      } catch (tokenError) {
-        console.error('Failed to regenerate JWT tokens for user sessions:', tokenError);
-      }
+      } catch (tokenError) {}
     }
 
     if (field === 'status') {
       emitUserStatusChange(updatedUser._id, value);
     }
 
+    if (field === 'designations') {
+      emitDesignationsUpdate(updatedUser._id, value);
+    }
+
     return response;
   } catch (error) {
-    console.error('Update user error:', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }

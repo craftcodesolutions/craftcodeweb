@@ -4,32 +4,42 @@ import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { createHash } from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!process.env.JWT_REFRESH_SECRET) {
+  throw new Error("JWT_REFRESH_SECRET environment variable is required");
+}
+
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const DB_NAME = 'CraftCode';
 const USERS_COLLECTION = 'users';
 const SESSIONS_COLLECTION = 'user_sessions';
 
 export async function POST(req: NextRequest) {
   try {
-    // Get current token from cookies
-    const currentToken = req.cookies.get('authToken')?.value;
-    
-    if (!currentToken) {
-      return NextResponse.json({ error: 'No authentication token found' }, { status: 401 });
+    // Get refresh token from cookie
+    const refreshToken = req.cookies.get('refreshToken')?.value;
+
+    if (!refreshToken) {
+      return NextResponse.json({ error: 'No refresh token found' }, { status: 401 });
     }
 
-    // Verify current token
+    // Verify refresh token
     let decoded: { userId?: string } | null = null;
     try {
-      decoded = jwt.verify(currentToken, JWT_SECRET) as { userId?: string } | null;
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { userId?: string };
     } catch (err) {
-      console.error('Token verification failed:', err);
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+      console.error('Refresh token verification failed:', err);
+      return NextResponse.json({ error: 'Invalid or expired refresh token' }, { status: 401 });
     }
 
     const userId = decoded?.userId;
     if (!userId) {
-      return NextResponse.json({ error: 'Invalid token payload' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid refresh token payload' }, { status: 401 });
     }
 
     const client = await clientPromise;
@@ -37,7 +47,7 @@ export async function POST(req: NextRequest) {
     const usersCollection = db.collection(USERS_COLLECTION);
     const sessionsCollection = db.collection(SESSIONS_COLLECTION);
 
-    // Get fresh user data from database
+    // Get user from database
     const user = await usersCollection.findOne(
       { _id: new ObjectId(userId) },
       {
@@ -57,14 +67,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Account is deactivated' }, { status: 403 });
     }
 
-    // Generate new JWT token with fresh user data
-    const newToken = jwt.sign(
+    // Generate new access token (short-lived)
+    const newAccessToken = jwt.sign(
       {
         userId: user._id.toString(),
         email: user.email,
         isAdmin: user.isAdmin || false,
       },
       JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    // Optionally generate a new refresh token (long-lived)
+    const newRefreshToken = jwt.sign(
+      { userId: user._id.toString() },
+      JWT_REFRESH_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -79,7 +96,8 @@ export async function POST(req: NextRequest) {
         { userId: user._id.toString(), deviceId },
         {
           $set: {
-            token: newToken,
+            token: newAccessToken,
+            refreshToken: newRefreshToken,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
             updatedAt: new Date(),
           },
@@ -88,10 +106,9 @@ export async function POST(req: NextRequest) {
       );
     } catch (sessionError) {
       console.error('Failed to update session:', sessionError);
-      // Continue even if session update fails
     }
 
-    // Create response with new token
+    // Prepare response
     const response = NextResponse.json({
       success: true,
       message: 'Token refreshed successfully',
@@ -104,8 +121,16 @@ export async function POST(req: NextRequest) {
       },
     }, { status: 200 });
 
-    // Set new token in cookies
-    response.cookies.set('authToken', newToken, {
+    // Set cookies
+    response.cookies.set('authToken', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+    });
+
+    response.cookies.set('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -117,7 +142,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 7 * 24 * 60 * 60,
       path: '/',
     });
 
@@ -133,13 +158,9 @@ export async function POST(req: NextRequest) {
 function getClientIP(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIP = req.headers.get('x-real-ip');
-  
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  if (realIP) {
-    return realIP;
-  }
+
+  if (forwarded) return forwarded.split(',')[0].trim();
+  if (realIP) return realIP;
   return 'unknown';
 }
 

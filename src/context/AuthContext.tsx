@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
@@ -31,6 +32,7 @@ interface AuthContextType {
   updateEmail: (currentEmail: string, newEmail: string, password: string) => Promise<{ success: boolean; error?: string }>;
   changePassword: (email: string, currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   updateUserByAdmin: (userId: string, field: 'isAdmin' | 'status', value: boolean) => Promise<{ success: boolean; error?: string; updatedUser?: User }>;
+  updateUserDesignations: (userId: string, designations: string[]) => Promise<{ success: boolean; error?: string; updatedUser?: User }>;
   signup: (data: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
   checkAuth: () => Promise<void>;
   isSigningUp: boolean;
@@ -64,7 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? 'http://localhost:3000'
     : '/';
 
-  const SOCKET_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : BASE_URL;
+    const SOCKET_URL = process.env.SOCKET_URL || 
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://your-service-name.onrender.com');
 
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,15 +82,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 5;
 
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return null;
+  };
+
   const fetchUserFromBackend = async () => {
     try {
+      console.log('Fetching user with cookies:', document.cookie);
       const response = await fetch('/api/auth/me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to fetch user data or token expired/invalid');
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Check for authToken before attempting refresh
+          const authToken = getCookie('authToken');
+          if (!authToken) {
+            console.log('No authToken found, skipping token refresh.');
+            throw new Error('No authentication token available');
+          }
+
+          console.log('Attempting token refresh...');
+          const refreshResult = await refreshToken();
+          if (refreshResult.success) {
+            console.log('Token refreshed, retrying user fetch...');
+            const retryResponse = await fetch('/api/auth/me', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+            });
+            if (!retryResponse.ok) {
+              throw new Error('Failed to fetch user data after token refresh');
+            }
+            const data = await retryResponse.json();
+            console.log('User data:', data);
+            const updatedUser: User = {
+              userId: data.userId,
+              email: data.email,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              isAdmin: data.isAdmin,
+              profileImage: data.profileImage,
+              createdAt: data.createdAt,
+              updatedAt: data.updatedAt,
+              bio: data.bio || '',
+            };
+            setUser(updatedUser);
+            setIsAuthenticated(true);
+            setError(null);
+            return;
+          } else {
+            throw new Error('Token refresh failed: ' + refreshResult.error);
+          }
+        }
+        throw new Error('Failed to fetch user data or token expired/invalid');
+      }
       const data = await response.json();
+      console.log('User data:', data);
       const updatedUser: User = {
         userId: data.userId,
         email: data.email,
@@ -164,6 +220,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      const authToken = getCookie('authToken');
+      console.log(`AuthContext[${authInstanceId.current}] Auth token for socket:`, authToken ? 'Present' : 'Missing');
+
       const newSocket = io(SOCKET_URL, {
         path: '/api/socket',
         withCredentials: true,
@@ -173,6 +232,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         timeout: 20000,
+        auth: {
+          token: authToken
+        },
+        extraHeaders: authToken ? {
+          cookie: `authToken=${authToken}`
+        } : {}
       });
 
       newSocket.on('connect', () => {
@@ -198,6 +263,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('Your account has been reactivated.');
           await refreshUser();
         }
+      });
+
+      newSocket.on('designationsUpdated', async (data: { designations: string[]; timestamp: string; reason: string }) => {
+        console.log(`Designations updated for user ${user?.userId}:`, data);
+        await refreshUser();
+        newSocket.emit('designationsUpdateReceived', { timestamp: data.timestamp, reason: data.reason });
+        console.log('Your designations have been updated. Session refreshed automatically.');
       });
 
       newSocket.on('force_logout', (data: { reason: string; timestamp: string }) => {
@@ -536,12 +608,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshToken = async () => {
     try {
+      console.log('Attempting token refresh, cookies:', document.cookie);
       const response = await fetch('/api/auth/refresh-token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!response.ok) throw new Error('Failed to refresh token');
+  
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+  
       const data = await response.json();
       const refreshedUser: User = {
         userId: data.user.id,
@@ -554,16 +631,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updatedAt: data.user.updatedAt,
         bio: data.user.bio || '',
       };
+  
       setUser(refreshedUser);
       setIsAuthenticated(true);
       setError(null);
+  
+      console.log('Token refreshed successfully');
       return { success: true, user: refreshedUser };
     } catch (error) {
       console.error('Token refresh failed:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Token refresh failed' };
     }
   };
-
+  
   const updateUserByAdmin = async (userId: string, field: 'isAdmin' | 'status', value: boolean) => {
     setIsLoading(true);
     try {
@@ -594,6 +674,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUserDesignations = async (userId: string, designations: string[]) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/users?id=${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: 'designations', value: designations }),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update designations');
+      }
+      const updatedUser = await response.json();
+      if (user && user.userId === userId) {
+        await refreshUser();
+        console.log('Your designations have been updated successfully!');
+      } else {
+        console.log('User designations updated successfully');
+      }
+      return { success: true, updatedUser };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update designations';
+      console.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -609,6 +719,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateEmail,
         changePassword,
         updateUserByAdmin,
+        updateUserDesignations,
         signup,
         checkAuth,
         isSigningUp,

@@ -58,15 +58,15 @@ const RootLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
         <Navbar />
       </div>
 
-      <div className="relative z-0 flex min-h-[calc(100vh-192px)]">
-        {/* Enhanced Sidebar - Hidden on small devices */}
-        <div className="hidden sm:block">
+      <div className="relative z-0 flex min-h-[calc(100vh-160px)] sm:min-h-[calc(100vh-192px)]">
+        {/* Enhanced Sidebar - Hidden on small and medium devices */}
+        <div className="hidden xl:block">
           <Sidebar />
         </div>
         
         <section className="flex flex-1 flex-col overflow-hidden">
-          {/* Enhanced Content Area with proper scroll handling */}
-          <div className="flex-1 overflow-y-auto px-3 pb-4 pr-2 max-md:pb-8 sm:px-6 sm:pr-4 scrollbar-hide">
+          {/* Enhanced Content Area with proper scroll handling and responsive padding */}
+          <div className="flex-1 overflow-y-auto px-2 pb-4 pr-2 sm:px-4 md:px-6 sm:pr-4 max-md:pb-8 scrollbar-hide">
             <div className="w-full max-w-none min-h-full">
               <ErrorBoundary>
                 <div className="animate-fade-in">

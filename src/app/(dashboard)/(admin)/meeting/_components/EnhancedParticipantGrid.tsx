@@ -86,7 +86,7 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
   const gridLayout = getGridLayout(processedParticipants.length);
 
   return (
-    <div className={cn("relative w-full h-full p-4", className)}>
+    <div className={cn("relative w-full h-full p-2 sm:p-4", className)}>
       {layout === 'grid' ? (
         <div className={cn(
           "grid gap-3 h-full w-full",
@@ -197,19 +197,23 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
           ))}
         </div>
       ) : (
-        // Enhanced Speaker layout with better alignment and space utilization
-        <div className="flex h-full gap-4">
-          {/* Main speaker with enhanced design */}
-          <div className="flex-1 relative min-w-0">
+        // Enhanced Speaker layout with responsive design
+        <div className="flex h-full gap-0 sm:gap-4 items-center sm:items-stretch">
+          {/* Main speaker with enhanced design - Full width on mobile */}
+          <div className={cn(
+            "relative min-w-0",
+            "w-full sm:flex-1", // Full width on mobile, flexible on desktop
+            "aspect-video sm:aspect-auto sm:h-full" // Use video aspect ratio on mobile, full height on desktop
+          )}>
             <div className={cn(
-              "w-full h-full rounded-2xl overflow-hidden transition-all duration-700 ease-in-out",
+              "w-full h-full rounded-lg sm:rounded-2xl overflow-hidden transition-all duration-700 ease-in-out",
               processedParticipants[0]?.hasVideo ? "bg-gradient-to-br from-slate-800 to-slate-900 border border-white/20" : ""
             )}>
               {processedParticipants[0]?.hasVideo ? (
                 <div className="relative w-full h-full">
                   <ParticipantView
                     participant={processedParticipants[0].participant}
-                    className="w-full h-full object-cover rounded-2xl"
+                    className="w-full h-full object-cover rounded-lg sm:rounded-2xl"
                     VideoPlaceholder={() => (
                       <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center rounded-2xl">
                         <div className="text-center text-gray-300">
@@ -245,8 +249,8 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
             </div>
           </div>
           
-          {/* Enhanced Sidebar participants - compact and organized */}
-          <div className="w-80 overflow-y-auto bg-slate-900/30 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
+          {/* Enhanced Sidebar participants - Hidden on mobile */}
+          <div className="hidden sm:block w-80 overflow-y-auto bg-slate-900/30 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-white flex items-center gap-2">
                 <Users size={14} className="text-blue-400" />

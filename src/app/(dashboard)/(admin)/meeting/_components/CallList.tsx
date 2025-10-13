@@ -123,7 +123,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
 
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-3 mt-6">
+    <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 mt-4 sm:mt-6">
       {calls && calls.length > 0 ? (
         calls.map((meeting: StreamCallWithCustomState) => {
           const status = getMeetingStatus(meeting);
@@ -136,12 +136,12 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
           return (
             <div
               key={meeting.id}
-              className="group relative bg-slate-800/50 dark:bg-slate-700/50 border border-white/10 dark:border-white/20 rounded-2xl p-6 hover:border-white/20 dark:hover:border-white/30 transition-all duration-300 hover:bg-slate-800/70 dark:hover:bg-slate-700/70 shadow-lg hover:shadow-xl"
+              className="group relative bg-slate-800/50 dark:bg-slate-700/50 border border-white/10 dark:border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:border-white/20 dark:hover:border-white/30 transition-all duration-300 hover:bg-slate-800/70 dark:hover:bg-slate-700/70 shadow-lg hover:shadow-xl"
             >
               
-              {/* Status Badge */}
-              <div className="absolute top-4 right-4 z-10">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${getStatusColor(status)} border border-white/10 dark:border-white/20`}>
+              {/* Status Badge - Responsive */}
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+                <span className={`inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${getStatusColor(status)} border border-white/10 dark:border-white/20`}>
                   <div className={`w-2 h-2 rounded-full mr-2 animate-pulse ${
                     status === 'Ready to Join' ? 'bg-green-400' :
                     status === 'Starting Soon' ? 'bg-yellow-400' :
@@ -151,23 +151,23 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                 </span>
               </div>
               
-              {/* Meeting Header */}
-              <div className="relative z-10 mb-6">
-                <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              {/* Meeting Header - Responsive */}
+              <div className="relative z-10 mb-4 sm:mb-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 ${
                     type === 'ended' 
                       ? 'bg-purple-500' 
                       : 'bg-blue-500'
                   }`}>
                     {type === 'ended' ? (
-                      <Video size={24} className="text-white" />
+                      <Video size={20} className="sm:w-6 sm:h-6 text-white" />
                     ) : (
-                      <Calendar size={24} className="text-white" />
+                      <Calendar size={20} className="sm:w-6 sm:h-6 text-white" />
                     )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-white dark:text-gray-100 mb-3 truncate">
+                    <h3 className="text-base sm:text-lg font-semibold text-white dark:text-gray-100 mb-2 sm:mb-3 truncate">
                       {getMeetingDescription(meeting)}
                     </h3>
                     
@@ -238,31 +238,31 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                 </div>
               </div>
               
-              {/* Meeting Details Grid */}
-              <div className="relative z-10 grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-slate-700/30 dark:bg-slate-600/30 backdrop-blur-sm rounded-xl p-4 border border-white/5 dark:border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500/20 dark:bg-blue-400/20 rounded-xl flex items-center justify-center">
-                      <Clock size={18} className="text-blue-400 dark:text-blue-300" />
+              {/* Meeting Details Grid - Responsive */}
+              <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="bg-slate-700/30 dark:bg-slate-600/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5 dark:border-white/10">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/20 dark:bg-blue-400/20 rounded-lg sm:rounded-xl flex items-center justify-center">
+                      <Clock size={16} className="sm:w-[18px] sm:h-[18px] text-blue-400 dark:text-blue-300" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-1">Duration</p>
-                      <p className="text-sm font-semibold text-white dark:text-gray-100">
+                      <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-0.5 sm:mb-1">Duration</p>
+                      <p className="text-xs sm:text-sm font-semibold text-white dark:text-gray-100">
                         {getMeetingDuration(meeting)}
                       </p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-slate-700/30 dark:bg-slate-600/30 backdrop-blur-sm rounded-xl p-4 border border-white/5 dark:border-white/10">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-500/20 dark:bg-green-400/20 rounded-xl flex items-center justify-center">
-                        <Users size={18} className="text-green-400 dark:text-green-300" />
+                <div className="bg-slate-700/30 dark:bg-slate-600/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5 dark:border-white/10">
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/20 dark:bg-green-400/20 rounded-lg sm:rounded-xl flex items-center justify-center">
+                        <Users size={16} className="sm:w-[18px] sm:h-[18px] text-green-400 dark:text-green-300" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-1">Participants</p>
-                        <p className="text-sm font-semibold text-white dark:text-gray-100">
+                        <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-0.5 sm:mb-1">Participants</p>
+                        <p className="text-xs sm:text-sm font-semibold text-white dark:text-gray-100">
                           {getParticipantCount(meeting)}
                         </p>
                       </div>
@@ -281,13 +281,13 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                 </div>
               </div>
               
-              {/* Meeting ID and Link */}
-              <div className="relative z-10 mb-6">
-                <div className="bg-slate-700/20 dark:bg-slate-600/20 backdrop-blur-sm rounded-xl p-4 border border-white/5 dark:border-white/10">
+              {/* Meeting ID and Link - Responsive */}
+              <div className="relative z-10 mb-4 sm:mb-6">
+                <div className="bg-slate-700/20 dark:bg-slate-600/20 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5 dark:border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-1">Meeting ID</p>
-                      <p className="text-sm font-mono text-white dark:text-gray-100">{meeting.id.slice(0, 12)}...</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-300 uppercase tracking-wide mb-0.5 sm:mb-1">Meeting ID</p>
+                      <p className="text-xs sm:text-sm font-mono text-white dark:text-gray-100">{meeting.id.slice(0, 8)}...</p>
                     </div>
                     <button
                       onClick={() => handleCopyLink(meeting.id)}
@@ -299,11 +299,11 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                 </div>
               </div>
               
-              {/* Action Buttons */}
-              <div className="relative z-10 flex gap-3">
+              {/* Action Buttons - Responsive */}
+              <div className="relative z-10 flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <Button
                   onClick={() => router.push(getMeetingRoomUrl(meeting.id))}
-                  className={`flex-1 font-semibold py-4 rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden ${
+                  className={`flex-1 font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg relative overflow-hidden ${
                     type === 'ended'
                       ? 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 hover:shadow-purple-500/25'
                       : status === 'Ready to Join'
@@ -334,12 +334,12 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' }) => {
                   <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"></div>
                 </Button>
                 
-                {/* Quick Action Button */}
+                {/* Quick Action Button - Responsive */}
                 <Button
                   onClick={() => handleCopyLink(meeting.id)}
-                  className="px-4 py-4 bg-slate-700/50 hover:bg-slate-700/70 rounded-2xl transition-all duration-300 hover:scale-105 border border-white/10"
+                  className="px-3 py-3 sm:px-4 sm:py-4 bg-slate-700/50 hover:bg-slate-700/70 rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-105 border border-white/10 sm:w-auto w-full sm:flex-shrink-0"
                 >
-                  <Copy size={18} className="text-gray-300" />
+                  <Copy size={16} className="sm:w-[18px] sm:h-[18px] text-gray-300" />
                 </Button>
               </div>
               

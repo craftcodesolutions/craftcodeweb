@@ -149,7 +149,7 @@ const MeetingTypeList = () => {
   const meetingDetails = getMeetingDetails();
 
   return (
-    <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <section className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 xl:grid-cols-3">
       <HomeCard
         img="/icons/add-meeting.svg"
         title="New Meeting"
@@ -167,7 +167,7 @@ const MeetingTypeList = () => {
         img="/icons/schedule.svg"
         title="Schedule Meeting"
         description="Plan your meeting"
-        className="bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 hover:shadow-purple-500/25 dark:hover:shadow-purple-600/25"
+        className="bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 hover:shadow-purple-500/25 dark:hover:shadow-purple-600/25 sm:col-span-2 xl:col-span-1"
         handleClick={() => setMeetingState('isScheduleMeeting')}
       />
 

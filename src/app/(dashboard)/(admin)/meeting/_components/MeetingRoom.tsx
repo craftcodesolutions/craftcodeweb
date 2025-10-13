@@ -170,9 +170,9 @@ const MeetingRoom = () => {
           </div>
         )}
         
-        {/* Local Video Preview (Picture-in-Picture) */}
+        {/* Local Video Preview (Picture-in-Picture) - Responsive */}
         {!isCameraMuted && !cameraTransitioning && (
-          <div className="absolute bottom-4 right-4 w-48 h-36 bg-slate-900 rounded-xl border-2 border-white/20 overflow-hidden shadow-2xl z-30">
+          <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 w-32 h-24 sm:w-48 sm:h-36 bg-slate-900 rounded-lg sm:rounded-xl border-2 border-white/20 overflow-hidden shadow-2xl z-30">
             <div className="relative w-full h-full">
               {/* This would show the local video preview */}
               <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
@@ -240,19 +240,21 @@ const MeetingRoom = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-slate-900 to-black"></div>
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]"></div>
       
-      {/* Enhanced Main Content Area with better space utilization */}
-      <div className="relative flex size-full p-4 items-center">
-        {/* Main Video Area */}
+      {/* Enhanced Main Content Area with responsive layout */}
+      <div className="relative flex size-full p-2 sm:p-4 items-center">
+        {/* Main Video Area - Full width on mobile, flexible on desktop */}
         <div className={cn(
-          "flex-1 flex items-center justify-center",
-          !showParticipants ? "mr-0" : "mr-4"
+          "flex items-center justify-center",
+          // On mobile: always full width, on desktop: flexible with margin when participants shown
+          "w-full sm:flex-1",
+          !showParticipants ? "sm:mr-0" : "sm:mr-4"
         )}>
           <div className={cn(
-            "w-full rounded-2xl overflow-hidden transition-all duration-500 relative",
+            "w-full rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 relative",
             isFullscreen 
               ? "bg-black/50" 
               : "bg-slate-800/30 backdrop-blur-xl border border-white/10 shadow-2xl",
-            "h-[calc(100vh-140px)]"
+            "h-[calc(100vh-100px)] sm:h-[calc(100vh-140px)]"
           )}>
             {/* Video Layout Container */}
             <div className="relative w-full h-full">
@@ -261,10 +263,10 @@ const MeetingRoom = () => {
           </div>
         </div>
         
-        {/* Enhanced Participants Panel with better integration */}
+        {/* Enhanced Participants Panel - Hidden on small devices */}
         <div
           className={cn(
-            'transition-all duration-500 transform flex-shrink-0',
+            'transition-all duration-500 transform flex-shrink-0 hidden sm:block',
             showParticipants 
               ? 'translate-x-0 opacity-100 w-80' 
               : 'translate-x-full opacity-0 w-0 overflow-hidden'
@@ -373,12 +375,12 @@ const MeetingRoom = () => {
         </div>
       </div>
       
-      {/* Redesigned Compact Navigation Bar */}
+      {/* Redesigned Compact Navigation Bar - Responsive */}
       <div className={cn(
         "fixed left-1/2 -translate-x-1/2 transition-all duration-500 z-50",
-        isFullscreen ? "bottom-3" : "bottom-5"
+        isFullscreen ? "bottom-2 sm:bottom-3" : "bottom-3 sm:bottom-5"
       )}>
-        <div className="flex items-center gap-2 bg-slate-900/98 backdrop-blur-2xl rounded-full px-4 py-3 border border-white/10 shadow-2xl h-12">
+        <div className="flex items-center gap-1 sm:gap-2 bg-slate-900/98 backdrop-blur-2xl rounded-full px-2 sm:px-4 py-2 sm:py-3 border border-white/10 shadow-2xl h-10 sm:h-12 max-w-[95vw] overflow-x-auto scrollbar-hide">
           {/* Enhanced Camera Toggle with Transition Feedback */}
           <button 
             onClick={toggleCamera}
@@ -393,66 +395,66 @@ const MeetingRoom = () => {
           >
             {cameraTransitioning ? (
               <div className="animate-spin">
-                <Camera size={18} className="transition-colors duration-300" />
+                <Camera size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
               </div>
             ) : (
               <>
                 {!isCameraMuted ? (
-                  <Camera size={18} className="transition-colors duration-300" />
+                  <Camera size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
                 ) : (
-                  <CameraOff size={18} className="transition-colors duration-300" />
+                  <CameraOff size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
                 )}
               </>
             )}
             
             {/* Status Indicator */}
             <div className={cn(
-              "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-900 transition-colors duration-300",
+              "absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-slate-900 sm:border-2 transition-colors duration-300",
               !isCameraMuted ? "bg-green-500" : "bg-red-500"
             )}></div>
           </button>
 
-          {/* Microphone Toggle - Functional */}
+          {/* Microphone Toggle - Functional - Responsive */}
           <button 
             onClick={toggleMicrophone}
             className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 hover:scale-110",
+              "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0",
               !isMicMuted 
                 ? "bg-green-500/30 text-green-300" 
                 : "bg-red-500/30 text-red-300"
             )}
           >
             {!isMicMuted ? (
-              <Mic size={18} className="transition-colors duration-300" />
+              <Mic size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             ) : (
-              <MicOff size={18} className="transition-colors duration-300" />
+              <MicOff size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             )}
           </button>
 
-          {/* Screen Share Toggle - Functional */}
+          {/* Screen Share Toggle - Functional - Responsive */}
           <button 
             onClick={toggleScreenShare}
             className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 hover:scale-110",
+              "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0",
               !isScreenShareMuted 
                 ? "bg-purple-500/30 text-purple-300" 
                 : "bg-slate-800/40 hover:bg-purple-500/20 text-white hover:text-purple-300"
             )}
           >
             {!isScreenShareMuted ? (
-              <ScreenShare size={18} className="transition-colors duration-300" />
+              <ScreenShare size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             ) : (
-              <ScreenShareOff size={18} className="transition-colors duration-300" />
+              <ScreenShareOff size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             )}
           </button>
           
           {/* Divider */}
-          <div className="h-8 w-px bg-white/10"></div>
+          <div className="h-6 sm:h-8 w-px bg-white/10 flex-shrink-0"></div>
           
-          {/* Layout Selector */}
+          {/* Layout Selector - Responsive */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-800/40 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110 border border-white/5">
-              <LayoutList size={18} className="text-white group-hover:text-blue-400 transition-colors duration-300" />
+            <DropdownMenuTrigger className="group relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800/40 hover:bg-blue-500/20 transition-all duration-300 hover:scale-110 border border-white/5 flex-shrink-0">
+              <LayoutList size={16} className="sm:w-[18px] sm:h-[18px] text-white group-hover:text-blue-400 transition-colors duration-300" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="border-slate-700/50 bg-slate-900/98 backdrop-blur-2xl text-white rounded-2xl p-2 shadow-2xl min-w-[160px] mb-2">
               {[
@@ -482,87 +484,87 @@ const MeetingRoom = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          {/* Fullscreen Toggle */}
+          {/* Fullscreen Toggle - Responsive */}
           <button 
             onClick={() => setIsFullscreen(!isFullscreen)}
             className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 hover:scale-110",
+              "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0",
               isFullscreen 
                 ? "bg-orange-500/30 text-orange-300" 
                 : "bg-slate-800/40 hover:bg-orange-500/20 text-white hover:text-orange-300"
             )}
           >
             {isFullscreen ? (
-              <Minimize2 size={18} className="transition-colors duration-300" />
+              <Minimize2 size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             ) : (
-              <Maximize2 size={18} className="transition-colors duration-300" />
+              <Maximize2 size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             )}
           </button>
           
           {/* Divider */}
-          <div className="h-8 w-px bg-white/10"></div>
+          <div className="h-6 sm:h-8 w-px bg-white/10 flex-shrink-0"></div>
           
-          {/* Participants Toggle */}
+          {/* Participants Toggle - Hidden on small devices */}
           <button 
             onClick={() => setShowParticipants((prev) => !prev)}
             className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 hover:scale-110 relative",
+              "hidden sm:flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 hover:scale-110 relative flex-shrink-0",
               showParticipants 
                 ? "bg-purple-500/30 text-purple-300" 
                 : "bg-slate-800/40 hover:bg-purple-500/20 text-white hover:text-purple-300"
             )}
           >
-            <Users size={18} className="transition-colors duration-300" />
+            <Users size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
             {participantCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+              <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-purple-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-xs font-bold">
                 {participantCount > 9 ? '9+' : participantCount}
               </span>
             )}
           </button>
           
-          {/* Settings */}
+          {/* Settings - Responsive */}
           <button 
             onClick={() => setShowSettings(!showSettings)}
             className={cn(
-              "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 hover:scale-110",
+              "hidden sm:flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0",
               showSettings 
                 ? "bg-green-500/30 text-green-300" 
                 : "bg-slate-800/40 hover:bg-green-500/20 text-white hover:text-green-300"
             )}
           >
-            <Settings size={18} className="transition-colors duration-300" />
+            <Settings size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
           </button>
           
-          {/* End Call Button (Icon Only) */}
+          {/* End Call Button (Icon Only) - Responsive */}
           {!isPersonalRoom && (
             <>
-              <div className="h-8 w-px bg-white/10"></div>
+              <div className="h-6 sm:h-8 w-px bg-white/10 flex-shrink-0"></div>
               <button 
                 onClick={() => router.push(`/meeting`)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500/30 hover:bg-red-500/50 text-red-300 hover:text-red-200 transition-all duration-300 hover:scale-110"
+                className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-500/30 hover:bg-red-500/50 text-red-300 hover:text-red-200 transition-all duration-300 hover:scale-110 flex-shrink-0"
               >
-                <PhoneOff size={18} className="transition-colors duration-300" />
+                <PhoneOff size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />
               </button>
             </>
           )}
         </div>
       </div>
       
-      {/* Enhanced Meeting Info Overlay */}
+      {/* Enhanced Meeting Info Overlay - Responsive */}
       <div className={cn(
-        "absolute top-6 left-6 transition-all duration-500 z-20",
+        "absolute top-3 left-3 sm:top-6 sm:left-6 transition-all duration-500 z-20",
         isFullscreen ? "opacity-0 pointer-events-none" : "opacity-100"
       )}>
-        <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl px-4 py-3 border border-white/20 shadow-xl">
+        <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 border border-white/20 shadow-xl">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
               <div className="absolute inset-0 w-4 h-4 bg-green-500 rounded-full animate-ping opacity-30"></div>
             </div>
             <div>
-              <p className="text-sm font-semibold text-white flex items-center gap-2">
+              <p className="text-xs sm:text-sm font-semibold text-white flex items-center gap-2">
                 Meeting Live
-                <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full font-medium">
+                <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-green-500/20 text-green-400 text-xs rounded-full font-medium">
                   {participantCount}
                 </span>
               </p>
@@ -587,15 +589,15 @@ const MeetingRoom = () => {
       {/* Enhanced Status Indicators */}
       <div className="absolute inset-0 pointer-events-none z-10">
         <div className="relative w-full h-full">
-            {/* Enhanced Status Indicators */}
+            {/* Enhanced Status Indicators - Responsive */}
           <div className={cn(
-            "absolute top-6 space-y-3 transition-all duration-500",
-            showParticipants ? "right-[340px]" : "right-6"
+            "absolute top-3 sm:top-6 space-y-2 sm:space-y-3 transition-all duration-500",
+            showParticipants ? "right-3 sm:right-[340px]" : "right-3 sm:right-6"
           )}>
             {/* Camera Status Indicator */}
             {isCameraMuted && (
               <div className={cn(
-                "bg-slate-900/95 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl transition-all duration-500",
+                "bg-slate-900/95 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20 shadow-xl transition-all duration-500",
                 cameraTransitioning && "animate-pulse"
               )}>
                 <div className="flex items-center gap-3">
@@ -603,7 +605,7 @@ const MeetingRoom = () => {
                     <CameraOff size={18} className="text-red-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-xs sm:text-sm font-medium text-white">
                       {cameraTransitioning ? "Adjusting Camera..." : "Camera Off"}
                     </p>
                     <p className="text-xs text-gray-400">Click camera button to enable</p>
@@ -614,13 +616,13 @@ const MeetingRoom = () => {
             
             {/* Microphone Status Indicator */}
             {isMicMuted && (
-              <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl">
+              <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20 shadow-xl">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
                     <MicOff size={18} className="text-red-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">Microphone Off</p>
+                    <p className="text-xs sm:text-sm font-medium text-white">Microphone Off</p>
                     <p className="text-xs text-gray-400">You are muted</p>
                   </div>
                 </div>
@@ -630,9 +632,9 @@ const MeetingRoom = () => {
         </div>
       </div>
 
-      {/* Compact Settings Panel */}
+      {/* Compact Settings Panel - Responsive */}
       {showSettings && (
-        <div className="absolute top-4 right-4 bg-slate-900/98 backdrop-blur-xl rounded-xl p-4 border border-white/20 shadow-2xl w-64 z-20">
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-slate-900/98 backdrop-blur-xl rounded-xl p-3 sm:p-4 border border-white/20 shadow-2xl w-56 sm:w-64 z-20">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-white flex items-center gap-2 text-sm">
