@@ -61,7 +61,11 @@ export async function POST(
     }
 
     // Initialize MongoDB client
-    client = new MongoClient(MONGODB_URI);
+    if (!MONGODB_URI) {
+      console.error('MONGODB_URI is not set');
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+    }
+    client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
     await client.connect();
     const db = client.db(DB_NAME);
 
@@ -99,6 +103,11 @@ export async function POST(
 
     let imageUrl: string | undefined;
     if (image) {
+      // Validate Cloudinary config in production
+      if (!cloudinary.config().cloud_name || !cloudinary.config().api_key || !cloudinary.config().api_secret) {
+        console.error('Cloudinary configuration missing. Ensure CLOUDINARY_* env vars are set.');
+        return NextResponse.json({ error: 'Image upload service misconfigured' }, { status: 500 });
+      }
       try {
         const uploadResponse = await cloudinary.uploader.upload(image, {
           folder: 'chat_images',
@@ -197,13 +206,10 @@ export async function POST(
       receiverId: savedMessage.receiverId.toString(),
     }, { status: 201 });
   } catch (error) {
-    console.error('Error in sendMessage:', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      userId: (await params).userId,
-      authUserId: (await verifyAuth(request)).userId,
-    });
-    return NextResponse.json({ error: 'Failed to send message', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    // Avoid performing async calls here that could throw again
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error in sendMessage:', { error: message });
+    return NextResponse.json({ error: 'Failed to send message', details: message }, { status: 500 });
   } finally {
     if (client) {
       await client.close().catch((err) => console.error('Error closing MongoDB client:', err));
