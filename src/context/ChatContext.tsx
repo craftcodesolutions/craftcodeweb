@@ -59,12 +59,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('isSoundEnabled');
       setIsSoundEnabled(saved === 'true');
     }
   }, []);
+
 
   // const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com'; // Removed - not used
 
@@ -116,6 +118,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('isSoundEnabled', JSON.stringify(newSoundState));
     }
   };
+  
 
   const getAllContacts = useCallback(async () => {
     setIsUsersLoading(true);
@@ -226,7 +229,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           if (data?.error || data?.details) {
             errorText = `${data.error || 'Error'}: ${data.details || ''}`.trim();
           }
-        } catch {}
+        } catch { }
         console.error('Send message API error:', errorText);
         throw new Error(errorText);
       }
