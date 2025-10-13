@@ -65,13 +65,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return false;
   });
 
+  // const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com'; // Removed - not used
+
   useEffect(() => {
     console.log('📨 Messenger opened - initializing socket connection...');
     if (authUser && !isSocketConnected) {
       connectSocket();
     }
   }, [authUser, connectSocket, isSocketConnected]);
-
   useEffect(() => {
     setSelectedUser(null);
     setMessages([]);
@@ -87,7 +88,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch contacts: ${response.status}`);
+        throw new Error('Failed to fetch contacts');
       }
 
       const contacts: Contact[] = await response.json();
@@ -102,10 +103,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.log('✅ Target user set:', { _id: targetUser._id, email: targetUser.email });
       return targetUser;
     } catch (error) {
-      console.error('Initialize target user error:', {
-        error: error instanceof Error ? error.message : String(error),
-        email,
-      });
+      console.error('Initialize target user error:', error);
       return null;
     }
   }, [authUser]);
@@ -128,16 +126,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch contacts: ${response.status}`);
+        throw new Error('Failed to fetch contacts');
       }
 
       const data = await response.json();
       setAllContacts(data);
       console.log(`📋 Fetched ${data.length} contacts`);
     } catch (error) {
-      console.error('Get contacts error:', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      console.error('Get contacts error:', error);
     } finally {
       setIsUsersLoading(false);
     }
@@ -153,16 +149,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch chats: ${response.status}`);
+        throw new Error('Failed to fetch chats');
       }
 
       const data = await response.json();
       setChats(data);
-      console.log(`📋 Fetched ${data.length} chat partners`);
     } catch (error) {
-      console.error('Get chat partners error:', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      console.error('Get chat partners error:', error);
     } finally {
       setIsUsersLoading(false);
     }
@@ -171,9 +164,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const getMessagesByUserId = useCallback(async (userId: string) => {
     setIsMessagesLoading(true);
     try {
-      if (!userId) {
-        throw new Error('User ID is required');
-      }
       const response = await fetch(`/api/messages/${userId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -181,7 +171,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch messages: ${response.status}`);
+        throw new Error('Failed to fetch messages');
       }
 
       const data: MessageType[] = await response.json();
@@ -191,29 +181,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setMessages(uniqueMessages);
       console.log(`📬 Fetched ${uniqueMessages.length} unique messages for user ${userId}`);
     } catch (error) {
-      console.error('Get messages error:', {
-        error: error instanceof Error ? error.message : String(error),
-        userId,
-      });
+      console.error('Get messages error:', error);
     } finally {
       setIsMessagesLoading(false);
     }
   }, []);
 
-  const sendMessage = async (messageData: { text?: string; image?: string }, retries = 3) => {
+  const sendMessage = async (messageData: { text?: string; image?: string }) => {
     if (!selectedUser || !authUser) {
-      console.warn('Cannot send message: Missing selectedUser or authUser', { selectedUser, authUser });
-      if (typeof window !== 'undefined') {
-        alert('Please select a user and ensure you are logged in.');
-      }
-      return;
-    }
-
-    if (!messageData.text && !messageData.image) {
-      console.warn('Cannot send message: Missing text or image', { messageData });
-      if (typeof window !== 'undefined') {
-        alert('Please provide a message or image.');
-      }
+      console.warn('Cannot send message: Missing selectedUser or authUser');
       return;
     }
 
@@ -234,96 +210,47 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return [...filteredMessages, optimisticMessage];
     });
 
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messageData),
+        credentials: 'include',
+      });
 
-        const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(messageData),
-          credentials: 'include',
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errorMessage = errorData.details || `Failed to send message: ${response.status}`;
-          const nonTransientErrors = [
-            'localStorage is not defined',
-            'Unauthorized',
-            'Invalid receiver ID format',
-            'Receiver not found',
-            'Cannot send messages to yourself',
-            'Invalid request body',
-            'Server configuration error',
-          ];
-          if (nonTransientErrors.some((err) => errorMessage.includes(err))) {
-            throw new Error(errorMessage);
-          }
-          throw new Error(errorMessage);
-        }
-
-        const sentMessage: Message = await response.json();
-
-        setMessages((prevMessages) => {
-          const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
-          const messageExists = filteredMessages.some((msg) => msg._id === sentMessage._id);
-          if (messageExists) {
-            console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
-            return filteredMessages;
-          }
-          return [...filteredMessages, sentMessage];
-        });
-
-        if (isSoundEnabled && typeof Audio !== 'undefined') {
-          const notificationSound = new Audio('/sounds/notification.mp3');
-          notificationSound.currentTime = 0;
-          notificationSound.play().catch((e) => console.log('Audio play failed:', e));
-        }
-
-        if (document.hidden || !document.hasFocus()) {
-          const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email || 'Unknown');
-          const messageText = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
-          debouncedShowSentNotification(receiverName, messageText, () => {
-            window.focus();
-            setSelectedUser(selectedUser);
-          });
-        }
-        return;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Send message attempt ${attempt} failed:`, {
-          error: errorMessage,
-          userId: selectedUser._id,
-          attempt,
-          messageData,
-          timestamp: new Date().toISOString(),
-        });
-        if (
-          attempt === retries ||
-          errorMessage.includes('localStorage is not defined') ||
-          errorMessage.includes('Server configuration error') ||
-          errorMessage.includes('Unauthorized') ||
-          errorMessage.includes('Invalid receiver ID format') ||
-          errorMessage.includes('Receiver not found')
-        ) {
-          setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
-          console.error('Send message failed after retries:', error);
-          if (typeof window !== 'undefined') {
-            alert(
-              errorMessage.includes('localStorage') || errorMessage.includes('Server configuration')
-                ? 'Server error: Please contact support.'
-                : `Failed to send message: ${errorMessage}`
-            );
-          }
-          return;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      if (!response.ok) {
+        throw new Error('Failed to send message');
       }
+
+      const sentMessage: Message = await response.json();
+
+      setMessages((prevMessages) => {
+        const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
+        const messageExists = filteredMessages.some((msg) => msg._id === sentMessage._id);
+        if (messageExists) {
+          console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+          return filteredMessages;
+        }
+        return [...filteredMessages, sentMessage];
+      });
+
+      if (isSoundEnabled && typeof Audio !== 'undefined') {
+        const notificationSound = new Audio('/sounds/notification.mp3');
+        notificationSound.currentTime = 0;
+        notificationSound.play().catch((e) => console.log('Audio play failed:', e));
+      }
+
+      if (document.hidden || !document.hasFocus()) {
+        const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email);
+        const messageText = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
+        debouncedShowSentNotification(receiverName, messageText, () => {
+          window.focus();
+          setSelectedUser(selectedUser);
+        });
+      }
+    } catch (error) {
+      setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
+      console.error('Send message error:', error);
     }
   };
 
@@ -367,30 +294,32 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setMessages((prevMessages) => {
-        const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
-        if (messageExists) {
-          console.warn(`Message with _id ${newMessage._id} already exists, skipping`, newMessage);
-          return prevMessages;
-        }
-        return [...prevMessages, newMessage];
-      });
-
-      setChats((prevChats) => {
-        const updatedChats = prevChats.map((chat) => {
-          const otherParticipant = chat.participants?.[0] || chat;
-          if (otherParticipant._id === selectedUser._id) {
-            return {
-              ...chat,
-              lastMessage: newMessage,
-              updatedAt: new Date().toISOString(),
-            };
+      if (isMessageForSelectedUser) {
+        setMessages((prevMessages) => {
+          const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
+          if (messageExists) {
+            console.warn(`Message with _id ${newMessage._id} already exists, skipping`, newMessage);
+            return prevMessages;
           }
-          return chat;
+          return [...prevMessages, newMessage];
         });
 
-        return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      });
+        setChats((prevChats) => {
+          const updatedChats = prevChats.map((chat) => {
+            const otherParticipant = chat.participants?.[0] || chat;
+            if (otherParticipant._id === selectedUser._id) {
+              return {
+                ...chat,
+                lastMessage: newMessage,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return chat;
+          });
+
+          return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
+      }
 
       if (isSoundEnabled && typeof Audio !== 'undefined') {
         const notificationSound = new Audio('/sounds/notification.mp3');
@@ -416,35 +345,39 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Check if message is to selected user
       if (!selectedUser || sentMessage.receiverId !== selectedUser._id) {
-        console.log('Message sent confirmation not for selected user:', sentMessage.receiverId);
+        console.log('Message sent confirmation not for selected user');
         return;
       }
 
-      setMessages((prevMessages) => {
-        const messageExists = prevMessages.some((msg) => msg._id === sentMessage._id);
-        if (messageExists) {
-          console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
-          return prevMessages;
-        }
-        return [...prevMessages, sentMessage];
-      });
-
-      setChats((prevChats) => {
-        const updatedChats = prevChats.map((chat) => {
-          const otherParticipant = chat.participants?.[0] || chat;
-          if (otherParticipant._id === selectedUser._id) {
-            return {
-              ...chat,
-              lastMessage: sentMessage,
-              updatedAt: new Date().toISOString(),
-            };
+      const isMessageToSelectedUser = selectedUser && sentMessage.receiverId === selectedUser._id;
+      if (isMessageToSelectedUser) {
+        setMessages((prevMessages) => {
+          const messageExists = prevMessages.some((msg) => msg._id === sentMessage._id);
+          if (messageExists) {
+            console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+            return prevMessages;
           }
-          return chat;
+          return [...prevMessages, sentMessage];
         });
 
-        return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      });
+        setChats((prevChats) => {
+          const updatedChats = prevChats.map((chat) => {
+            const otherParticipant = chat.participants?.[0] || chat;
+            if (otherParticipant._id === selectedUser._id) {
+              return {
+                ...chat,
+                lastMessage: sentMessage,
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return chat;
+          });
+
+          return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
+      }
     });
   }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification]);
 
