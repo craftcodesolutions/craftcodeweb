@@ -58,12 +58,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [selectedUser, setSelectedUser] = useState<Contact | null>(null);
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      return JSON.parse(localStorage.getItem('isSoundEnabled') || 'false') === true;
+      const saved = localStorage.getItem('isSoundEnabled');
+      setIsSoundEnabled(saved === 'true');
     }
-    return false;
-  });
+  }, []);
 
   // const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com'; // Removed - not used
 
