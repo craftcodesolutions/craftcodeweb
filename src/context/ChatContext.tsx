@@ -71,6 +71,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       connectSocket();
     }
   }, [authUser, connectSocket, isSocketConnected]);
+
   useEffect(() => {
     setSelectedUser(null);
     setMessages([]);
@@ -101,7 +102,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.log('✅ Target user set:', { _id: targetUser._id, email: targetUser.email });
       return targetUser;
     } catch (error) {
-      console.error('Initialize target user error:', error);
+      console.error('Initialize target user error:', {
+        error: error instanceof Error ? error.message : String(error),
+        email,
+      });
       return null;
     }
   }, [authUser]);
@@ -131,7 +135,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setAllContacts(data);
       console.log(`📋 Fetched ${data.length} contacts`);
     } catch (error) {
-      console.error('Get contacts error:', error);
+      console.error('Get contacts error:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       setIsUsersLoading(false);
     }
@@ -152,8 +158,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       setChats(data);
+      console.log(`📋 Fetched ${data.length} chat partners`);
     } catch (error) {
-      console.error('Get chat partners error:', error);
+      console.error('Get chat partners error:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       setIsUsersLoading(false);
     }
@@ -162,6 +171,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const getMessagesByUserId = useCallback(async (userId: string) => {
     setIsMessagesLoading(true);
     try {
+      if (!userId) {
+        throw new Error('User ID is required');
+      }
       const response = await fetch(`/api/messages/${userId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -179,7 +191,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setMessages(uniqueMessages);
       console.log(`📬 Fetched ${uniqueMessages.length} unique messages for user ${userId}`);
     } catch (error) {
-      console.error('Get messages error:', error);
+      console.error('Get messages error:', {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
     } finally {
       setIsMessagesLoading(false);
     }
@@ -187,7 +202,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const sendMessage = async (messageData: { text?: string; image?: string }, retries = 3) => {
     if (!selectedUser || !authUser) {
-      console.warn('Cannot send message: Missing selectedUser or authUser');
+      console.warn('Cannot send message: Missing selectedUser or authUser', { selectedUser, authUser });
+      if (typeof window !== 'undefined') {
+        alert('Please select a user and ensure you are logged in.');
+      }
+      return;
+    }
+
+    if (!messageData.text && !messageData.image) {
+      console.warn('Cannot send message: Missing text or image', { messageData });
+      if (typeof window !== 'undefined') {
+        alert('Please provide a message or image.');
+      }
       return;
     }
 
@@ -210,16 +236,35 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(messageData),
           credentials: 'include',
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.details || `Failed to send message: ${response.status}`);
+          const errorMessage = errorData.details || `Failed to send message: ${response.status}`;
+          const nonTransientErrors = [
+            'localStorage is not defined',
+            'Unauthorized',
+            'Invalid receiver ID format',
+            'Receiver not found',
+            'Cannot send messages to yourself',
+            'Invalid request body',
+            'Server configuration error',
+          ];
+          if (nonTransientErrors.some((err) => errorMessage.includes(err))) {
+            throw new Error(errorMessage);
+          }
+          throw new Error(errorMessage);
         }
 
         const sentMessage: Message = await response.json();
@@ -241,29 +286,43 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         }
 
         if (document.hidden || !document.hasFocus()) {
-          const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email);
+          const receiverName = selectedUser.isAdmin ? 'Support' : (selectedUser.firstName || selectedUser.email || 'Unknown');
           const messageText = messageData.text || (messageData.image ? 'Sent an image' : 'Message sent');
           debouncedShowSentNotification(receiverName, messageText, () => {
             window.focus();
             setSelectedUser(selectedUser);
           });
         }
-        return; // Success, exit the retry loop
+        return;
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`Send message attempt ${attempt} failed:`, {
-          error: error instanceof Error ? error.message : String(error),
+          error: errorMessage,
           userId: selectedUser._id,
+          attempt,
+          messageData,
+          timestamp: new Date().toISOString(),
         });
-        if (attempt === retries) {
+        if (
+          attempt === retries ||
+          errorMessage.includes('localStorage is not defined') ||
+          errorMessage.includes('Server configuration error') ||
+          errorMessage.includes('Unauthorized') ||
+          errorMessage.includes('Invalid receiver ID format') ||
+          errorMessage.includes('Receiver not found')
+        ) {
           setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
           console.error('Send message failed after retries:', error);
-          // Optionally notify the user
           if (typeof window !== 'undefined') {
-            alert('Failed to send message after multiple attempts. Please try again later.');
+            alert(
+              errorMessage.includes('localStorage') || errorMessage.includes('Server configuration')
+                ? 'Server error: Please contact support.'
+                : `Failed to send message: ${errorMessage}`
+            );
           }
-        } else {
-          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+          return;
         }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
   };
@@ -308,32 +367,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (isMessageForSelectedUser) {
-        setMessages((prevMessages) => {
-          const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
-          if (messageExists) {
-            console.warn(`Message with _id ${newMessage._id} already exists, skipping`, newMessage);
-            return prevMessages;
+      setMessages((prevMessages) => {
+        const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
+        if (messageExists) {
+          console.warn(`Message with _id ${newMessage._id} already exists, skipping`, newMessage);
+          return prevMessages;
+        }
+        return [...prevMessages, newMessage];
+      });
+
+      setChats((prevChats) => {
+        const updatedChats = prevChats.map((chat) => {
+          const otherParticipant = chat.participants?.[0] || chat;
+          if (otherParticipant._id === selectedUser._id) {
+            return {
+              ...chat,
+              lastMessage: newMessage,
+              updatedAt: new Date().toISOString(),
+            };
           }
-          return [...prevMessages, newMessage];
+          return chat;
         });
 
-        setChats((prevChats) => {
-          const updatedChats = prevChats.map((chat) => {
-            const otherParticipant = chat.participants?.[0] || chat;
-            if (otherParticipant._id === selectedUser._id) {
-              return {
-                ...chat,
-                lastMessage: newMessage,
-                updatedAt: new Date().toISOString(),
-              };
-            }
-            return chat;
-          });
-
-          return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        });
-      }
+        return updatedChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      });
 
       if (isSoundEnabled && typeof Audio !== 'undefined') {
         const notificationSound = new Audio('/sounds/notification.mp3');
@@ -360,7 +417,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }
 
       if (!selectedUser || sentMessage.receiverId !== selectedUser._id) {
-        console.log('Message sent confirmation not for selected user');
+        console.log('Message sent confirmation not for selected user:', sentMessage.receiverId);
         return;
       }
 

@@ -8,7 +8,7 @@ export async function verifyAuth(req: NextRequest): Promise<{ isAuthenticated: b
       return { isAuthenticated: false, userId: null, isAdmin: false };
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hG8v$L1^r!eX9@dP2z&Bt7WfKmQsVjE3cYuT6nMwAoLjR5xZ') as { userId: string; isAdmin?: boolean };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX') as { userId: string; isAdmin?: boolean };
     return { isAuthenticated: true, userId: decoded.userId, isAdmin: decoded.isAdmin || false };
   } catch (error) {
     console.error('Auth verification error:', error);
