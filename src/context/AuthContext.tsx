@@ -42,6 +42,8 @@ interface AuthContextType {
   isSocketConnected: boolean;
   connectSocket: () => void;
   disconnectSocket: () => void;
+  forceReconnectSocket: () => void;
+  debugAuthState: () => void;
   joinChatRoom: (chatId: string) => void;
   leaveChatRoom: (chatId: string) => void;
   sendTypingIndicator: (receiverId: string, isTyping: boolean) => void;
@@ -66,7 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? 'http://localhost:3000'
     : '/';
 
-    const SOCKET_URL = process.env.SOCKET_URL || 
+
+  const SOCKET_URL = process.env.SOCKET_URL || 
     (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://server-wp4r.onrender.com');
 
   const [user, setUser] = useState<User | null>(null);
@@ -83,10 +86,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const MAX_RETRIES = 5;
 
   const getCookie = (name: string) => {
+    if (typeof document === 'undefined') return null;
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop()?.split(';').shift();
     return null;
+  };
+
+  // Debug function to check auth state
+  const debugAuthState = () => {
+    const authToken = getCookie('authToken');
+    console.log('🔍 Auth Debug State:', {
+      isAuthenticated,
+      hasUser: !!user,
+      hasAuthToken: !!authToken,
+      authToken: authToken ? `${authToken.substring(0, 20)}...` : 'null',
+      socketConnected: socket?.connected,
+      isConnecting,
+      retryCount
+    });
   };
 
   const fetchUserFromBackend = async () => {
@@ -97,7 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-      console.log('Response status:', response.status);
       if (!response.ok) {
         if (response.status === 401) {
           // Check for authToken before attempting refresh
@@ -181,75 +198,251 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const connectSocket = async () => {
-    if (!user || isConnecting || typeof window === 'undefined') {
+    if (!user || socket?.connected || socket || isConnecting || typeof window === 'undefined') {
       console.log(`AuthContext[${authInstanceId.current}] Skipping socket connection:`, {
         hasUser: !!user,
+        socketConnected: socket?.connected,
+        socketExists: !!socket,
         isConnecting,
-        isClient: typeof window !== 'undefined',
+        isClient: typeof window !== 'undefined'
       });
       return;
     }
-  
-    if (socket && socket.connected) {
-      console.log(`AuthContext[${authInstanceId.current}] Socket already connected: ${socket.id}`);
+    if (retryCount >= MAX_RETRIES) {
+      console.error(`AuthContext[${authInstanceId.current}] Max retries (${MAX_RETRIES}) reached for socket connection`);
+      console.error('Failed to connect to server after multiple attempts');
+      setIsConnecting(false);
+      setRetryCount(0); // Reset retry count
       return;
     }
-  
-    console.log(`🔌 AuthContext[${authInstanceId.current}] Connecting socket for ${user.email}`);
-  
-    const res = await fetch('/api/auth/token', { credentials: 'include' });
-    if (!res.ok) throw new Error('Failed to fetch token');
-    const { token: authToken } = await res.json();
-    if (!authToken) {
-      console.error(`AuthContext[${authInstanceId.current}] ❌ No authToken found, cannot connect socket`);
-      return;
+
+    // Check if we have a valid user session before attempting connection
+    if (!user || !user.userId) {
+      // Only retry if we haven't exceeded max retries for user checks
+      if (retryCount < 3) {
+        console.warn(`AuthContext[${authInstanceId.current}] No authenticated user available, will retry in 2 seconds... (${retryCount + 1}/3)`);
+        setRetryCount(prev => prev + 1);
+        setTimeout(connectSocket, 2000);
+        return;
+      } else {
+        console.error(`AuthContext[${authInstanceId.current}] No authenticated user found after 3 attempts, stopping connection attempts`);
+        setIsConnecting(false);
+        setRetryCount(0);
+        return;
+      }
     }
-  
-    setIsConnecting(true);
-  
+
+    // Get a Socket.IO specific token from server
+    let socketToken: string | null = null;
     try {
+      const response = await fetch('/api/auth/socket-token', {
+        method: 'GET',
+        credentials: 'include', // This will include httpOnly cookies
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        socketToken = data.socketToken;
+        console.log(`AuthContext[${authInstanceId.current}] Socket token obtained successfully`);
+      } else {
+        throw new Error(`Socket token request failed: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`AuthContext[${authInstanceId.current}] Failed to get socket token:`, error);
+      if (retryCount < 3) {
+        console.warn(`AuthContext[${authInstanceId.current}] Socket token failed, will retry in 2 seconds... (${retryCount + 1}/3)`);
+        setRetryCount(prev => prev + 1);
+        setTimeout(connectSocket, 2000);
+        return;
+      } else {
+        console.error(`AuthContext[${authInstanceId.current}] Socket token failed after 3 attempts, stopping connection attempts`);
+        setIsConnecting(false);
+        setRetryCount(0);
+        return;
+      }
+    }
+    console.log(`🔌 AuthContext[${authInstanceId.current}] Initiating socket connection for user: ${user.email} (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+    setIsConnecting(true);
+
+    try {
+      console.log(`AuthContext[${authInstanceId.current}] Triggering Socket.IO server initialization`);
+      const initResponse = await fetch(`/api/socket`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!initResponse.ok) {
+        const errorData = await initResponse.json();
+        throw new Error(`Failed to initialize Socket.IO server: ${errorData.error || initResponse.statusText}`);
+      }
+      const initData = await initResponse.json();
+      console.log(`AuthContext[${authInstanceId.current}] Socket.IO server initialization response:`, initData);
+
+      if (initData.message.includes('not initialized')) {
+        console.log(`AuthContext[${authInstanceId.current}] Socket.IO server not ready, retrying in 2s`);
+        setRetryCount(prev => prev + 1);
+        setTimeout(connectSocket, 2000);
+        return;
+      }
+
+      console.log(`AuthContext[${authInstanceId.current}] Connecting socket with token authentication`);
+
       const newSocket = io(SOCKET_URL, {
         path: '/api/socket',
-        transports: ['websocket'],
         withCredentials: true,
+        transports: ['websocket', 'polling'],
         forceNew: true,
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         timeout: 20000,
-        auth: { token: authToken }, // ✅ THIS IS WHAT SERVER READS
+        auth: {
+          token: socketToken, // Send the Socket.IO specific token
+          userId: user.userId,
+          email: user.email
+        }
       });
-  
+
       newSocket.on('connect', () => {
         console.log(`✅ AuthContext[${authInstanceId.current}] Socket connected: ${newSocket.id}`);
-        setSocket(newSocket);
         setIsSocketConnected(true);
         setIsConnecting(false);
+        setRetryCount(0);
       });
-  
-      newSocket.on('connect_error', (err) => {
-        console.error(`❌ Socket connection error: ${err.message}`);
+
+      newSocket.on('tokenUpdated', async (data: { newToken: string; timestamp: string; reason: string }) => {
+        console.log(`Token updated for user ${user?.userId}:`, data);
+        await refreshUser();
+        newSocket.emit('tokenUpdateReceived', { timestamp: data.timestamp, reason: data.reason });
+        console.log('Your account has been updated. Session refreshed automatically.');
+      });
+
+      newSocket.on('userStatusChanged', async (data: { status: boolean; timestamp: string; reason: string }) => {
+        newSocket.emit('statusUpdateReceived', { status: data.status, timestamp: data.timestamp });
+        if (!data.status) {
+          console.error('Your account has been deactivated. Logging out...');
+          setTimeout(() => logout(), 3000);
+        } else {
+          console.log('Your account has been reactivated.');
+          await refreshUser();
+        }
+      });
+
+      newSocket.on('designationsUpdated', async (data: { designations: string[]; timestamp: string; reason: string }) => {
+        console.log(`Designations updated for user ${user?.userId}:`, data);
+        await refreshUser();
+        newSocket.emit('designationsUpdateReceived', { timestamp: data.timestamp, reason: data.reason });
+        console.log('Your designations have been updated. Session refreshed automatically.');
+      });
+
+      newSocket.on('force_logout', (data: { reason: string; timestamp: string }) => {
+        console.log(`Force logout received:`, data);
+        console.warn(`You have been logged out: ${data.reason}`);
+        logout();
+      });
+
+      newSocket.on('getOnlineUsers', (users: string[]) => {
+        console.log(`📊 AuthContext[${authInstanceId.current}] Online users updated:`, users);
+        setOnlineUsers(users);
+      });
+
+      newSocket.on('newMessage', (msg: { from: string; content: string; timestamp: string; notification: boolean }) => {
+        console.log(`📩 New message received:`, msg);
+        if (msg.notification) {
+          if (document.hidden || !document.hasFocus()) {
+            showMessageNotification(msg.from, msg.content, () => {
+              window.focus();
+              if (document.hidden) {
+                if ('focus' in window) {
+                  window.focus();
+                }
+              }
+            });
+          }
+        }
+      });
+
+      newSocket.on('userTyping', (data: { userId: string; isTyping: boolean; timestamp: string }) => {
+        console.log(`⌨️ Typing indicator received from ${data.userId}: ${data.isTyping ? 'typing' : 'stopped'}`);
+      });
+
+      newSocket.on('messageReadReceipt', (data: { messageId: string; readBy: string; readAt: string }) => {
+        console.log(`✅ Message read receipt received: ${data.messageId} read by ${data.readBy}`);
+      });
+
+      newSocket.on('connect_error', (error) => {
+        console.error(`❌ Socket connection error: ${error.message}`);
         setIsSocketConnected(false);
         setIsConnecting(false);
         setSocket(null);
+        
+        // Handle rate limiting errors differently
+        if (error.message.includes('Too many failed attempts')) {
+          console.warn(`Rate limit reached, waiting longer before retry...`);
+          setRetryCount(prev => prev + 1);
+          // Wait longer for rate limit to reset (60 seconds)
+          setTimeout(connectSocket, 60000);
+        } else if (error.message.includes('Authentication error')) {
+          console.warn(`Authentication error, refreshing token and retrying...`);
+          // Try to refresh token before retrying
+          refreshToken().then((result) => {
+            if (result.success) {
+              setRetryCount(prev => prev + 1);
+              setTimeout(connectSocket, 2000);
+            } else {
+              console.error('Token refresh failed, stopping connection attempts');
+              setRetryCount(MAX_RETRIES); // Stop retrying
+            }
+          });
+        } else {
+          setRetryCount(prev => prev + 1);
+          setTimeout(connectSocket, 2000);
+        }
       });
-  
+
       newSocket.on('disconnect', (reason) => {
-        console.log(`🔌 Socket disconnected: ${reason}`);
+        console.log(`🔌 Socket disconnected: ${newSocket.id}, reason: ${reason}`);
         setIsSocketConnected(false);
       });
-  
-      newSocket.on('userStatusChanged', (data) => {
-        console.log(`👤 User status changed:`, data);
-        if (!data.status) logout();
+
+      newSocket.on('reconnect', () => {
+        console.log(`🔄 Socket reconnected: ${newSocket.id}`);
+        setIsSocketConnected(true);
+        setRetryCount(0);
       });
-  
+
+      newSocket.on('reconnect_failed', () => {
+        console.error('❌ Socket reconnection failed after all attempts');
+        setIsSocketConnected(false);
+        console.error('Failed to reconnect to server');
+      });
+
+      newSocket.on('ping', (data: { timestamp: string }) => {
+        newSocket.emit('pong', { timestamp: data.timestamp });
+      });
+
+      setSocket(newSocket);
     } catch (err) {
-      console.error(`❌ Failed to connect socket:`, err);
+      const error = err as unknown;
+      let message = 'Unknown error';
+      let stack: unknown = undefined;
+      if (error && typeof error === 'object') {
+        message = (error as { message?: string }).message ?? message;
+        stack = (error as { stack?: unknown }).stack;
+      }
+      console.error(`❌ Socket connection failed: ${message}`, {
+        error,
+        socketUrl: SOCKET_URL,
+        userId: user?.userId,
+        stack,
+      });
+      setIsSocketConnected(false);
       setIsConnecting(false);
+      setSocket(null);
+      setRetryCount(prev => prev + 1);
+      console.error(`Failed to connect to server: ${message}`);
+      setTimeout(connectSocket, 2000);
     }
   };
-  
 
   const disconnectSocket = () => {
     if (socket) {
@@ -260,6 +453,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsConnecting(false);
       setOnlineUsers([]);
       setRetryCount(0);
+    }
+  };
+
+  const forceReconnectSocket = () => {
+    console.log(`🔄 Force reconnecting socket...`);
+    disconnectSocket();
+    setRetryCount(0);
+    if (user && isAuthenticated) {
+      setTimeout(() => {
+        connectSocket();
+      }, 1000);
     }
   };
 
@@ -293,7 +497,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkAuth();
-    
+
     initializeNotifications().then(success => {
       if (success) {
         console.log('✅ Notification service initialized in AuthContext');
@@ -304,28 +508,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      connectSocket();
-    } else {
+    if (isAuthenticated && user && !socket?.connected && !isConnecting) {
+      // Reset retry count when starting fresh connection attempt
+      setRetryCount(0);
+      // Delay socket connection to ensure auth token is set in cookies
+      const timer = setTimeout(() => {
+        connectSocket();
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (!isAuthenticated || !user) {
       disconnectSocket();
     }
   }, [isAuthenticated, user]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isAuthenticated && user) {
-        connectSocket();
-      } else if (document.visibilityState === 'hidden') {
-        disconnectSocket();
+      if (document.visibilityState === 'visible' && isAuthenticated && user && !socket?.connected && !isConnecting) {
+        console.log('Page became visible, attempting socket reconnection...');
+        setRetryCount(0); // Reset retry count for fresh attempt
+        setTimeout(() => {
+          connectSocket();
+        }, 2000); // Increased delay to prevent rapid reconnections
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      disconnectSocket();
-    };
-  }, [isAuthenticated, user]);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isAuthenticated, user, socket?.connected, isConnecting]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -500,10 +709,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Attempting token refresh, cookies:', document.cookie);
       const response = await fetch('/api/auth/refresh-token', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
-  
       if (!response.ok) {
         throw new Error('Failed to refresh token');
       }
@@ -532,6 +740,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: error instanceof Error ? error.message : 'Token refresh failed' };
     }
   };
+
   
   const updateUserByAdmin = async (userId: string, field: 'isAdmin' | 'status', value: boolean) => {
     setIsLoading(true);
@@ -566,10 +775,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUserDesignations = async (userId: string, designations: string[]) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/users?id=${userId}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field: 'designations', value: designations }),
+        body: JSON.stringify({ designations }),
         credentials: 'include',
       });
       if (!response.ok) {
@@ -579,9 +788,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatedUser = await response.json();
       if (user && user.userId === userId) {
         await refreshUser();
-        console.log('Your designations have been updated successfully!');
-      } else {
-        console.log('User designations updated successfully');
       }
       return { success: true, updatedUser };
     } catch (error) {
@@ -618,6 +824,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isSocketConnected,
         connectSocket,
         disconnectSocket,
+        forceReconnectSocket,
+        debugAuthState,
         joinChatRoom,
         leaveChatRoom,
         sendTypingIndicator,
@@ -628,5 +836,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-export default AuthProvider;

@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import * as React from 'react';
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+
 import { useAuth } from './AuthContext';
 import { Message as MessageType } from '@/types/Message';
 import { showMessageNotification, showSentMessageNotification } from '@/lib/notificationService';
@@ -12,6 +14,7 @@ import { Contact } from '@/lib/contacts';
 interface Message extends MessageType {
   isOptimistic?: boolean;
 }
+
 
 interface Chat {
   _id: string;
@@ -29,6 +32,7 @@ interface ChatContextType {
   isUsersLoading: boolean;
   isMessagesLoading: boolean;
   isSoundEnabled: boolean;
+  
   toggleSound: () => void;
   setActiveTab: (tab: string) => void;
   setSelectedUser: (user: Contact | null) => void;
@@ -50,6 +54,8 @@ export function useChat(): ChatContextType {
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
+
+  
   const { user: authUser, socket, connectSocket, isSocketConnected } = useAuth();
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -58,25 +64,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [selectedUser, setSelectedUser] = useState<Contact | null>(null);
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
-
-  useEffect(() => {
+  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('isSoundEnabled');
-      setIsSoundEnabled(saved === 'true');
+      return JSON.parse(localStorage.getItem('isSoundEnabled') || 'false') === true;
     }
-  }, []);
+    return false;
+  });
 
-
+  // Ensure user returns to inbox on page refresh/reload
   // const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com'; // Removed - not used
 
   useEffect(() => {
-    console.log('📨 Messenger opened - initializing socket connection...');
     if (authUser && !isSocketConnected) {
-      connectSocket();
+      // Delay socket connection attempt to allow AuthContext to handle it first
+      const timer = setTimeout(() => {
+        if (!isSocketConnected) {
+          console.log('ChatContext: Requesting socket connection from AuthContext');
+          connectSocket();
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
     }
   }, [authUser, connectSocket, isSocketConnected]);
   useEffect(() => {
+    // Clear any selected user on component mount (page refresh)
     setSelectedUser(null);
     setMessages([]);
   }, [authUser]);
@@ -111,15 +122,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }, [authUser]);
 
+  /**
+   * Toggle sound notification setting
+   */
   const toggleSound = () => {
     const newSoundState = !isSoundEnabled;
     setIsSoundEnabled(newSoundState);
     if (typeof window !== 'undefined') {
+      localStorage.setItem("isSoundEnabled", JSON.stringify(newSoundState));
       localStorage.setItem('isSoundEnabled', JSON.stringify(newSoundState));
     }
   };
-  
 
+  /**
+   * Get all contacts from the server
+   */
   const getAllContacts = useCallback(async () => {
     setIsUsersLoading(true);
     try {
@@ -130,19 +147,25 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch contacts');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch contacts');
       }
 
       const data = await response.json();
       setAllContacts(data);
       console.log(`📋 Fetched ${data.length} contacts`);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch contacts';
+     
       console.error('Get contacts error:', error);
     } finally {
       setIsUsersLoading(false);
     }
   }, []);
 
+  /**
+   * Get chat partners (users with existing conversations)
+   */
   const getMyChatPartners = useCallback(async () => {
     setIsUsersLoading(true);
     try {
@@ -153,18 +176,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch chats');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch chats');
       }
 
       const data = await response.json();
       setChats(data);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch chats';
+   
       console.error('Get chat partners error:', error);
     } finally {
       setIsUsersLoading(false);
     }
   }, []);
 
+  /**
+   * Get messages for a specific user
+   */
   const getMessagesByUserId = useCallback(async (userId: string) => {
     setIsMessagesLoading(true);
     try {
@@ -175,9 +204,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch messages');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch messages');
       }
 
+      
       const data: MessageType[] = await response.json();
       const uniqueMessages = Array.from(
         new Map(data.map((msg) => [msg._id, msg])).values()
@@ -185,18 +216,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setMessages(uniqueMessages);
       console.log(`📬 Fetched ${uniqueMessages.length} unique messages for user ${userId}`);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+     
       console.error('Get messages error:', error);
     } finally {
       setIsMessagesLoading(false);
     }
   }, []);
 
+  /**
+   * Send a message with optimistic updates
+   */
   const sendMessage = async (messageData: { text?: string; image?: string }) => {
     if (!selectedUser || !authUser) {
       console.warn('Cannot send message: Missing selectedUser or authUser');
       return;
     }
 
+  
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2)}`;
 
     const optimisticMessage: Message = {
@@ -209,6 +246,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       isOptimistic: true,
     };
 
+    // Immediately update the UI by adding the message
     setMessages((prevMessages) => {
       const filteredMessages = prevMessages.filter((msg) => !msg.isOptimistic || msg._id !== tempId);
       return [...filteredMessages, optimisticMessage];
@@ -223,16 +261,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        let errorText = `Failed to send message (HTTP ${response.status})`;
-        try {
-          const data = await response.json();
-          if (data?.error || data?.details) {
-            errorText = `${data.error || 'Error'}: ${data.details || ''}`.trim();
-          }
-        } catch { }
-        console.error('Send message API error:', errorText);
-        throw new Error(errorText);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to send message');
       }
+
 
       const sentMessage: Message = await response.json();
 
@@ -240,7 +272,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
         const messageExists = filteredMessages.some((msg) => msg._id === sentMessage._id);
         if (messageExists) {
-          console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+          console.log(`✅ Message ${sentMessage._id} already exists (duplicate prevented)`);
           return filteredMessages;
         }
         return [...filteredMessages, sentMessage];
@@ -261,11 +293,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (error) {
+      // Remove optimistic message on failure
       setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
       console.error('Send message error:', error);
     }
   };
 
+  /**
+   * Subscribe to new messages via socket
+   */
   const debouncedShowNotification = useCallback(
     debounce((senderName: string, messageText: string, onClick: () => void) => {
       showMessageNotification(senderName, messageText, onClick);
@@ -285,41 +322,42 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.log('⚠️ Cannot subscribe to messages:', {
         socket: !!socket,
         isSocketConnected,
+        selectedUser: !!selectedUser
       });
       return;
     }
 
-    console.log('📡 Subscribing to messages for user:', authUser?.email);
-
-    // Load current conversation messages once when subscribing
-    if (selectedUser?._id) {
-      getMessagesByUserId(selectedUser._id);
+    if (!selectedUser) {
+      console.log('⚠️ No selected user for message subscription');
+      return;
     }
-
-    // Ensure we don't accumulate duplicate listeners across re-subscribes
-    socket.off('newMessage');
-    socket.off('messageSent');
 
     socket.on('newMessage', (newMessage: Message) => {
       console.log('📨 Received new message:', newMessage);
 
       if (!newMessage._id) {
-        console.warn('Received message without _id, skipping:', newMessage);
+        console.log('⚠️ Received message without _id, skipping');
         return;
       }
 
-      const isMessageForSelectedUser = selectedUser && newMessage.senderId === selectedUser._id;
+      // Check if message is part of current conversation (sender OR receiver)
+      const isMessageForCurrentConversation = selectedUser && 
+        (newMessage.senderId === selectedUser._id || newMessage.receiverId === selectedUser._id);
 
-      if (!isMessageForSelectedUser) {
-        console.log('Message not for selected user:', newMessage.senderId);
+      if (!isMessageForCurrentConversation) {
+        console.log('Message not for current conversation:', {
+          senderId: newMessage.senderId,
+          receiverId: newMessage.receiverId,
+          selectedUserId: selectedUser._id
+        });
         return;
       }
 
-      if (isMessageForSelectedUser) {
+      if (isMessageForCurrentConversation) {
         setMessages((prevMessages) => {
           const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
           if (messageExists) {
-            console.warn(`Message with _id ${newMessage._id} already exists, skipping`, newMessage);
+            console.log(`✅ Message ${newMessage._id} already exists (duplicate prevented)`);
             return prevMessages;
           }
           return [...prevMessages, newMessage];
@@ -362,7 +400,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.log('📤 Received message sent confirmation:', sentMessage);
 
       if (!sentMessage._id) {
-        console.warn('Received messageSent without _id, skipping:', sentMessage);
+        console.log('⚠️ Received messageSent without _id, skipping');
         return;
       }
 
@@ -377,7 +415,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setMessages((prevMessages) => {
           const messageExists = prevMessages.some((msg) => msg._id === sentMessage._id);
           if (messageExists) {
-            console.warn(`Message with _id ${sentMessage._id} already exists, skipping`, sentMessage);
+            console.log(`✅ Message ${sentMessage._id} already exists (duplicate prevented)`);
             return prevMessages;
           }
           return [...prevMessages, sentMessage];
@@ -400,8 +438,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
       }
     });
-  }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification, getMessagesByUserId]);
 
+  }, [selectedUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification]);
+
+  /**
+   * Unsubscribe from message events
+   */
   const unsubscribeFromMessages = useCallback(() => {
     if (!socket) return;
     socket.off('newMessage');
@@ -411,7 +453,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     console.log('📴 Unsubscribed from socket events');
   }, [socket]);
 
-  // Removed global auto-subscribe to avoid duplicate subscriptions.
+  // Subscribe to messages when selectedUser changes
+  useEffect(() => {
+    if (selectedUser && socket && isSocketConnected) {
+      subscribeToMessages();
+    }
+
+    return () => {
+      unsubscribeFromMessages();
+    };
+  }, [socket, isSocketConnected, selectedUser]);
 
   useEffect(() => {
     if (authUser) {

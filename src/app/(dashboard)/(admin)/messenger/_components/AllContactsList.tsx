@@ -9,7 +9,7 @@ import { Contact } from "@/lib/contacts";
 import { Search, Crown, Users } from "lucide-react";
 
 function AllContactsList() {
-  const { getAllContacts, allContacts, setSelectedUser, getMessagesByUserId, isUsersLoading, chats } = useChat();
+  const { getAllContacts, allContacts, setSelectedUser, isUsersLoading, chats } = useChat();
   const { onlineUsers } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
@@ -43,10 +43,8 @@ function AllContactsList() {
     }
   }, [allContacts, searchTerm]);
 
-  const handleContactSelect = async (contact: Contact) => {
+  const handleContactSelect = (contact: Contact) => {
     setSelectedUser(contact);
-    // Load messages for this contact
-    await getMessagesByUserId(contact._id);
   };
 
   if (isUsersLoading) return <UsersLoadingSkeleton />;

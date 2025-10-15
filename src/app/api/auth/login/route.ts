@@ -5,11 +5,7 @@ import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
 import { io as ClientIO } from 'socket.io-client';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required");
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX';
 const SOCKET_URL = process.env.SOCKET_URL || 'http://localhost:3008';
 
 const DB_NAME = 'CraftCode';

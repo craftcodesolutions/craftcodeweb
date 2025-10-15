@@ -8,7 +8,7 @@ import NoChatsFound from "./NoChatsFound";
 import Image from "next/image";
 
 function ChatsList() {
-  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser, getMessagesByUserId } = useChat();
+  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser } = useChat();
   const { onlineUsers } = useAuth();
 
   useEffect(() => {
@@ -28,10 +28,8 @@ function ChatsList() {
           : otherParticipant.email;
         const isOnline = onlineUsers?.includes(otherParticipant._id) || false;
 
-        const handleChatSelect = async () => {
+        const handleChatSelect = () => {
           setSelectedUser(otherParticipant);
-          // Load messages for this chat
-          await getMessagesByUserId(otherParticipant._id);
         };
 
         return (

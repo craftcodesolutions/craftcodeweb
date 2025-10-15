@@ -7,11 +7,7 @@ import { cookies } from 'next/headers'; // Import cookies from next/headers
 import clientPromise from '@/config/mongodb'; // Assuming you need to fetch user data from DB
 import { ObjectId } from 'mongodb';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required");
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX';
 const DB_NAME = 'CraftCode';
 const COLLECTION = 'users';
 

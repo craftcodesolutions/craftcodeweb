@@ -1,3 +1,4 @@
+
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -14,6 +15,7 @@ function ChatContainer() {
     selectedUser,
     messages,
     isMessagesLoading,
+    getMessagesByUserId,
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useChat();
@@ -22,12 +24,17 @@ function ChatContainer() {
   const [isUserTyping, setIsUserTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  // Load messages when user is first selected
   useEffect(() => {
     if (selectedUser?._id) {
-      // Subscribe (will internally load messages once)
-      subscribeToMessages();
+      getMessagesByUserId(selectedUser._id);
+    }
+  }, [selectedUser?._id, getMessagesByUserId]);
 
-      // clean up
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (selectedUser?._id) {
+      subscribeToMessages();
       return () => unsubscribeFromMessages();
     }
   }, [selectedUser?._id, subscribeToMessages, unsubscribeFromMessages]);

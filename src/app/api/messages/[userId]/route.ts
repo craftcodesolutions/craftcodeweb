@@ -3,7 +3,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
 import { createMessage, checkUserExists, getMessagesByUserId, Message } from '@/controllers/messageService';
 import { v2 as cloudinary } from 'cloudinary';
-import { sendToUser, getSocketIO } from '@/lib/socketServer';
+// Remove client-side Socket.IO imports - we'll use HTTP requests to the Socket.IO server
 
 // Configure Cloudinary
 cloudinary.config({
@@ -37,8 +37,10 @@ export async function GET(
     if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
     const { userId: otherUserId } = await params;
 
+    // Validate userToChatId
     if (!ObjectId.isValid(otherUserId)) {
       return NextResponse.json({ message: 'Invalid user ID.' }, { status: 400 });
     }
@@ -49,10 +51,12 @@ export async function GET(
       return NextResponse.json({ message: 'User not found.' }, { status: 404 });
     }
 
+
     // Fetch messages
     const messages = await getMessagesByUserId(authResult.userId, otherUserId);
     return NextResponse.json(messages, { status: 200 });
-  } catch (error) {
+  } catch (error) { 
+
     console.error('Error in getMessages:', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -166,37 +170,41 @@ export async function POST(
       image: imageUrl,
     });
 
-    // Real-time Socket.IO integration
-    let io = getSocketIO();
-    
-    if (!io) {
-      console.warn('⚠️ Socket.IO server not initialized, attempting to initialize...');
-      try {
-        const initResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/socket`);
-        if (initResponse.ok) {
-          console.log('✅ Socket.IO server initialization attempted');
-          io = getSocketIO();
-        }
-      } catch (error) {
-        console.error('❌ Failed to initialize Socket.IO server:', error);
-      }
-    }
-    
-    if (io) {
-      console.log(`🚀 Attempting to send real-time message from ${authResult.userId} to ${receiverId}`);
-      
-      const messageData: MessageResponse = {
-        ...savedMessage,
-        senderId: savedMessage.senderId.toString(),
-        receiverId: savedMessage.receiverId.toString(),
-        timestamp: new Date().toISOString(),
-      };
+    // Real-time Socket.IO integration via HTTP endpoint
+    const SOCKET_SERVER_URL = process.env.SOCKET_URL || 
+      (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://server-wp4r.onrender.com');
 
+    const messageData: MessageResponse = {
+      ...savedMessage,
+      senderId: savedMessage.senderId.toString(),
+      receiverId: savedMessage.receiverId.toString(),
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      console.log(`🚀 Sending real-time message from ${authResult.userId} to ${receiverId}`);
+      
       // Send real-time message to receiver
-      sendToUser(receiverId, 'newMessage', { ...messageData });
+      await fetch(`${SOCKET_SERVER_URL}/emit-message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: receiverId, 
+          event: 'newMessage', 
+          data: messageData 
+        })
+      });
 
       // Also send to sender for multi-device sync
-      sendToUser(authResult.userId, 'messageSent', { ...messageData });
+      await fetch(`${SOCKET_SERVER_URL}/emit-message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: authResult.userId, 
+          event: 'messageSent', 
+          data: messageData 
+        })
+      });
 
       console.log(`📨 Real-time message broadcasted: ${authResult.userId} -> ${receiverId}`);
       console.log('📋 Message data:', { 
@@ -205,8 +213,8 @@ export async function POST(
         senderId: savedMessage.senderId.toString(),
         receiverId: savedMessage.receiverId.toString(),
       });
-    } else {
-      console.warn('⚠️ Socket.IO server still not available - message saved to database only');
+    } catch (socketError) {
+      console.warn('⚠️ Socket.IO server not available - message saved to database only:', socketError);
     }
     
     return NextResponse.json({

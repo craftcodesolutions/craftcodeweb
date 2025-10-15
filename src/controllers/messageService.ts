@@ -1,9 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import clientPromise from "@/config/mongodb";
 import { ObjectId, WithId, Document } from "mongodb";
 
 const DB_NAME = "CraftCode";
 const MESSAGES_COLLECTION = "messages";
 const USERS_COLLECTION = "users";
+
+export interface MessageMetadata {
+  attempts?: number;
+  lastAttempt?: Date;
+  receivedAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  error?: string;
+  serverMessageId?: string;
+  clientMessageId?: string;
+}
+
+// Helper function to validate message status
+function validateMessageStatus(status?: string): 'sending' | 'sent' | 'delivered' | 'read' | 'error' {
+  const validStatuses = ['sending', 'sent', 'delivered', 'read', 'error'] as const;
+  if (status && validStatuses.includes(status as any)) {
+    return status as 'sending' | 'sent' | 'delivered' | 'read' | 'error';
+  }
+  return 'delivered'; // Default fallback
+}
 
 export interface Message {
   _id: string;
@@ -13,6 +34,11 @@ export interface Message {
   image?: string;
   createdAt: Date;
   updatedAt: Date;
+  isOptimistic?: boolean;
+  isRead?: boolean;
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'error';
+  error?: string;
+  metadata?: MessageMetadata;
 }
 
 export interface Contact {
@@ -114,8 +140,19 @@ export async function getMessagesByUserId(myId: string, otherUserId: string): Pr
       .sort({ createdAt: 1 })
       .toArray();
 
-    // Deduplicate messages by _id
-    const msgs = messages as Array<WithId<Document> & { _id: ObjectId; senderId: ObjectId; receiverId: ObjectId; text?: string; image?: string; createdAt: Date; updatedAt: Date }>;
+    const msgs = messages as Array<WithId<Document> & { 
+      _id: ObjectId; 
+      senderId: ObjectId; 
+      receiverId: ObjectId; 
+      text?: string; 
+      image?: string; 
+      createdAt: Date; 
+      updatedAt: Date; 
+      status?: string; 
+      isRead?: boolean; 
+      metadata?: MessageMetadata 
+    }>;
+
     const uniqueMessages = Array.from(
       new Map(msgs.map((msg) => [msg._id.toString(), msg])).values()
     );
@@ -128,6 +165,12 @@ export async function getMessagesByUserId(myId: string, otherUserId: string): Pr
       image: msg.image,
       createdAt: msg.createdAt,
       updatedAt: msg.updatedAt,
+      status: validateMessageStatus(msg.status),
+      isRead: msg.isRead || false,
+      metadata: {
+        ...msg.metadata,
+        serverMessageId: msg._id.toString(),
+      },
     }));
   } catch (error) {
     console.error("Error in getMessagesByUserId:", error);
@@ -140,6 +183,7 @@ export async function createMessage(messageData: {
   receiverId: string;
   text?: string;
   image?: string;
+  metadata?: MessageMetadata;
 }): Promise<Message> {
   try {
     const client = await clientPromise;
@@ -168,6 +212,12 @@ export async function createMessage(messageData: {
         receiverId: existingMessage.receiverId.toString(),
         createdAt: existingMessage.createdAt,
         updatedAt: existingMessage.updatedAt,
+        status: existingMessage.status || 'delivered',
+        isRead: existingMessage.isRead || false,
+        metadata: {
+          ...existingMessage.metadata,
+          serverMessageId: existingMessage._id.toString(),
+        },
       };
     }
 
@@ -176,8 +226,11 @@ export async function createMessage(messageData: {
       receiverId: new ObjectId(messageData.receiverId),
       text: messageData.text || undefined,
       image: messageData.image || undefined,
+      metadata: messageData.metadata || undefined,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      status: 'sent',
+      isRead: false,
     };
 
     const result = await collection.insertOne(message);
@@ -192,9 +245,49 @@ export async function createMessage(messageData: {
       receiverId: savedMessage.receiverId.toString(),
       createdAt: savedMessage.createdAt,
       updatedAt: savedMessage.updatedAt,
+      status: savedMessage.status || 'sent',
+      isRead: savedMessage.isRead || false,
+      metadata: {
+        ...savedMessage.metadata,
+        serverMessageId: savedMessage._id.toString(),
+      },
     };
   } catch (error) {
     console.error("Error in createMessage:", error);
+    throw error;
+  }
+}
+
+export async function markMessageAsRead(messageId: string, readerId: string): Promise<boolean> {
+  try {
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    const collection = db.collection(MESSAGES_COLLECTION);
+
+    const result = await collection.updateOne(
+      { 
+        _id: new ObjectId(messageId), 
+        receiverId: new ObjectId(readerId),
+        isRead: { $ne: true }
+      },
+      { 
+        $set: { 
+          isRead: true, 
+          'metadata.readAt': new Date().toISOString(),
+          updatedAt: new Date()
+        } 
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      console.warn('No message updated in markMessageAsRead:', { messageId, readerId });
+      return false;
+    }
+
+    console.log('Message marked as read:', { messageId, readerId });
+    return true;
+  } catch (error) {
+    console.error("Error in markMessageAsRead:", error);
     throw error;
   }
 }
