@@ -22,6 +22,15 @@ const MeetingPage = () => {
       : undefined;
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+
+  // Handle navigation to appropriate dashboard based on user role
+  const handleDashboardNavigation = () => {
+    if (user?.isAdmin) {
+      router.push('/meeting');
+    } else {
+      router.push('/');
+    }
+  };
   const { call, isCallLoading, callError } = useGetCallById(id as string);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
 
@@ -29,10 +38,14 @@ const MeetingPage = () => {
   useEffect(() => {
     if (id && !isValidMeetingId(id as string)) {
       toast.error('Invalid meeting ID format');
-      router.push('/meeting');
+      if (user?.isAdmin) {
+        router.push('/meeting');
+      } else {
+        router.push('/');
+      }
       return;
     }
-  }, [id, router]);
+  }, [id, router, user?.isAdmin]);
 
   if (!isAuthenticated || isCallLoading) {
     return (
@@ -71,10 +84,10 @@ const MeetingPage = () => {
               Go Back
             </button>
             <button
-              onClick={() => router.push('/meeting')}
+              onClick={handleDashboardNavigation}
               className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
             >
-              Meeting Dashboard
+              {user?.isAdmin ? 'Meeting Dashboard' : 'Home'}
             </button>
           </div>
         </div>
@@ -111,10 +124,10 @@ const MeetingPage = () => {
               Go Back
             </button>
             <button
-              onClick={() => router.push('/meeting')}
+              onClick={handleDashboardNavigation}
               className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
             >
-              Meeting Dashboard
+              {user?.isAdmin ? 'Meeting Dashboard' : 'Home'}
             </button>
           </div>
         </div>

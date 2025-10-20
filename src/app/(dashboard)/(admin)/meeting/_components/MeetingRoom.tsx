@@ -6,6 +6,7 @@ import {
   useCall,
 } from '@stream-io/video-react-sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Users, 
   LayoutList, 
@@ -43,6 +44,7 @@ const MeetingRoom = () => {
   const searchParams = useSearchParams();
   const isPersonalRoom = !!searchParams?.get('personal');
   const router = useRouter();
+  const { user } = useAuth();
   const [layout, setLayout] = useState<CallLayoutType>('speaker-left');
   const [showParticipants, setShowParticipants] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -115,6 +117,15 @@ const MeetingRoom = () => {
       }
     } catch (error) {
       console.error('Error toggling screen share:', error);
+    }
+  };
+
+  // Handle hang up with proper redirection based on user role
+  const handleHangUp = () => {
+    if (user?.isAdmin) {
+      router.push('/meeting');
+    } else {
+      router.push('/');
     }
   };
 
@@ -540,7 +551,7 @@ const MeetingRoom = () => {
             <>
               <div className="h-6 sm:h-8 w-px bg-white/10 flex-shrink-0"></div>
               <button 
-                onClick={() => router.push(`/meeting`)}
+                onClick={handleHangUp}
                 className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-500/30 hover:bg-red-500/50 text-red-300 hover:text-red-200 transition-all duration-300 hover:scale-110 flex-shrink-0"
               >
                 <PhoneOff size={16} className="sm:w-[18px] sm:h-[18px] transition-colors duration-300" />

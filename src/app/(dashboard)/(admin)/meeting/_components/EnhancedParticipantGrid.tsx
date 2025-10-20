@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useCallStateHooks, StreamVideoParticipant, ParticipantView } from '@stream-io/video-react-sdk';
+import { hasAudio as participantHasAudio, hasVideo as participantHasVideo } from '@stream-io/video-client';
 import { Users, Grid3X3, Maximize2, Camera, CameraOff, Mic, MicOff } from 'lucide-react';
 import CameraOffDisplay from './CameraOffDisplay';
 import { cn } from '@/lib/utils';
@@ -42,13 +43,12 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
     
     return participantList.map(participant => {
       const isLocal = participant.sessionId === local?.sessionId;
-      const hasVideo = isLocal 
-        ? !isCameraMuted 
-        : participant.publishedTracks.length > 0 && participant.videoStream !== undefined;
-      const hasAudio = isLocal 
-        ? !isMicMuted 
-        : participant.publishedTracks.length > 0 && participant.audioStream !== undefined;
-      
+      const remoteHasVideo = participantHasVideo(participant);
+      const remoteHasAudio = participantHasAudio(participant);
+
+      const hasVideo = isLocal ? !isCameraMuted : remoteHasVideo;
+      const hasAudio = isLocal ? !isMicMuted : remoteHasAudio;
+
       return {
         id: participant.sessionId,
         name: participant.name || participant.userId || 'Unknown User',
@@ -84,6 +84,7 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
   };
 
   const gridLayout = getGridLayout(processedParticipants.length);
+  const primaryParticipant = processedParticipants[0];
 
   return (
     <div className={cn("relative w-full h-full p-2 sm:p-4", className)}>
@@ -109,50 +110,35 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
             >
               <div className={cn(
                 "w-full h-full rounded-2xl overflow-hidden transition-all duration-700 ease-in-out",
-                participant.hasVideo ? "bg-slate-800 border border-white/20" : ""
+                participant.hasVideo
+                  ? "bg-slate-800 border border-white/20"
+                  : "bg-slate-900/80 border border-white/10"
               )}>
-                {participant.hasVideo ? (
-                  // Actual Video Stream using Stream SDK
-                  <div className="relative w-full h-full rounded-2xl overflow-hidden bg-slate-900">
-                    <ParticipantView
-                      participant={participant.participant}
-                      className="w-full h-full object-cover"
-                      VideoPlaceholder={() => (
-                        <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                          <div className="text-center text-gray-300">
-                            <div className="relative mb-3">
-                              <Camera size={40} className="mx-auto text-blue-400" />
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
-                            </div>
-                            <p className="text-sm font-medium">{participant.name}</p>
-                            <p className="text-xs text-blue-400">Loading video...</p>
-                          </div>
-                        </div>
-                      )}
-                    />
-                    
-                    {/* Video Controls Overlay */}
-                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                      <div className={cn(
-                        "flex items-center justify-center w-6 h-6 rounded-full text-xs backdrop-blur-sm",
-                        participant.hasAudio ? "bg-green-500/80 text-white" : "bg-red-500/80 text-white"
-                      )}>
-                        {participant.hasAudio ? <Mic size={12} /> : <MicOff size={12} />}
-                      </div>
+                <div className="relative w-full h-full">
+                  <ParticipantView
+                    participant={participant.participant}
+                    className="w-full h-full object-cover"
+                    VideoPlaceholder={() => (
+                      <CameraOffDisplay
+                        participantName={participant.name}
+                        isCurrentUser={participant.isLocal}
+                        isMuted={!participant.hasAudio}
+                        avatar={participant.avatar}
+                        className="w-full h-full"
+                      />
+                    )}
+                  />
+                  
+                  {/* Video Controls Overlay */}
+                  <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                    <div className={cn(
+                      "flex items-center justify-center w-6 h-6 rounded-full text-xs backdrop-blur-sm",
+                      participant.hasAudio ? "bg-green-500/80 text-white" : "bg-red-500/80 text-white"
+                    )}>
+                      {participant.hasAudio ? <Mic size={12} /> : <MicOff size={12} />}
                     </div>
                   </div>
-                ) : (
-                  // Camera off participant with enhanced transitions
-                  <div className="w-full h-full transform transition-all duration-700 ease-in-out">
-                    <CameraOffDisplay
-                      participantName={participant.name}
-                      isCurrentUser={participant.isLocal}
-                      isMuted={!participant.hasAudio}
-                      avatar={participant.avatar}
-                      className="w-full h-full"
-                    />
-                  </div>
-                )}
+                </div>
               </div>
               
               {/* Enhanced Participant Controls Overlay */}
@@ -207,24 +193,23 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
           )}>
             <div className={cn(
               "w-full h-full rounded-lg sm:rounded-2xl overflow-hidden transition-all duration-700 ease-in-out",
-              processedParticipants[0]?.hasVideo ? "bg-gradient-to-br from-slate-800 to-slate-900 border border-white/20" : ""
+              primaryParticipant?.hasVideo
+                ? "bg-gradient-to-br from-slate-800 to-slate-900 border border-white/20"
+                : "bg-slate-900/80 border border-white/10"
             )}>
-              {processedParticipants[0]?.hasVideo ? (
+              {primaryParticipant ? (
                 <div className="relative w-full h-full">
                   <ParticipantView
-                    participant={processedParticipants[0].participant}
+                    participant={primaryParticipant.participant}
                     className="w-full h-full object-cover rounded-lg sm:rounded-2xl"
                     VideoPlaceholder={() => (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center rounded-2xl">
-                        <div className="text-center text-gray-300">
-                          <div className="relative mb-4">
-                            <Camera size={48} className="mx-auto text-blue-400" />
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
-                          </div>
-                          <p className="text-lg font-medium">{processedParticipants[0]?.name}</p>
-                          <p className="text-sm text-blue-400">Loading video...</p>
-                        </div>
-                      </div>
+                      <CameraOffDisplay
+                        participantName={primaryParticipant.name}
+                        isCurrentUser={primaryParticipant.isLocal}
+                        isMuted={!primaryParticipant.hasAudio}
+                        avatar={primaryParticipant.avatar}
+                        className="w-full h-full"
+                      />
                     )}
                   />
                   
@@ -232,17 +217,16 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
                   <div className="absolute bottom-4 left-4 flex items-center gap-3">
                     <div className={cn(
                       "flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm",
-                      processedParticipants[0]?.hasAudio ? "bg-green-500/80 text-white" : "bg-red-500/80 text-white"
+                      primaryParticipant.hasAudio ? "bg-green-500/80 text-white" : "bg-red-500/80 text-white"
                     )}>
-                      {processedParticipants[0]?.hasAudio ? <Mic size={16} /> : <MicOff size={16} />}
+                      {primaryParticipant.hasAudio ? <Mic size={16} /> : <MicOff size={16} />}
                     </div>
                   </div>
                 </div>
               ) : (
                 <CameraOffDisplay
-                  participantName={processedParticipants[0]?.name || 'Speaker'}
-                  isCurrentUser={processedParticipants[0]?.isLocal}
-                  isMuted={!processedParticipants[0]?.hasAudio}
+                  participantName="Waiting for participants"
+                  isMuted
                   className="w-full h-full"
                 />
               )}
@@ -264,27 +248,19 @@ const EnhancedParticipantGrid = ({ layout = 'grid', className }: EnhancedPartici
                   <div className="flex items-center gap-3">
                     {/* Compact Participant Avatar/Video */}
                     <div className="flex-shrink-0">
-                      {participant.hasVideo ? (
-                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-white/10">
-                          <ParticipantView
-                            participant={participant.participant}
-                            className="w-full h-full object-cover"
-                            VideoPlaceholder={() => (
-                              <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                                <Camera size={16} className="text-gray-400" />
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-white/10">
+                        <ParticipantView
+                          participant={participant.participant}
+                          className="w-full h-full object-cover"
+                          VideoPlaceholder={() => (
+                            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
+                                {(participant.name || '?').charAt(0).toUpperCase()}
                               </div>
-                            )}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
-                              {participant.name.charAt(0).toUpperCase()}
                             </div>
-                          </div>
-                        </div>
-                      )}
+                          )}
+                        />
+                      </div>
                     </div>
                     
                     {/* Participant Info */}

@@ -120,7 +120,9 @@ function HomeSection() {
                                     alt="Person sitting with tablet"
                                     width={480}
                                     height={500}
-                                    className="object-cover w-full h-auto rounded-lg"
+                                    priority
+                                    className="object-cover rounded-lg"
+                                    style={{ width: '100%', height: 'auto' }}
                                 />
                             </div>
                             <div className="absolute bottom-0 left-0 z-10 w-7/12 sm:w-8/12">
@@ -129,7 +131,8 @@ function HomeSection() {
                                     alt="Person working on laptop"
                                     width={380}
                                     height={700}
-                                    className="object-cover w-full h-auto rounded-lg"
+                                    className="object-cover rounded-lg"
+                                    style={{ width: '100%', height: 'auto' }}
                                 />
                                 <div className="border-primary/10 bg-primary/5 absolute -top-4 sm:-top-6 -right-4 sm:-right-6 -z-10 h-full w-full border backdrop-blur-[6px] dark:border-white/10 dark:bg-white/10 rounded-lg" />
                             </div>

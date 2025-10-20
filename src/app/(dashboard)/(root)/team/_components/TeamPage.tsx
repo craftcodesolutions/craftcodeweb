@@ -1448,7 +1448,8 @@ export default function TeamPage() {
                                       alt={member.name}
                                       width={96}
                                       height={96}
-                                      className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                      style={{ width: '100%', height: 'auto' }}
                                       onError={(e) => {
                                         e.currentTarget.src = '/default-profile.png';
                                       }}
@@ -1594,7 +1595,8 @@ export default function TeamPage() {
                                       alt={member.name}
                                       width={64}
                                       height={64}
-                                      className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                      style={{ width: '100%', height: 'auto' }}
                                       onError={(e) => {
                                         e.currentTarget.src = '/default-profile.png';
                                       }}
@@ -1763,7 +1765,8 @@ export default function TeamPage() {
                         alt={programmer.name}
                         width={80}
                         height={80}
-                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        style={{ width: '100%', height: 'auto' }}
                         onError={(e) => {
                           e.currentTarget.src = '/default-profile.png';
                         }}

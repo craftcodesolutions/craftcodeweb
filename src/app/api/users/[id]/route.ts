@@ -6,7 +6,7 @@ import { User } from '@/types/User';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hG8v$L1^r!eX9@dP2z&Bt7WfKmQsVjE3cYuT6nMwAoLjR5xZ';
+const JWT_SECRET = process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX';
 
 // Context type — note `Promise`
 type RouteContext = { params: Promise<{ id: string }> };
@@ -67,6 +67,19 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get current admin user from JWT token for session management
+    const authToken = req.cookies.get('authToken')?.value;
+    let currentAdminUserId: string | null = null;
+    
+    if (authToken) {
+      try {
+        const decoded = jwt.verify(authToken, JWT_SECRET) as any;
+        currentAdminUserId = decoded.userId;
+      } catch (error) {
+        console.error('JWT verification error:', error);
+      }
+    }
+
     const body = await req.json();
     const { firstName, lastName, email, bio, profileImage, designations, isAdmin: adminStatus, status } = body;
 
@@ -113,7 +126,8 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
     }
 
-    const token = jwt.sign(
+    // Generate new JWT token
+    const newToken = jwt.sign(
       {
         userId: updatedUser?._id?.toString?.() ?? '',
         email: updatedUser?.email ?? '',
@@ -125,22 +139,75 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 
     const response = NextResponse.json({ ...updatedUser, password: undefined }, { status: 200 });
 
-    response.cookies.set('authToken', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
+    // Check if updating own account to set cookies
+    const isUpdatingOwnAccount = currentAdminUserId === id;
 
-    if (updatedUser.email) {
-      response.cookies.set('userEmail', updatedUser.email, {
+    if (isUpdatingOwnAccount) {
+      response.cookies.set('authToken', newToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60,
         path: '/',
       });
+
+      if (updatedUser.email) {
+        response.cookies.set('userEmail', updatedUser.email, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 7 * 24 * 60 * 60,
+          path: '/',
+        });
+      }
+    }
+
+    // Emit Socket.IO events for real-time updates
+    try {
+      // If admin status was changed, emit token update
+      if (adminStatus !== undefined) {
+        await fetch(`${process.env.SOCKET_URL || 'http://localhost:3008'}/emit-token-update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: id, 
+            newToken,
+            timestamp: new Date().toISOString(),
+            reason: 'Admin status updated'
+          })
+        }).catch(err => console.error('Failed to emit token update:', err));
+      }
+
+      // If status was changed, emit user status change
+      if (status !== undefined) {
+        await fetch(`${process.env.SOCKET_URL || 'http://localhost:3008'}/emit-user-status-change`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: id, 
+            status,
+            timestamp: new Date().toISOString(),
+            reason: status ? 'User account enabled' : 'User account disabled'
+          })
+        }).catch(err => console.error('Failed to emit user status change:', err));
+      }
+
+      // If designations were changed, emit designations update
+      if (designations !== undefined) {
+        await fetch(`${process.env.SOCKET_URL || 'http://localhost:3008'}/emit-designations-update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: id, 
+            designations,
+            timestamp: new Date().toISOString(),
+            reason: 'Designations updated by admin'
+          })
+        }).catch(err => console.error('Failed to emit designations update:', err));
+      }
+    } catch (socketError) {
+      console.error('Socket.IO event emission failed:', socketError);
+      // Don't fail the request if Socket.IO events fail
     }
 
     return response;
