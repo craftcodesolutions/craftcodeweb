@@ -173,46 +173,41 @@ export default function ProfileDynamic(): JSX.Element {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    if (!validateForm() || !user?.userId) return;
-    setIsLoading(true);
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  e.preventDefault();
+  if (!validateForm() || !user?.userId) return;
+  setIsLoading(true);
 
-    try {
-      const updateData: Partial<UserProfile> = {
-        firstName: userProfile.firstName,
-        lastName: userProfile.lastName,
-        email: userProfile.email,
-        bio: userProfile.bio,
-        profileImage: cloudinaryUrl,
-        publicId: cloudinaryPublicId,
-      };
+  try {
+    // Always use the latest context user as the source of truth
+    const updateData: Partial<UserProfile> = {
+      firstName: userProfile.firstName !== user.firstName ? userProfile.firstName : user.firstName,
+      lastName: userProfile.lastName !== user.lastName ? userProfile.lastName : user.lastName,
+      email: userProfile.email !== user.email ? userProfile.email : user.email,
+      bio: userProfile.bio !== user.bio ? userProfile.bio : user.bio,
+      profileImage: cloudinaryUrl !== user.profileImage ? cloudinaryUrl : user.profileImage,
+      publicId: cloudinaryPublicId !== user.publicId ? cloudinaryPublicId : user.publicId,
+    };
 
-      Object.keys(updateData).forEach((key) => {
-        if (updateData[key as keyof typeof updateData] === initialUser[key as keyof typeof initialUser]) {
-          delete updateData[key as keyof typeof updateData];
-        }
-      });
-
-      console.log('Sending update data:', updateData);
-      const result = await updateProfile(updateData);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update profile');
-      }
-
-      setIsSuccess(true);
-      setTempImage(null);
-      setTimeout(() => setIsSuccess(false), 3000);
-    } catch (error) {
-      console.error('Profile update error:', error);
-      setErrors((prev) => ({
-        ...prev,
-        image: error instanceof Error ? error.message : 'Failed to update profile. Please try again.',
-      }));
-    } finally {
-      setIsLoading(false);
+    console.log('Sending update data:', updateData);
+    const result = await updateProfile(updateData);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to update profile');
     }
-  };
+
+    setIsSuccess(true);
+    setTempImage(null);
+    setTimeout(() => setIsSuccess(false), 3000);
+  } catch (error) {
+    console.error('Profile update error:', error);
+    setErrors((prev) => ({
+      ...prev,
+      image: error instanceof Error ? error.message : 'Failed to update profile. Please try again.',
+    }));
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleLogout = async (): Promise<void> => {
     setShowLogoutConfirm(true);
@@ -321,14 +316,27 @@ export default function ProfileDynamic(): JSX.Element {
 
   if (authError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900">
-        <div className="p-4 bg-red-100/80 dark:bg-red-900/40 border border-red-300 dark:border-red-700 rounded-lg text-center">
-          <p className="text-sm text-red-700 dark:text-red-300">{authError}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-100 via-white to-red-200 dark:from-red-900 dark:via-gray-900 dark:to-gray-800 font-sans antialiased relative">
+        <div className="absolute inset-0 pointer-events-none z-0" style={{background: "radial-gradient(circle at 60% 40%, rgba(255,255,255,0.4) 0%, rgba(255,0,0,0.08) 100%)"}}></div>
+        <div className="flex flex-col items-center justify-center w-full max-w-md p-8 rounded-3xl shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-red-200 dark:border-red-700 z-10 relative" style={{boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"}}>
+          <div className="flex flex-col items-center mb-4">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-red-200 via-red-400 to-red-600 dark:from-red-900 dark:via-red-700 dark:to-red-500 flex items-center justify-center shadow-xl mb-4 animate-bounce">
+              <svg className="w-10 h-10 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-30" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-400 to-pink-400 dark:from-red-400 dark:via-red-300 dark:to-pink-300 mb-2 tracking-tight drop-shadow-lg">Authentication Error</h2>
+            <p className="text-base text-gray-700 dark:text-gray-200 mb-3 px-2 text-center font-medium" style={{textShadow: "0 1px 2px rgba(255,0,0,0.08)"}}>{authError}</p>
+          </div>
           <Link
             href="/login"
-            className="mt-2 inline-block text-sm font-medium text-blue-500 dark:text-blue-400 hover:underline"
+            className="inline-flex items-center justify-center px-6 py-2.5 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:to-blue-800 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 text-white shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
             aria-label="Go to login page"
           >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             Go to Login
           </Link>
         </div>
@@ -408,7 +416,7 @@ export default function ProfileDynamic(): JSX.Element {
                     )}
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-osi0-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16M8 12l1.586-1.586a2 2 0 012.828 0L14 12M12 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <input

@@ -17,6 +17,7 @@ interface User {
   createdAt?: string;
   updatedAt?: string;
   bio?: string;
+  publicId?: string;
 }
 
 interface AuthContextType {
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     : '/';
 
 
-  const SOCKET_URL = process.env.SOCKET_URL || 
+  const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 
     (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://server-wp4r.onrender.com');
 
   const [user, setUser] = useState<User | null>(null);
@@ -120,8 +121,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Check for authToken before attempting refresh
           const authToken = getCookie('authToken');
           if (!authToken) {
-            console.log('No authToken found, skipping token refresh.');
-            throw new Error('No authentication token available');
+            console.log('No authToken found, user is not authenticated.');
+            // Don't throw error, just set as unauthenticated
+            setIsAuthenticated(false);
+            setUser(null);
+            setError(null); // Clear any previous errors
+            return;
           }
 
           console.log('Attempting token refresh...');
@@ -179,7 +184,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Auth error:', err);
       setIsAuthenticated(false);
       setUser(null);
-      setError('Authentication failed. Please log in again.');
+      // Only set error for actual errors, not for unauthenticated state
+      if (err instanceof Error && !err.message.includes('No authentication token')) {
+        setError('Authentication failed. Please log in again.');
+      } else {
+        setError(null); // Clear error for normal unauthenticated state
+      }
     }
   };
 

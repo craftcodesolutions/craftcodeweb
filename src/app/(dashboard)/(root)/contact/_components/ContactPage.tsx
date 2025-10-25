@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { useGlobalChat } from "@/context/GlobalChatContext";
 
 const HeroArt = () => (
   <svg
@@ -34,6 +35,12 @@ const HeroArt = () => (
 );
 
 const ContactPage: React.FC = () => {
+  const { openChatBox } = useGlobalChat();
+
+  const handleContactSupport = () => {
+    openChatBox();
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col items-center">
       {/* Hero Section */}
@@ -57,7 +64,7 @@ const ContactPage: React.FC = () => {
           </div>
           <h2 className="text-lg font-semibold mb-2">Talk to Sales</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">Interested in Craftcode Solutions? Just pick up the phone to chat with a member of our sales team.</p>
-          <a href="tel:+15551234567" className="text-blue-600 font-semibold hover:underline mb-2 block">+1 555 123 4567</a>
+          <a href="tel:+880 1617 887017" className="text-blue-600 font-semibold hover:underline mb-2 block">+880 1617 887017</a>
           <a href="#" className="text-sm text-blue-500 hover:underline">View all global numbers</a>
         </div>
         {/* Card 2: Customer Support */}
@@ -66,8 +73,13 @@ const ContactPage: React.FC = () => {
             <svg className="w-10 h-10 text-blue-600 mx-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m2-4h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
           </div>
           <h2 className="text-lg font-semibold mb-2">Contact Customer Support</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">Sometimes you need a little help from your friends. Or a support rep. Don’t worry... we’re here for you.</p>
-          <a href="#" className="inline-block px-6 py-2 rounded bg-orange-500 text-white font-semibold shadow hover:bg-orange-600 transition">Contact Support</a>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">Sometimes you need a little help from your friends. Or a support rep. Don't worry... we're here for you.</p>
+          <button 
+            onClick={handleContactSupport}
+            className="inline-block px-6 py-2 cursor-pointer rounded bg-orange-500 text-white font-semibold shadow hover:bg-orange-600 transition"
+          >
+            Contact Support
+          </button>
         </div>
       </section>
 
@@ -97,7 +109,7 @@ const ContactPage: React.FC = () => {
           <p className="text-gray-700 dark:text-gray-300 mb-2">University of Rajshahi<br />Rajshahi 6205<br />Bangladesh</p>
           <div className="mb-2">
             <span className="font-semibold">Phone / Fax</span>
-            <div className="text-gray-700 dark:text-gray-300">+880 721 750244<br />Fax: +880 721 750064</div>
+            <div className="text-gray-700 dark:text-gray-300">+880 1617 887017<br />What'sApp: +880 1617 887017</div>
           </div>
           <div className="mb-2">
             <span className="font-semibold">Press / Media / Blogger Information</span>

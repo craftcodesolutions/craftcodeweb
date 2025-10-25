@@ -1,11 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Filter, X, Search, Grid3X3, List, Sparkles, Star, MapPin, Calendar, Mail, Phone, Briefcase, Award, TrendingUp, Zap, Heart, Eye, MessageCircle, Share2, Globe, Linkedin, Github, Twitter, ChevronRight, BarChart3, Target, Rocket } from "lucide-react";
+import { Users, Search, Grid3X3, List, Sparkles, Star, Mail, Linkedin, Github, Twitter, ChevronRight, TrendingUp, Rocket, Heart, Eye, MessageCircle, Share2, Award, Zap, Target } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from 'react';
@@ -128,136 +127,16 @@ const fadeIn = {
 
 export default function TeamPage() {
   const [teamMembers, setTeamMembers] = useState<DisplayTeamMember[]>([]);
-  const [filteredMembers, setFilteredMembers] = useState<DisplayTeamMember[]>([]);
   const [programmers, setProgrammers] = useState<DisplayProgrammer[]>([]);
-  const [filteredProgrammers, setFilteredProgrammers] = useState<DisplayProgrammer[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [isFetchingProgrammers, setIsFetchingProgrammers] = useState(true);
-  const [selectedDesignations, setSelectedDesignations] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [uniqueDesignations, setUniqueDesignations] = useState<string[]>([]);
-  const [filterSearchTerm, setFilterSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'name' | 'role' | 'recent'>('name');
 
-  // Dynamic designation extraction function
-  const fetchAllDesignations = async () => {
-    try {
-      const designationsSet = new Set<string>();
-      
-      // Fetch from teams API
-      const teamsResponse = await fetch('/api/teams?limit=1000', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (teamsResponse.ok) {
-        const teamsData = await teamsResponse.json();
-        const teams: TeamMember[] = teamsData.teams || [];
-        
-        // Extract designations from teams
-        teams.forEach((team: TeamMember) => {
-          if (team.designation && team.designation.trim()) {
-            const cleanDesignation = team.designation.charAt(0).toUpperCase() + 
-                                   team.designation.slice(1).toLowerCase().trim();
-            designationsSet.add(cleanDesignation);
-          }
-        });
-      }
-      
-      // Fetch from users API to get comprehensive designation data
-      const usersResponse = await fetch('/api/users?limit=1000', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (usersResponse.ok) {
-        const usersData = await usersResponse.json();
-        const users = usersData.users || usersData.data || usersData || [];
-        
-        // Extract designations from users with comprehensive field checking
-        users.forEach((user: any) => {
-          
-          // Check various possible field names for designation/role information
-          const possibleDesignations = [
-            user.designation,
-            user.role,
-            user.position,
-            user.jobTitle,
-            user.title,
-            user.department,
-            user.team,
-            user.level,
-            user.grade,
-            user.rank,
-            // Check nested objects
-            user.profile?.designation,
-            user.profile?.role,
-            user.profile?.position,
-            user.profile?.jobTitle,
-            user.workInfo?.designation,
-            user.workInfo?.role,
-            user.workInfo?.position,
-            user.employment?.designation,
-            user.employment?.role,
-            user.employment?.position
-          ];
-          
-          possibleDesignations.forEach(designation => {
-            if (designation && typeof designation === 'string' && designation.trim()) {
-              const cleanDesignation = designation.charAt(0).toUpperCase() + 
-                                     designation.slice(1).toLowerCase().trim();
-              designationsSet.add(cleanDesignation);
-            }
-          });
-        });
-        
-      } else {
-        console.warn('Users API failed:', usersResponse.status, usersResponse.statusText);
-      }
-      
-      // Convert Set to sorted array
-      const dynamicDesignations = Array.from(designationsSet).sort();
-      
-      // Update state with dynamic designations
-      if (dynamicDesignations.length > 0) {
-        setUniqueDesignations(dynamicDesignations);
-      }
-      
-      return dynamicDesignations;
-      
-    } catch (error) {
-      console.error('Error fetching designations:', error);
-      
-      // Fallback to default designations
-      const fallbackDesignations = [
-        'Developer', 'Designer', 'Manager', 'Tester', 
-        'Analyst', 'Support', 'Lead', 'Architect',
-        'Engineer', 'Consultant', 'Specialist', 'Director'
-      ];
-      
-      setUniqueDesignations(fallbackDesignations);
-      
-      return fallbackDesignations;
-    }
-  };
-
-  // Dynamic designation options based on actual API data
-  const designationOptions = uniqueDesignations.length > 0 
-    ? uniqueDesignations 
-    : [
-        'Developer', 'Designer', 'Manager', 'Tester', 
-        'Analyst', 'Support', 'Lead', 'Architect',
-        'Engineer', 'Consultant', 'Specialist', 'Director'
-      ];
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTeamMembers = async () => {
     setIsFetching(true);
+    setError(null);
     try {
       const response = await fetch('/api/teams?limit=100', {
         method: 'GET',
@@ -268,6 +147,12 @@ export default function TeamPage() {
       if (response.ok) {
         const data = await response.json();
         const teams: TeamMember[] = data.teams || [];
+
+        // Show loading toast for large teams
+        if (teams.length > 20) {
+          // You can add a toast notification here
+          console.log(`Loading details for ${teams.length} team members...`);
+        }
 
         const userPromises = teams.map((team: TeamMember) =>
           fetch(`/api/users/${team.userId}`, {
@@ -288,6 +173,7 @@ export default function TeamPage() {
                 publicIdProfile: userData.publicIdProfile || null,
               };
             } else {
+              console.warn(`Failed to fetch user data for ${team.userId}`);
               return {
                 userId: team.userId,
                 firstName: 'Unknown',
@@ -298,15 +184,18 @@ export default function TeamPage() {
                 publicIdProfile: null,
               };
             }
-          }).catch(() => ({
-            userId: team.userId,
-            firstName: 'Unknown',
-            lastName: '',
-            email: 'N/A',
-            bio: 'No bio available',
-            profileImage: '/default-profile.png',
-            publicIdProfile: null,
-          }))
+          }).catch((error) => {
+            console.error(`Error fetching user ${team.userId}:`, error);
+            return {
+              userId: team.userId,
+              firstName: 'Unknown',
+              lastName: '',
+              email: 'N/A',
+              bio: 'No bio available',
+              profileImage: '/default-profile.png',
+              publicIdProfile: null,
+            };
+          })
         );
 
         const users = await Promise.all(userPromises);
@@ -335,199 +224,34 @@ export default function TeamPage() {
         }));
 
         setTeamMembers(displayMembers);
-        setFilteredMembers(displayMembers);
-        
-        const designations = [...new Set(displayMembers
-          .map(member => member.designation)
-          .filter(Boolean)
-          .map(designation => 
-            designation.charAt(0).toUpperCase() + designation.slice(1).toLowerCase()
-          )
-        )].sort();
-        
-        setUniqueDesignations(designations);
       } else {
         const errorData = await response.json();
-        console.error('Failed to fetch team members:', errorData?.error);
+        const errorMessage = errorData?.error || 'Failed to fetch team members';
+        console.error('Failed to fetch team members:', errorMessage);
+        setError(errorMessage);
       }
     } catch (error: any) {
-      console.error('Fetch team members error:', error);
+      const errorMessage = error?.message || 'An unexpected error occurred';
+      console.error('Fetch team members error:', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsFetching(false);
     }
+
+    // Clear error after 5 seconds
+    setTimeout(() => setError(null), 5000);
   };
 
   useEffect(() => {
-    // Fetch team members, programmers, and designations on component mount
     const initializeData = async () => {
       await Promise.all([
         fetchTeamMembers(),
-        fetchProgrammers(),
-        fetchAllDesignations()
+        fetchProgrammers()
       ]);
     };
     
     initializeData();
   }, []);
-
-  // Click outside to close filter dropdown and keyboard shortcuts
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (isFilterOpen && !target.closest('.filter-dropdown-container')) {
-        setIsFilterOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Escape key to close filter
-      if (event.key === 'Escape' && isFilterOpen) {
-        setIsFilterOpen(false);
-      }
-      
-      // Ctrl/Cmd + F to open filter
-      if ((event.ctrlKey || event.metaKey) && event.key === 'f' && !isFilterOpen) {
-        event.preventDefault();
-        setIsFilterOpen(true);
-      }
-      
-      // Ctrl/Cmd + A to select all visible when filter is open
-      if ((event.ctrlKey || event.metaKey) && event.key === 'a' && isFilterOpen) {
-        event.preventDefault();
-        const visibleDesignations = designationOptions.filter(designation => 
-          designation.toLowerCase().includes(filterSearchTerm.toLowerCase())
-        );
-        const allVisible = visibleDesignations.length > 0 && 
-                          visibleDesignations.every(designation => selectedDesignations.includes(designation));
-        
-        if (allVisible) {
-          setSelectedDesignations(prev => 
-            prev.filter(designation => !visibleDesignations.includes(designation))
-          );
-        } else {
-          const newSelections = [...new Set([...selectedDesignations, ...visibleDesignations])];
-          setSelectedDesignations(newSelections);
-        }
-      }
-      
-      // Ctrl/Cmd + Shift + C to clear all filters
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'C') {
-        event.preventDefault();
-        setSelectedDesignations([]);
-        setSearchTerm('');
-        setFilterSearchTerm('');
-      }
-    };
-
-    if (isFilterOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    
-    document.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isFilterOpen, selectedDesignations, filterSearchTerm, searchTerm, designationOptions]);
-
-  useEffect(() => {
-    let filtered = teamMembers;
-
-    if (selectedDesignations.length > 0) {
-      filtered = filtered.filter(member =>
-        selectedDesignations.some(designation =>
-          member.designation.toLowerCase().includes(designation.toLowerCase())
-        )
-      );
-    }
-
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(member =>
-        member.name.toLowerCase().includes(searchLower) ||
-        member.designation.toLowerCase().includes(searchLower) ||
-        member.bio.toLowerCase().includes(searchLower) ||
-        member.email.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply sorting
-    filtered = filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'role':
-          return a.role.localeCompare(b.role);
-        case 'recent':
-          // For recent, we'll just reverse the order (assuming the API returns in creation order)
-          return 0; // Keep original order for recent
-        default:
-          return 0;
-      }
-    });
-
-    if (sortBy === 'recent') {
-      filtered = filtered.reverse();
-    }
-
-    setFilteredMembers(filtered);
-  }, [selectedDesignations, searchTerm, teamMembers, sortBy]);
-
-  const toggleDesignation = (designation: string) => {
-    setSelectedDesignations(prev => {
-      const isCurrentlySelected = prev.includes(designation);
-      const newSelections = isCurrentlySelected
-        ? prev.filter(d => d !== designation)
-        : [...prev, designation];
-      
-      
-      return newSelections;
-    });
-  };
-
-  const clearAllFilters = () => {
-    setSelectedDesignations([]);
-    setSearchTerm('');
-    setFilterSearchTerm('');
-  };
-
-  // Advanced filter functions
-  const selectAllVisibleDesignations = () => {
-    const visibleDesignations = designationOptions.filter(designation => 
-      designation.toLowerCase().includes(filterSearchTerm.toLowerCase())
-    );
-    const newSelections = [...new Set([...selectedDesignations, ...visibleDesignations])];
-    
-    setSelectedDesignations(newSelections);
-  };
-
-  const deselectAllVisibleDesignations = () => {
-    const visibleDesignations = designationOptions.filter(designation => 
-      designation.toLowerCase().includes(filterSearchTerm.toLowerCase())
-    );
-    
-    setSelectedDesignations(prev => 
-      prev.filter(designation => !visibleDesignations.includes(designation))
-    );
-  };
-
-  const getFilteredDesignations = () => {
-    return designationOptions.filter(designation => 
-      designation.toLowerCase().includes(filterSearchTerm.toLowerCase())
-    );
-  };
-
-  const areAllVisibleSelected = () => {
-    const visibleDesignations = getFilteredDesignations();
-    return visibleDesignations.length > 0 && 
-           visibleDesignations.every(designation => selectedDesignations.includes(designation));
-  };
-
-  const areSomeVisibleSelected = () => {
-    const visibleDesignations = getFilteredDesignations();
-    return visibleDesignations.some(designation => selectedDesignations.includes(designation));
-  };
 
   // Fetch programmers from users API
   const fetchProgrammers = async () => {
@@ -545,26 +269,19 @@ export default function TeamPage() {
         const users = data.users || data.data || data || [];
 
         console.log('Total users fetched:', users.length);
-        console.log('Sample user data:', users[0]);
 
         // Filter users who are developers/programmers
         const developerUsers = users.filter((user: any) => {
-          // Handle designations as array (primary field)
           const designations = Array.isArray(user.designations) 
             ? user.designations.map((d: string) => d.toLowerCase()) 
             : [];
           
-          // Handle other fields as strings
           const designation = user.designation?.toLowerCase() || '';
           const role = user.role?.toLowerCase() || '';
           const position = user.position?.toLowerCase() || '';
           const jobTitle = user.jobTitle?.toLowerCase() || '';
           const title = user.title?.toLowerCase() || '';
-          const department = user.department?.toLowerCase() || '';
-          const team = user.team?.toLowerCase() || '';
-          const bio = user.bio?.toLowerCase() || '';
 
-          // Strict developer terms - only explicit developer roles
           const developerTerms = [
             'developer', 'programmer', 'coder', 'engineer', 'dev',
             'frontend', 'backend', 'fullstack', 'full-stack', 'software',
@@ -572,12 +289,10 @@ export default function TeamPage() {
             'software engineer', 'software developer'
           ];
 
-          // Primary check: designations array (most reliable)
           const designationMatch = designations.some((d: string) => 
             developerTerms.some(term => d.includes(term))
           );
 
-          // Secondary check: explicit role/position fields only
           const explicitRoleMatch = developerTerms.some(term => 
             designation.includes(term) || 
             role.includes(term) || 
@@ -586,35 +301,15 @@ export default function TeamPage() {
             title.includes(term)
           );
 
-          // Only match if explicitly identified as developer in role/designation
-          const isMatch = designationMatch || explicitRoleMatch;
-
-          if (isMatch) {
-            console.log('Found developer:', {
-              name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-              designations: user.designations,
-              designation,
-              role,
-              position,
-              jobTitle,
-              title,
-              department,
-              team,
-              bio: bio.substring(0, 50) + '...'
-            });
-          }
-
-          return isMatch;
+          return designationMatch || explicitRoleMatch;
         });
 
         console.log('Filtered developers:', developerUsers.length);
 
         // Transform users to DisplayProgrammer format
         const displayProgrammers: DisplayProgrammer[] = developerUsers.map((user: any) => {
-          // Handle MongoDB ObjectId
           const userId = user._id?.$oid || user._id || user.id || Math.random().toString();
           
-          // Get primary designation from designations array or fallback fields
           const primaryDesignation = Array.isArray(user.designations) && user.designations.length > 0
             ? user.designations[0]
             : user.designation || user.role || user.position || user.jobTitle || user.title || 'Developer';
@@ -633,9 +328,7 @@ export default function TeamPage() {
           };
         });
 
-        // Only show actual developers, no fallback users
         setProgrammers(displayProgrammers);
-        setFilteredProgrammers(displayProgrammers);
 
       } else {
         const errorData = await response.json();
@@ -646,11 +339,6 @@ export default function TeamPage() {
     } finally {
       setIsFetchingProgrammers(false);
     }
-  };
-
-  // Refresh designations function
-  const refreshDesignations = async () => {
-    await fetchAllDesignations();
   };
 
   const getDesignationColor = (designation: string) => {
@@ -686,30 +374,6 @@ export default function TeamPage() {
       
       <ModernFloatingElements />
       
-      {/* Floating Quick Filter Button */}
-      <motion.button
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ delay: 1, type: "spring", stiffness: 200 }}
-        whileHover={{ scale: 1.1, y: -2 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsFilterOpen(true)}
-        className="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-2xl shadow-2xl hover:shadow-violet-500/25 transition-all duration-300 z-30 backdrop-blur-sm border border-white/20"
-      >
-        <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5" />
-          {selectedDesignations.length > 0 && (
-            <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-white/20 rounded-full"
-            >
-              {selectedDesignations.length}
-            </motion.span>
-          )}
-        </div>
-      </motion.button>
-
       {/* Modern Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-200/40 via-transparent to-transparent dark:from-violet-900/20" />
@@ -836,7 +500,15 @@ export default function TeamPage() {
               <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => document.getElementById('team-section')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => {
+                  const teamSection = document.getElementById('team-section');
+                  if (teamSection) {
+                    teamSection.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }
+                }}
                 className="group px-8 py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
               >
                 <div className="flex items-center gap-3 relative z-10">
@@ -863,508 +535,127 @@ export default function TeamPage() {
 
       {/* Modern Control Panel */}
       <section id="team-section" className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+        {/* Modern Header with View Toggle */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl p-6 mb-8"
+          className="mb-12"
         >
-          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
-            {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-              {/* Advanced Search */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search team members..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-0 bg-white/80 dark:bg-slate-700/80 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-violet-500 focus:bg-white dark:focus:bg-slate-700 transition-all duration-300 shadow-lg"
-                />
+          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              {/* Header Content */}
+              <div className="flex-1">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  Team Directory
+                </h2>
+                <p className="text-slate-600 dark:text-slate-300">
+                  Discover our talented team members and their expertise
+                </p>
               </div>
 
-              {/* Filter Toggle */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Filter className="h-5 w-5" />
-                Filters
-                {selectedDesignations.length > 0 && (
-                  <span className="inline-flex items-center justify-center w-6 h-6 text-sm font-bold bg-white/20 rounded-full">
-                    {selectedDesignations.length}
-                  </span>
-                )}
-              </motion.button>
-            </div>
-
-            {/* View Controls */}
-            <div className="flex items-center gap-3">
-              {/* Sort Dropdown */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'name' | 'role' | 'recent')}
-                className="px-4 py-3 rounded-xl bg-white/80 dark:bg-slate-700/80 border-0 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 transition-all duration-300 shadow-lg"
-              >
-                <option value="name">Sort by Name</option>
-                <option value="role">Sort by Role</option>
-                <option value="recent">Recently Added</option>
-              </select>
-
               {/* View Mode Toggle */}
-              <div className="flex items-center bg-white/80 dark:bg-slate-700/80 rounded-xl p-1 shadow-lg">
-                <button
+              <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-700/50 p-2 rounded-xl">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setViewMode('grid')}
-                  className={`p-3 rounded-lg transition-all duration-300 ${
+                  className={`px-4 py-2 cursor-pointer rounded-lg flex items-center gap-2 transition-all duration-200 ${
                     viewMode === 'grid'
-                      ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-slate-600 shadow-md text-violet-600 dark:text-violet-400'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600/50'
                   }`}
                 >
-                  <Grid3X3 className="h-5 w-5" />
-                </button>
-                <button
+                  <Grid3X3 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Grid</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setViewMode('list')}
-                  className={`p-3 rounded-lg transition-all duration-300 ${
+                  className={`px-4 py-2 cursor-pointer rounded-lg flex items-center gap-2 transition-all duration-200 ${
                     viewMode === 'list'
-                      ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-slate-600 shadow-md text-violet-600 dark:text-violet-400'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600/50'
                   }`}
                 >
-                  <List className="h-5 w-5" />
-                </button>
+                  <List className="w-4 h-4" />
+                  <span className="text-sm font-medium">List</span>
+                </motion.button>
+              </div>
+
+              {/* Search and Filter (placeholder for future implementation) */}
+              <div className="flex items-center gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    fetchTeamMembers();
+                    // Add a small vibration for haptic feedback if available
+                    if (window.navigator.vibrate) {
+                      window.navigator.vibrate(50);
+                    }
+                  }}
+                  className="p-3 bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 rounded-xl transition-all duration-200 group relative"
+                  title="Refresh team members"
+                >
+                  {/* Loading indicator */}
+                  {isFetching && (
+                    <motion.div
+                      className="absolute inset-0 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <svg className="animate-spin h-5 w-5 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </motion.div>
+                  )}
+                  <motion.div
+                    animate={{ rotate: isFetching ? 360 : 0 }}
+                    transition={{ duration: 1, repeat: isFetching ? Infinity : 0, ease: "linear" }}
+                  >
+                    <Star className="w-5 h-5 text-violet-600 dark:text-violet-400 transform transition-transform duration-500 group-hover:scale-110" />
+                  </motion.div>
+                </motion.button>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Ultra-Modern Filter Sidebar */}
-        <AnimatePresence>
-          {isFilterOpen && (
-            <>
-              {/* Enhanced Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/40 backdrop-blur-md z-40"
-                onClick={() => setIsFilterOpen(false)}
-              />
-              
-              {/* Modern Sidebar */}
-              <motion.div
-                initial={{ x: -400, opacity: 0, scale: 0.95 }}
-                animate={{ x: 0, opacity: 1, scale: 1 }}
-                exit={{ x: -400, opacity: 0, scale: 0.95 }}
-                transition={{ 
-                  type: "spring", 
-                  damping: 30, 
-                  stiffness: 300,
-                  mass: 0.8
-                }}
-                className="filter-dropdown-container fixed left-0 top-0 h-full w-96 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-r border-white/30 dark:border-slate-700/40 shadow-2xl z-50 overflow-hidden hide-scrollbar"
-              >
-                {/* Animated Background Pattern */}
-                <div className="absolute inset-0 opacity-5 dark:opacity-10">
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500" />
-                  {Array.from({ length: 15 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-1 bg-violet-400 rounded-full"
-                      style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                      }}
-                      animate={{
-                        scale: [1, 1.5, 1],
-                        opacity: [0.3, 0.7, 0.3],
-                      }}
-                      transition={{
-                        duration: 3 + Math.random() * 2,
-                        repeat: Infinity,
-                        delay: Math.random() * 2,
-                      }}
-                    />
-                  ))}
+        {/* Error Message Display */}
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6"
+            >
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 flex items-center gap-3">
+                <div className="p-2 bg-red-100 dark:bg-red-800/30 rounded-lg">
+                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-
-                <div className="relative h-full flex flex-col">
-                  {/* Enhanced Header */}
-                  <motion.div
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="p-6 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-r from-violet-50/50 to-purple-50/50 dark:from-violet-900/20 dark:to-purple-900/20"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <motion.div
-                          animate={{ rotate: [0, 360] }}
-                          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                          className="p-2 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl shadow-lg"
-                        >
-                          <Filter className="h-5 w-5 text-white" />
-                        </motion.div>
-                        <div>
-                          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Smart Filters</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">Find your perfect team member</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {/* Refresh Designations Button */}
-                        <motion.button
-                          whileHover={{ scale: 1.1, rotate: 180 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={refreshDesignations}
-                          className="p-2 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-all duration-200 backdrop-blur-sm"
-                          title="Refresh Role Types"
-                        >
-                          <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                        </motion.button>
-                        
-                        {/* Keyboard Shortcuts Help */}
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          className="group relative"
-                        >
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-xl bg-slate-100/80 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 backdrop-blur-sm"
-                            title="Keyboard Shortcuts"
-                          >
-                            <span className="text-xs font-bold text-slate-600 dark:text-slate-400">?</span>
-                          </motion.button>
-                          
-                          {/* Tooltip */}
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                            whileHover={{ opacity: 1, scale: 1, y: 0 }}
-                            className="absolute top-full right-0 mt-2 w-64 p-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl z-10 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                          >
-                            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Keyboard Shortcuts</h4>
-                            <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                              <div className="flex justify-between">
-                                <span>Open Filter</span>
-                                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Ctrl+F</kbd>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Close Filter</span>
-                                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Esc</kbd>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Select/Deselect All</span>
-                                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Ctrl+A</kbd>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Clear All Filters</span>
-                                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Ctrl+⇧+C</kbd>
-                              </div>
-                            </div>
-                          </motion.div>
-                        </motion.div>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.1, rotate: 90 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => setIsFilterOpen(false)}
-                          className="p-2 rounded-xl bg-slate-100/80 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 backdrop-blur-sm"
-                        >
-                          <X className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-                        </motion.button>
-                      </div>
-                    </div>
-
-                    {/* Filter Stats */}
-                    <div className="flex items-center gap-3">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring" }}
-                        className="px-3 py-1.5 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-full"
-                      >
-                        <span className="text-xs font-semibold text-violet-800 dark:text-violet-200">
-                          {selectedDesignations.length} Active
-                        </span>
-                      </motion.div>
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3, type: "spring" }}
-                        className="px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-full"
-                      >
-                        <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-                          {filteredMembers.length} Results
-                        </span>
-                      </motion.div>
-                    </div>
-                  </motion.div>
-
-                  {/* Filter Content */}
-                  <div className="flex-1 overflow-y-auto hide-scrollbar p-6 space-y-6">
-                    {/* Advanced Search */}
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                      className="space-y-3"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Search className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">Quick Search</span>
-                      </div>
-                      
-                      <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
-                        <input
-                          type="text"
-                          placeholder="Search roles, skills, names..."
-                          value={filterSearchTerm}
-                          onChange={(e) => setFilterSearchTerm(e.target.value)}
-                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-100/80 dark:bg-slate-700/80 border-2 border-transparent text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:border-violet-500 focus:bg-white dark:focus:bg-slate-700 transition-all duration-300 backdrop-blur-sm"
-                        />
-                        {filterSearchTerm && (
-                          <motion.button
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => setFilterSearchTerm('')}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-full bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </motion.button>
-                        )}
-                      </div>
-                    </motion.div>
-
-                    {/* Role Categories */}
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="space-y-4"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                          <span className="text-sm font-semibold text-slate-900 dark:text-white">Roles & Positions</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getFilteredDesignations().length > 0 && (
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={areAllVisibleSelected() ? deselectAllVisibleDesignations : selectAllVisibleDesignations}
-                              className="px-3 py-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-200/50 dark:hover:bg-emerald-900/30 transition-all duration-200"
-                            >
-                              {areAllVisibleSelected() ? 'Deselect All' : 'Select All'}
-                            </motion.button>
-                          )}
-                          {selectedDesignations.length > 0 && (
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={clearAllFilters}
-                              className="px-3 py-1.5 text-xs font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 bg-violet-100/50 dark:bg-violet-900/20 rounded-lg hover:bg-violet-200/50 dark:hover:bg-violet-900/30 transition-all duration-200"
-                            >
-                              Clear All
-                            </motion.button>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Filter Summary */}
-                      {(selectedDesignations.length > 0 || filterSearchTerm) && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="mb-4 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl"
-                        >
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-600 dark:text-slate-400">
-                              {selectedDesignations.length > 0 && (
-                                <span className="font-medium text-violet-600 dark:text-violet-400">
-                                  {selectedDesignations.length} selected
-                                </span>
-                              )}
-                              {selectedDesignations.length > 0 && filterSearchTerm && ' • '}
-                              {filterSearchTerm && (
-                                <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                                  "{filterSearchTerm}" search
-                                </span>
-                              )}
-                            </span>
-                            <span className="text-slate-500 dark:text-slate-500">
-                              {filteredMembers.length} results
-                            </span>
-                          </div>
-                        </motion.div>
-                      )}
-                      
-                      <div className="space-y-2 max-h-80 overflow-y-auto hide-scrollbar">
-                        {designationOptions
-                          .filter(designation => 
-                            designation.toLowerCase().includes(filterSearchTerm.toLowerCase())
-                          )
-                          .map((designation, index) => {
-                            const isSelected = selectedDesignations.includes(designation);
-                            const count = teamMembers.filter(m => 
-                              m.designation.toLowerCase() === designation.toLowerCase()
-                            ).length;
-                            
-                            return (
-                              <motion.div
-                                key={designation}
-                                initial={{ x: -20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                transition={{ delay: 0.4 + index * 0.05 }}
-                                whileHover={{ x: 4, scale: 1.02 }}
-                                className={`group relative p-4 rounded-2xl cursor-pointer transition-all duration-300 ${
-                                  isSelected 
-                                    ? 'bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 border-2 border-violet-300 dark:border-violet-600' 
-                                    : 'bg-slate-50/80 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700/70 border-2 border-transparent'
-                                }`}
-                                onClick={() => toggleDesignation(designation)}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <motion.div
-                                      whileHover={{ scale: 1.1 }}
-                                      className={`relative w-5 h-5 rounded-lg border-2 transition-all duration-200 ${
-                                        isSelected 
-                                          ? 'bg-gradient-to-r from-violet-500 to-purple-600 border-violet-500' 
-                                          : 'border-slate-300 dark:border-slate-600 group-hover:border-violet-400'
-                                      }`}
-                                    >
-                                      {isSelected && (
-                                        <motion.div
-                                          initial={{ scale: 0 }}
-                                          animate={{ scale: 1 }}
-                                          className="absolute inset-0 flex items-center justify-center"
-                                        >
-                                          <div className="w-2 h-2 bg-white rounded-full" />
-                                        </motion.div>
-                                      )}
-                                    </motion.div>
-                                    
-                                    <div className="flex-1">
-                                      <span className={`text-sm font-medium transition-colors ${
-                                        isSelected 
-                                          ? 'text-violet-800 dark:text-violet-200' 
-                                          : 'text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white'
-                                      }`}>
-                                        {designation}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-2">
-                                    <motion.span
-                                      whileHover={{ scale: 1.1 }}
-                                      className={`text-xs px-2.5 py-1.5 rounded-full font-semibold transition-all duration-200 ${
-                                        isSelected
-                                          ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-sm'
-                                          : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300'
-                                      }`}
-                                    >
-                                      {count}
-                                    </motion.span>
-                                    
-                                    {isSelected && (
-                                      <motion.div
-                                        initial={{ scale: 0, rotate: -180 }}
-                                        animate={{ scale: 1, rotate: 0 }}
-                                        className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full"
-                                      />
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                {/* Hover Effect */}
-                                <motion.div
-                                  className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                  layoutId={`hover-${designation}`}
-                                />
-                              </motion.div>
-                            );
-                          })}
-                        
-                        {designationOptions.filter(designation => 
-                          designation.toLowerCase().includes(filterSearchTerm.toLowerCase())
-                        ).length === 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="text-center py-12"
-                          >
-                            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-2xl flex items-center justify-center">
-                              <Search className="w-8 h-8 text-slate-400" />
-                            </div>
-                            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">No roles found</h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              Try adjusting your search terms
-                            </p>
-                          </motion.div>
-                        )}
-                      </div>
-                    </motion.div>
-                  </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+                  <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
                 </div>
-              </motion.div>
-            </>
+                <button
+                  onClick={() => setError(null)}
+                  className="p-2 hover:bg-red-100 dark:hover:bg-red-800/30 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Active Filters */}
-        {(selectedDesignations.length > 0 || searchTerm) && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-wrap gap-2 mb-6"
-          >
-            {selectedDesignations.map(designation => (
-              <motion.span
-                key={designation}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 text-violet-800 dark:text-violet-200 text-sm font-medium"
-              >
-                {designation}
-                <button
-                  onClick={() => toggleDesignation(designation)}
-                  className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </motion.span>
-            ))}
-            {searchTerm && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-800 dark:text-emerald-200 text-sm font-medium"
-              >
-                Search: "{searchTerm}"
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </motion.span>
-            )}
-          </motion.div>
-        )}
 
         {/* Modern Team Display */}
         <div className="mb-12">
@@ -1397,7 +688,7 @@ export default function TeamPage() {
                   </div>
                 ))}
               </motion.div>
-            ) : filteredMembers.length > 0 ? (
+            ) : teamMembers.length > 0 ? (
               <motion.div
                 key="content"
                 initial={{ opacity: 0, y: 20 }}
@@ -1412,7 +703,7 @@ export default function TeamPage() {
                       Team Members
                     </h3>
                     <span className="px-4 py-2 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 text-violet-800 dark:text-violet-200 rounded-full text-sm font-semibold">
-                      {filteredMembers.length} of {teamMembers.length}
+                      {teamMembers.length} members
                     </span>
                   </div>
                 </div>
@@ -1423,7 +714,7 @@ export default function TeamPage() {
                     ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                     : "space-y-4"
                 }>
-                  {filteredMembers.map((member, index) => (
+                  {teamMembers.map((member, index) => (
                     <motion.div
                       key={member.userId}
                       initial={{ opacity: 0, y: 20 }}
@@ -1586,48 +877,94 @@ export default function TeamPage() {
                             </>
                           ) : (
                             <>
-                              {/* List Layout */}
+                              {/* Modern List Layout */}
                               <div className="flex items-center gap-6 flex-1">
                                 <div className="relative">
-                                  <div className="w-16 h-16 rounded-2xl overflow-hidden border-4 border-white/50 dark:border-slate-700/50 shadow-lg group-hover:border-violet-400 transition-all duration-300">
+                                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-4 border-white/50 dark:border-slate-700/50 shadow-lg group-hover:border-violet-400 transition-all duration-300">
                                     <Image
                                       src={member.image}
                                       alt={member.name}
-                                      width={64}
-                                      height={64}
+                                      width={80}
+                                      height={80}
                                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                                       style={{ width: '100%', height: 'auto' }}
                                       onError={(e) => {
                                         e.currentTarget.src = '/default-profile.png';
                                       }}
                                     />
+                                    {/* Hover Overlay */}
+                                    <motion.div
+                                      initial={{ opacity: 0 }}
+                                      whileHover={{ opacity: 1 }}
+                                      className="absolute inset-0 bg-gradient-to-r from-violet-600/80 to-purple-600/80 flex items-center justify-center"
+                                    >
+                                      <Eye className="w-5 h-5 text-white" />
+                                    </motion.div>
                                   </div>
-                                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                                    <Star className="w-2.5 h-2.5 text-white" />
-                                  </div>
+                                  <motion.div
+                                    animate={{ scale: [1, 1.1, 1] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg"
+                                  >
+                                    <Star className="w-3 h-3 text-white" />
+                                  </motion.div>
                                 </div>
                                 
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
+                                <div className="flex-1 space-y-3">
+                                  <div className="flex items-center gap-3">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors">
                                       {member.name}
                                     </h3>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getDesignationColor(member.designation)} text-white shadow-sm`}>
+                                    <motion.span 
+                                      whileHover={{ scale: 1.05 }}
+                                      className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getDesignationColor(member.designation)} text-white shadow-sm`}
+                                    >
                                       {member.role}
-                                    </span>
+                                    </motion.span>
                                   </div>
-                                  <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">
-                                    {truncateBio(member.description, 20)}
+                                  
+                                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                                    {truncateBio(member.description, 25)}
                                   </p>
+                                  
+                                  {/* Skills Tags */}
+                                  <div className="flex flex-wrap gap-2">
+                                    {['TypeScript', 'React', 'Design'].map((skill, idx) => (
+                                      <motion.span
+                                        key={skill}
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: idx * 0.1 }}
+                                        className="px-2 py-1 text-xs font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 rounded-lg border border-violet-100 dark:border-violet-800"
+                                      >
+                                        {skill}
+                                      </motion.span>
+                                    ))}
+                                  </div>
                                 </div>
                                 
-                                <div className="flex items-center gap-2">
-                                  <button className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
-                                    <Mail className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                                  </button>
-                                  <button className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
-                                    <Award className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                                  </button>
+                                <div className="flex items-center gap-3">
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="p-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 transition-colors group/btn"
+                                  >
+                                    <Mail className="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover/btn:scale-110 transition-transform" />
+                                  </motion.button>
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="p-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 transition-colors group/btn"
+                                  >
+                                    <MessageCircle className="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover/btn:scale-110 transition-transform" />
+                                  </motion.button>
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors group/btn"
+                                  >
+                                    <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover/btn:scale-110 transition-transform" />
+                                  </motion.button>
                                 </div>
                               </div>
                             </>
@@ -1654,21 +991,8 @@ export default function TeamPage() {
                     No Team Members Found
                   </h3>
                   <p className="text-slate-600 dark:text-slate-300 mb-6">
-                    {selectedDesignations.length > 0 || searchTerm
-                      ? "Try adjusting your filters or search terms."
-                      : "Our team is growing! Check back soon."
-                    }
+                    Our team is growing! Check back soon.
                   </p>
-                  {(selectedDesignations.length > 0 || searchTerm) && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={clearAllFilters}
-                      className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      Clear All Filters
-                    </motion.button>
-                  )}
                 </div>
               </motion.div>
             )}

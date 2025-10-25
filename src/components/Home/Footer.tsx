@@ -6,7 +6,7 @@ import {
   Github, 
   Twitter, 
   Linkedin, 
-  ArrowUp,
+
   Sparkles,
   Code2,
   Shield,
@@ -17,9 +17,7 @@ import {
 import Link from "next/link";
 
 function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+ 
 
   const currentYear = new Date().getFullYear();
 
@@ -173,13 +171,7 @@ function Footer() {
                   <span>All systems operational</span>
                 </div>
                 
-                <button
-                  onClick={scrollToTop}
-                  className="group p-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-white/10 rounded-xl text-white transition-all duration-200 hover:scale-110"
-                  aria-label="Scroll to top"
-                >
-                  <ArrowUp className="h-4 w-4 group-hover:-translate-y-1 transition-transform duration-200" />
-                </button>
+                
               </div>
             </div>
           </div>

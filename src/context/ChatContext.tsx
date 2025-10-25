@@ -13,8 +13,21 @@ import { Contact } from '@/lib/contacts';
 
 interface Message extends MessageType {
   isOptimistic?: boolean;
+  isGuestMessage?: boolean;
+  isSupportReply?: boolean;
 }
 
+interface GuestMessageResponse {
+  messageId: string;
+  guestId: string;
+  guestName: string;
+  message: string;
+  image?: string;
+  chatId: string;
+  timestamp: Date;
+  type: 'guest_message' | 'support_reply';
+  senderId?: string;
+}
 
 interface Chat {
   _id: string;
@@ -197,6 +210,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const getMessagesByUserId = useCallback(async (userId: string) => {
     setIsMessagesLoading(true);
     try {
+      console.log('📨 Fetching messages for:', userId);
+      // Use the unified endpoint for both guest and real users
       const response = await fetch(`/api/messages/${userId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -208,16 +223,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         throw new Error(errorData.message || 'Failed to fetch messages');
       }
 
-      
       const data: MessageType[] = await response.json();
       const uniqueMessages = Array.from(
         new Map(data.map((msg) => [msg._id, msg])).values()
       ) as Message[];
       setMessages(uniqueMessages);
-      console.log(`📬 Fetched ${uniqueMessages.length} unique messages for user ${userId}`);
+      console.log(`📬 Fetched ${uniqueMessages.length} messages for user ${userId}`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
-     
       console.error('Get messages error:', error);
     } finally {
       setIsMessagesLoading(false);
@@ -229,17 +242,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
    */
   const sendMessage = async (messageData: { text?: string; image?: string }) => {
     if (!selectedUser || !authUser) {
-      console.warn('Cannot send message: Missing selectedUser or authUser');
+      console.warn('Cannot send message: Missing user information');
       return;
     }
 
-  
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2)}`;
 
+    // Create optimistic message
     const optimisticMessage: Message = {
       _id: tempId,
-      senderId: authUser.userId,
-      receiverId: selectedUser._id,
+      senderId: authUser.userId as string,  // Ensure we're using the actual user ID
+      receiverId: selectedUser._id,         // Use the actual guest/user ID from the contact list
       text: messageData.text,
       image: messageData.image,
       createdAt: new Date(),
@@ -253,10 +266,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      const response = await fetch(`/api/messages/send/${selectedUser._id}`, {
+      // Use the unified endpoint for sending messages
+      const endpoint = `/api/messages/send/${selectedUser._id}`;
+
+      const payload = {
+        ...messageData,
+        receiverId: selectedUser._id, // Use the ID from the contact list
+        senderId: authUser.userId,    // Include the sender ID explicitly
+        messageId: tempId,
+      };
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messageData),
+        body: JSON.stringify(payload),
         credentials: 'include',
       });
 
@@ -264,7 +287,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to send message');
       }
-
 
       const sentMessage: Message = await response.json();
 
@@ -317,6 +339,55 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const handleNewMessage = useCallback((
+    newMessage: Message,
+    isMessageForCurrentConversation: boolean,
+    isGuest: boolean
+  ) => {
+    if (isMessageForCurrentConversation) {
+      setMessages((prevMessages) => {
+        const messageExists = prevMessages.some((msg) => msg._id === newMessage._id);
+        if (messageExists) {
+          console.log(`✅ Message ${newMessage._id} already exists (duplicate prevented)`);
+          return prevMessages;
+        }
+        return [...prevMessages, newMessage];
+      });
+
+      setChats((prevChats) => {
+        const updatedChats = prevChats.map((chat) => {
+          const otherParticipant = chat.participants?.[0] || chat;
+          if (otherParticipant._id === selectedUser?._id) {
+            return {
+              ...chat,
+              lastMessage: newMessage,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return chat;
+        });
+        return updatedChats;
+      });
+
+      // Play notification sound
+      if (isSoundEnabled && typeof Audio !== 'undefined') {
+        const notificationSound = new Audio('/sounds/notification.mp3');
+        notificationSound.currentTime = 0;
+        notificationSound.play().catch((e) => console.log('Audio play failed:', e));
+      }
+
+      // Show browser notification if window is not focused
+      if (document.hidden || !document.hasFocus()) {
+        const senderName = isGuest ? 'Guest User' : selectedUser?.firstName || selectedUser?.email || 'User';
+        const messageText = newMessage.text || (newMessage.image ? 'Sent an image' : 'New message');
+        debouncedShowNotification(senderName, messageText, () => {
+          window.focus();
+          setSelectedUser(selectedUser);
+        });
+      }
+    }
+  }, [selectedUser, isSoundEnabled, debouncedShowNotification]);
+
   const subscribeToMessages = useCallback(() => {
     if (!socket || !isSocketConnected) {
       console.log('⚠️ Cannot subscribe to messages:', {
@@ -332,17 +403,45 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Handle regular messages
+    // Handle regular messages
     socket.on('newMessage', (newMessage: Message) => {
-      console.log('📨 Received new message:', newMessage);
+      console.log('📨 Received regular message:', newMessage);
 
       if (!newMessage._id) {
         console.log('⚠️ Received message without _id, skipping');
         return;
       }
 
-      // Check if message is part of current conversation (sender OR receiver)
       const isMessageForCurrentConversation = selectedUser && 
         (newMessage.senderId === selectedUser._id || newMessage.receiverId === selectedUser._id);
+        
+      handleNewMessage(newMessage, isMessageForCurrentConversation, false);
+    });
+
+    // Handle guest messages
+    socket.on('guestMessage', (guestMessage: GuestMessageResponse) => {
+      console.log('📨 Received guest message:', guestMessage);
+
+      if (!guestMessage.messageId) {
+        console.log('⚠️ Received guest message without messageId, skipping');
+        return;
+      }
+
+      // Convert guest message to regular message format
+      const newMessage: Message = {
+        _id: guestMessage.messageId,
+        senderId: guestMessage.type === 'guest_message' ? guestMessage.guestId : (guestMessage.senderId as string),
+        receiverId: guestMessage.type === 'guest_message' ? (authUser?.userId as string) : guestMessage.guestId,
+        text: guestMessage.message,
+        image: guestMessage.image,
+        createdAt: new Date(guestMessage.timestamp),
+        isGuestMessage: guestMessage.type === 'guest_message',
+        isSupportReply: guestMessage.type === 'support_reply'
+      };
+
+      const isMessageForCurrentConversation = selectedUser && 
+        (selectedUser.isGuest || selectedUser._id === guestMessage.guestId);
 
       if (!isMessageForCurrentConversation) {
         console.log('Message not for current conversation:', {

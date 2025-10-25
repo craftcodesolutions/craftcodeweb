@@ -379,7 +379,7 @@ const SupportSection: FC = () => {
     }
   };
 
-  const emailContact = 'info.codecraft.soft@gmail.com';
+  const emailContact = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@craftcode.com';
   const encodeEmail = (email: string) => {
     return email.replace(/./g, (char) => `&#${char.charCodeAt(0)};`);
   };

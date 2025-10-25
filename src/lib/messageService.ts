@@ -1,7 +1,8 @@
-import { MongoClient, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import clientPromise from "@/config/mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = process.env.DB_NAME || 'CraftCode';
+const USERS_COLLECTION = 'users';
 
 export interface Contact {
   _id: string;
@@ -12,80 +13,100 @@ export interface Contact {
   isAdmin?: boolean;
 }
 
-export async function getAllContacts(userId: string): Promise<Contact[]> {
-  const client = new MongoClient(MONGODB_URI);
+interface GuestUser {
+  guestId: string;
+  dummyName?: string;
+  expiresAt: Date;
+}
+
+interface UserContact {
+  _id: ObjectId;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
+}
+
+export interface GuestMessage {
+  messageId: string;
+  guestId: string;
+  guestName: string;
+  message: string;
+  image?: string;
+  chatId: string;
+  timestamp: Date;
+  type: 'guest_message' | 'support_reply';
+}
+
+export async function getGuestMessagesForAdmin(): Promise<GuestMessage[]> {
   try {
+    const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const usersCollection = db.collection('users');
+    const collection = db.collection('guest_messages');
 
-    // Validate userId as ObjectId
-    let objectId;
-    try {
-      objectId = new ObjectId(userId);
-    } catch (error) {
-      console.error(`Invalid userId format: ${userId}`, error);
-      throw new Error('Invalid user ID format');
-    }
+    // Get all guest messages, sorted by timestamp
+    const messages = await collection
+      .find<GuestMessage>({})
+      .sort({ timestamp: -1 })
+      .toArray();
 
-    // Fetch all users except the current user
-    const users = await usersCollection
-      .find({ _id: { $ne: objectId } })
-      .project({
-        _id: 1,
-        email: 1,
-        firstName: 1,
-        lastName: 1,
-        profileImage: 1,
-        isAdmin: 1,
+    console.log(`📨 Retrieved ${messages.length} guest messages`);
+    return messages;
+  } catch (error) {
+    console.error('Error fetching guest messages:', error);
+    throw error;
+  }
+}
+
+export async function getAllContacts(excludeUserId: string): Promise<Contact[]> {
+  try {
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    const usersCollection = db.collection(USERS_COLLECTION);
+    const guestCollection = db.collection('guest_users');
+
+    // Get regular user contacts
+    const userContacts = await usersCollection
+      .find<UserContact>(
+        { _id: { $ne: new ObjectId(excludeUserId) } },
+        { projection: { password: 0, resetToken: 0, resetTokenExpiry: 0 } }
+      )
+      .toArray();
+
+    // Get active guest contacts (not expired)
+    const guestContacts = await guestCollection
+      .find<GuestUser>({
+        expiresAt: { $gt: new Date() }
       })
       .toArray();
 
-    // Map to Contact interface
-    const contacts: Contact[] = users.map(user => ({
-      _id: user._id.toString(),
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profileImage: user.profileImage,
-      isAdmin: user.isAdmin || false,
+    // Format user contacts
+    const formattedUserContacts = userContacts.map(contact => ({
+      ...contact,
+      _id: contact._id.toString(),
+      email: contact.email,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      profileImage: contact.profileImage,
+      isGuest: false
     }));
 
-    // Ensure the target user is included
-    const targetEmail = 'somethinn999awkwardd@gmail.com';
-    const targetUser = contacts.find(contact => contact.email.toLowerCase() === targetEmail.toLowerCase());
-    if (!targetUser) {
-      console.warn(`Target user ${targetEmail} not found in initial contacts fetch`);
-      const userDoc = await usersCollection.findOne({ 
-        email: { $regex: `^${targetEmail}$`, $options: 'i' } 
-      });
-      if (userDoc && userDoc._id.toString() !== userId) {
-        console.log(`Found target user ${targetEmail} in database, adding to contacts`);
-        contacts.push({
-          _id: userDoc._id.toString(),
-          email: userDoc.email,
-          firstName: userDoc.firstName,
-          lastName: userDoc.lastName,
-          profileImage: userDoc.profileImage,
-          isAdmin: userDoc.isAdmin || true, // Target user is typically admin
-        });
-      } else if (userDoc && userDoc._id.toString() === userId) {
-        console.warn(`Target user ${targetEmail} is the current user, not adding to contacts`);
-      } else {
-        console.error(`Target user ${targetEmail} not found in database`);
-      }
-    } else {
-      console.log(`Target user ${targetEmail} found in contacts`);
-    }
+    // Format guest contacts
+    const formattedGuestContacts = guestContacts.map(guest => ({
+      _id: guest.guestId,
+      email: `guest_${guest.guestId}@temp.com`,
+      firstName: guest.dummyName || 'Guest',
+      lastName: guest.guestId.substring(0, 6),
+      profileImage: undefined,
+      isGuest: true
+    }));
 
-    return contacts;
+    const allContacts = [...formattedUserContacts, ...formattedGuestContacts];
+    console.log('Contacts fetched:', allContacts.map(c => ({ _id: c._id, email: c.email, isGuest: c.isGuest })));
+
+    return allContacts;
   } catch (error) {
-    console.error('Error fetching contacts:', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      userId,
-    });
-    throw new Error('Failed to fetch contacts');
-  } finally {
-    await client.close();
+    console.error("Error in getAllContacts:", error);
+    throw error;
   }
 }

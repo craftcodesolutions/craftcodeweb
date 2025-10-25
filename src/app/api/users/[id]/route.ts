@@ -16,7 +16,8 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
 
-    if (!ObjectId.isValid(id)) {
+    // Accept both ObjectId and string id
+    if (!ObjectId.isValid(id) && typeof id !== 'string') {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
 
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     }
 
     const userData = {
-      userId: user.userId || user._id.toString(),
+      userId: user.userId || user._id?.toString?.() || '',
       firstName: user.firstName || 'Unknown',
       lastName: user.lastName || 'User',
       email: user.email || 'N/A',
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
           ? user.profileImage
           : null,
       designations: user.designations || [],
+      publicId: user.publicId || '',
     };
 
     return NextResponse.json(userData, { status: 200 });
@@ -53,7 +55,9 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
 
-    if (!ObjectId.isValid(id)) {
+    // Accept both ObjectId and string id
+  const userId = id;
+    if (!ObjectId.isValid(id) && typeof id !== 'string') {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
     const authResult = await verifyAuth(req);
@@ -80,10 +84,10 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       }
     }
 
-    const body = await req.json();
-    const { firstName, lastName, email, bio, profileImage, designations, isAdmin: adminStatus, status } = body;
+  const body = await req.json();
+  const { firstName, lastName, email, bio, profileImage, designations, isAdmin: adminStatus, status, publicId } = body;
 
-    if (!firstName && !lastName && !email && !bio && !profileImage && !designations && adminStatus === undefined && status === undefined) {
+    if (!firstName && !lastName && !email && !bio && !profileImage && !designations && adminStatus === undefined && status === undefined && !publicId) {
       return NextResponse.json({ error: 'At least one field must be provided' }, { status: 400 });
     }
 
@@ -108,7 +112,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     }
 
     // Restrict non-admins from updating admin/status fields
-    const updateData: Partial<User> = { firstName, lastName, email, bio, profileImage, designations };
+    const updateData: Partial<User> = { firstName, lastName, email, bio, profileImage, designations, publicId };
     if (isAdmin) {
       if (adminStatus !== undefined) updateData.isAdmin = adminStatus;
       if (status !== undefined) updateData.status = status;
@@ -121,8 +125,8 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       }
     });
 
-    const updatedUser = await updateUserProfile(id, updateData);
-    if (!updatedUser) {
+    const updatedUser = await updateUserProfile(userId, updateData);
+    if (!updatedUser || typeof updatedUser !== 'object') {
       return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
     }
 
@@ -225,7 +229,8 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
 
-    if (!ObjectId.isValid(id)) {
+    // Accept both ObjectId and string id
+    if (!ObjectId.isValid(id) && typeof id !== 'string') {
       return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
 

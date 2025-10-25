@@ -16,8 +16,8 @@ export interface User {
   resetTokenExpiry?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-}
-
+    publicId?: string;
+  }
 export interface VerificationCode {
   _id?: string;
   email: string;

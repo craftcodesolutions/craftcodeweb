@@ -5,6 +5,7 @@
 import { useEffect, useRef } from "react";
 import { X, Minimize2, VolumeOff, Volume2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useGuest } from "@/context/GuestContext";
 import { useGlobalChat } from "@/context/GlobalChatContext";
 import GlobalMessageInput from "@/components/GlobalMessageInput";
 import Image from "next/image";
@@ -21,6 +22,7 @@ function GlobalChatBox() {
     toggleSound,
   } = useGlobalChat();
   const { user: authUser } = useAuth();
+  const { guestUser } = useGuest();
   const messageEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
@@ -37,7 +39,7 @@ function GlobalChatBox() {
     return null;
   }
 
-  const displayName = 'CraftCode Solutions';
+  const displayName ='CraftCode Solutions';
 
   return (
     <div className="fixed bottom-4 right-4 w-80 sm:w-96 h-[450px] sm:h-[500px] md:bottom-4 md:right-4 max-sm:bottom-0 max-sm:right-0 max-sm:left-0 max-sm:w-full max-sm:h-[100vh] max-sm:rounded-none bg-gradient-to-b from-slate-900/95 to-slate-800/95 backdrop-blur-md border border-slate-700/30 rounded-xl shadow-2xl shadow-black/50 z-50 flex flex-col overflow-hidden">
@@ -47,7 +49,7 @@ function GlobalChatBox() {
           <div className="relative">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-cyan-400/30 shadow-lg">
               <Image
-                src={targetUser?.profileImage || "/avatar.png"}
+                src={"/logo.png"}
                 alt={displayName}
                 width={32}
                 height={32}
@@ -120,7 +122,9 @@ function GlobalChatBox() {
         ) : messages.length > 0 ? (
           <div className="space-y-4">
             {messages.map((msg, index) => {
-              const isMyMessage = msg.senderId?.toString() === authUser?.userId?.toString();
+              // Handle both authenticated users and guests
+              const currentUserId = authUser?.userId || guestUser?.guestId;
+              const isMyMessage = msg.senderId?.toString() === currentUserId?.toString();
               const uniqueKey = msg.isOptimistic ? `optimistic-${msg._id}` : `${msg._id}-${index}`;
               
               return (

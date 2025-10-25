@@ -130,10 +130,11 @@ function Header() {
             src={user.profileImage}
             alt="Profile"
             fill
+            sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, (max-width: 1024px) 56px, 64px"
             className="object-cover transition-transform duration-300 hover:scale-105"
             onError={() => setImageError((prev) => ({ ...prev, profile: true }))}
             placeholder="blur"
-            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHsgJ0W5Y6IAAAAABJRU5ErkJggg=="
+            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHsgJ0W7Y6IAAAAABJRU5ErkJggg=="
           />
           <div className="absolute inset-0 rounded-sm border border-white/30 dark:border-white/10" />
         </div>

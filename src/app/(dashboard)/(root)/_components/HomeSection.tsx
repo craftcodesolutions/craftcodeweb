@@ -2,8 +2,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import Image from 'next/image';
 
 function HomeSection() {
@@ -11,6 +9,26 @@ function HomeSection() {
     const words = ['Startup', 'SaaS', 'Business', 'Agency'];
     const [wordIndex, setWordIndex] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Handle WhatsApp button click
+    const handleWhatsAppClick = async () => {
+        try {
+            const response = await fetch('/api/whatsapp');
+            const data = await response.json();
+            
+            if (data.success && data.whatsappUrl) {
+                window.open(data.whatsappUrl, '_blank');
+            } else {
+                console.error('Failed to get WhatsApp URL:', data.error);
+                // Fallback to default WhatsApp link if API fails
+                window.open('https://wa.me/qr/FRJC7NDURYO7P1', '_blank');
+            }
+        } catch (error) {
+            console.error('Error calling WhatsApp API:', error);
+            // Fallback to default WhatsApp link if API fails
+            window.open('https://wa.me/qr/FRJC7NDURYO7P1', '_blank');
+        }
+    };
 
     // Typing Effect
     useEffect(() => {
@@ -36,8 +54,19 @@ function HomeSection() {
 
     // Initialize AOS
     useEffect(() => {
-        AOS.init({ once: true, disable: 'mobile' });
-        AOS.refresh();
+        const initAOS = async () => {
+            try {
+                if (typeof window !== 'undefined') {
+                    const AOS = (await import('aos')).default;
+                    AOS.init({ once: true, disable: 'mobile' });
+                    AOS.refresh();
+                }
+            } catch (error) {
+                console.log('AOS failed to load:', error);
+            }
+        };
+
+        initAOS();
     }, []);
 
     return (
@@ -83,9 +112,9 @@ function HomeSection() {
                                 data-aos="fade-up"
                                 data-aos-delay="500"
                             >
-                                <a
-                                    href="https://wa.me/qr/FRJC7NDURYO7P1"
-                                    className="group bg-blue-400 hover:bg-blue-500 text-white font-heading inline-flex items-center rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                <button
+                                    onClick={handleWhatsAppClick}
+                                    className="group bg-blue-400 cursor-pointer hover:bg-blue-500 text-white font-heading inline-flex items-center rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
                                 >
                                     Let&apos;s Talk
                                     <span className="pl-2 sm:pl-3">
@@ -102,7 +131,7 @@ function HomeSection() {
                                             />
                                         </svg>
                                     </span>
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>

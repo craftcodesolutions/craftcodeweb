@@ -8,12 +8,14 @@ import NoChatsFound from "./NoChatsFound";
 import Image from "next/image";
 
 function ChatsList() {
-  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser } = useChat();
+  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser, getAllContacts } = useChat();
   const { onlineUsers } = useAuth();
 
   useEffect(() => {
+    // Get both regular chats and guest chats
     getMyChatPartners();
-  }, [getMyChatPartners]);
+    getAllContacts();
+  }, [getMyChatPartners, getAllContacts]);
 
   if (isUsersLoading) return <UsersLoadingSkeleton />;
   if (chats.length === 0) return <NoChatsFound />;
@@ -23,13 +25,23 @@ function ChatsList() {
       {chats.map((chat) => {
         // Get the other participant from the chat
         const otherParticipant = chat.participants?.[0] || chat;
-        const displayName = otherParticipant.firstName 
-          ? `${otherParticipant.firstName} ${otherParticipant.lastName || ''}`.trim()
-          : otherParticipant.email;
+        
+        // Handle guest users differently
+        const isGuestUser = otherParticipant.isGuest || otherParticipant._id.startsWith('guest_');
+        
+        const displayName = isGuestUser
+          ? `Guest ${otherParticipant.firstName || otherParticipant.email || otherParticipant._id.substring(6, 12)}`
+          : otherParticipant.firstName 
+            ? `${otherParticipant.firstName} ${otherParticipant.lastName || ''}`.trim()
+            : (otherParticipant.email || otherParticipant._id);
+
         const isOnline = onlineUsers?.includes(otherParticipant._id) || false;
 
         const handleChatSelect = () => {
-          setSelectedUser(otherParticipant);
+          setSelectedUser({
+            ...otherParticipant,
+            isGuest: isGuestUser
+          });
         };
 
         return (
@@ -40,13 +52,15 @@ function ChatsList() {
           >
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="size-12 rounded-full overflow-hidden border-2 border-slate-600">
+                <div className={`size-12 rounded-full overflow-hidden border-2 ${
+                  isGuestUser ? 'border-purple-500' : 'border-slate-600'
+                }`}>
                   <Image 
-                    src={otherParticipant.profileImage || "/avatar.png"} 
+                    src={isGuestUser ? "/icons/guest-avatar.png" : (otherParticipant.profileImage || "/avatar.png")}
                     alt={displayName}
                     width={48}
                     height={48}
-                    className="rounded-full object-cover"
+                    className={`rounded-full object-cover ${isGuestUser ? 'bg-purple-500/20' : ''}`}
                   />
                 </div>
                 {/* Online status indicator */}
@@ -68,17 +82,27 @@ function ChatsList() {
                   )}
                 </div>
                 {chat.lastMessage && (
-                  <p className="text-slate-400 text-sm truncate">
-                    {chat.lastMessage.text || (chat.lastMessage.image ? "📷 Image" : "Message")}
-                  </p>
+                  <div className="flex items-center gap-1">
+                    {isGuestUser && chat.lastMessage.isGuestMessage && (
+                      <span className="text-xs bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded">Guest</span>
+                    )}
+                    <p className="text-slate-400 text-sm truncate">
+                      {chat.lastMessage.text || (chat.lastMessage.image ? "📷 Image" : "Message")}
+                    </p>
+                  </div>
                 )}
                 {chat.lastMessage && chat.lastMessage.createdAt && (
-                  <p className="text-xs text-slate-500">
-                    {new Date(chat.lastMessage.createdAt).toLocaleTimeString(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-500">
+                      {new Date(chat.lastMessage.createdAt).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                    {isGuestUser && (
+                      <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded">Guest Chat</span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

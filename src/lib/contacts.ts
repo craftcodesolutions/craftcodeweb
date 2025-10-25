@@ -10,9 +10,10 @@ export interface Contact {
   lastName?: string;
   profileImage?: string;
   isAdmin?: boolean;
+  isGuest?: boolean;
 }
 
-const ADMIN_EMAILS = ['somethinn999awkwardd@gmail.com'];
+const ADMIN_EMAILS = [process.env.SUPPORT_EMAIL || 'support@craftcode.com'];
 
 export async function getAllContacts(userId: string, includeAdmins: boolean = true): Promise<Contact[]> {
   const client = new MongoClient(MONGODB_URI);
@@ -54,7 +55,7 @@ export async function getAllContacts(userId: string, includeAdmins: boolean = tr
       isAdmin: ADMIN_EMAILS.includes(user.email.toLowerCase()),
     }));
 
-    const supportEmail = 'somethinn999awkwardd@gmail.com';
+    const supportEmail = process.env.SUPPORT_EMAIL || 'support@craftcode.com';
     const isCurrentUserAdmin = ADMIN_EMAILS.includes(
       (await usersCollection.findOne({ _id: objectId }))?.email?.toLowerCase() || ''
     );

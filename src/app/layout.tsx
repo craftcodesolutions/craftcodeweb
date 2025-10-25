@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
+import { GuestProvider } from "@/context/GuestContext";
 import { DisabledAccountsProvider } from "@/context/DisabledAccountsContext";
 import { GlobalChatProvider } from "@/context/GlobalChatContext";
 import GlobalChatBox from "@/components/GlobalChatBox";
@@ -63,26 +64,27 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <DisabledAccountsProvider>
-              <GlobalChatProvider>
-                {children}
-                {/* <FloatingChatButton /> */}
-                <GlobalChatBox />
-                <NotificationPermission />
-                <ToastContainer
-                  position="top-right"
-                  autoClose={3000}
-                  hideProgressBar={false}
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme="dark"
-                />
-              </GlobalChatProvider>
-            </DisabledAccountsProvider>
+            <GuestProvider>
+              <DisabledAccountsProvider>
+                <GlobalChatProvider>
+                  {children}
+                  <GlobalChatBox />
+                  <NotificationPermission />
+                  <ToastContainer
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="dark"
+                  />
+                </GlobalChatProvider>
+              </DisabledAccountsProvider>
+            </GuestProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

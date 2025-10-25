@@ -2,6 +2,7 @@
 import { createServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { insertGuestUser, getGuestUserById, insertGuestMessage, cleanupExpiredGuests } from '@/controllers/guestUserService';
 
 // ===== CONFIGURATION =====
 const JWT_SECRET: string = process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX';
@@ -13,6 +14,11 @@ let io: SocketIOServer | null = null;
 let httpServer: ReturnType<typeof createServer> | null = null;
 let isServerListening = false;
 let lastError: string | null = null;
+
+// Function to get socket instance
+export function getSocketInstance(): SocketIOServer | null {
+  return io;
+}
 
 // Connection tracking
 const userConnections = new Map<string, Set<string>>();
@@ -45,7 +51,61 @@ function createHttpServer() {
 
 // ===== SOCKET.IO AUTHENTICATION =====
 function setupAuthentication(io: SocketIOServer) {
-  io.use((socket: Socket, next) => {
+  io.use(async (socket: Socket, next) => {
+    // Guest support: allow unauthenticated users with guestId
+    const guestToken = socket.handshake.auth?.guestToken;
+    const guestId = socket.handshake.auth?.guestId;
+    // If guestToken is provided, verify it
+    if (guestToken) {
+      try {
+        const decoded = jwt.verify(guestToken, JWT_SECRET) as { guestId: string };
+        const guestUser = await getGuestUserById(decoded.guestId);
+        if (!guestUser || new Date(guestUser.expiresAt) < new Date()) {
+          return next(new Error('Guest expired or not found'));
+        }
+        socket.data.guestId = guestUser.guestId;
+        socket.data.guestName = guestUser.dummyName;
+        socket.data.guestEmail = guestUser.dummyEmail;
+        socket.join(`guest_${guestUser.guestId}`);
+        logWithTimestamp(`✅ Guest socket ${socket.id} authenticated: ${guestUser.dummyName} (${guestUser.guestId})`);
+        return next();
+      } catch (err) {
+        logWithTimestamp(`❌ Guest JWT error for socket ${socket.id}:`, err);
+        return next(new Error('Guest authentication error'));
+      }
+    }
+    // If guestId is provided, create guest user and issue JWT
+    if (guestId) {
+      const dummyName = socket.handshake.auth?.dummyName || `Guest-${guestId.substring(0, 6)}`;
+      const dummyEmail = socket.handshake.auth?.dummyEmail || `${guestId.substring(0, 6)}@guest.local`;
+      try {
+        // Create guest user in DB if not exists
+        let guestUser = await getGuestUserById(guestId);
+        if (!guestUser) {
+          await insertGuestUser({ guestId, dummyName, dummyEmail });
+          guestUser = await getGuestUserById(guestId);
+        }
+        
+        if (!guestUser) {
+          return next(new Error('Failed to create guest user'));
+        }
+        
+        // Issue JWT for guest
+        const token = jwt.sign({ guestId }, JWT_SECRET, { expiresIn: '24h' });
+        socket.emit('guestTokenIssued', { token });
+        socket.data.guestId = guestUser.guestId;
+        socket.data.guestName = guestUser.dummyName;
+        socket.data.guestEmail = guestUser.dummyEmail;
+        socket.join(`guest_${guestId}`);
+        logWithTimestamp(`✅ Guest socket ${socket.id} connected: ${guestUser.dummyName} (${guestId})`);
+        return next();
+      } catch (err) {
+        logWithTimestamp(`❌ Guest DB error for socket ${socket.id}:`, err);
+        return next(new Error('Guest DB error'));
+      }
+    }
+
+    // Authenticated user logic (original)
     try {
       // Get authentication token
       let token = socket.handshake.auth?.token;
@@ -89,18 +149,118 @@ function setupAuthentication(io: SocketIOServer) {
 
 // ===== SOCKET EVENT HANDLERS =====
 function setupSocketHandlers(socket: Socket) {
-  const userId = socket.data.userId as string;
-  const userEmail = socket.data.userEmail as string;
+  // Guest support
+  if (socket.data.guestId) {
+    const guestId = socket.data.guestId as string;
+    const guestName = socket.data.guestName as string;
+    // Track guest connections
+    if (!userConnections.has(guestId)) {
+      userConnections.set(guestId, new Set());
+    }
+    userConnections.get(guestId)!.add(socket.id);
+    socketUsers.set(socket.id, guestId);
+    emitOnlineUsers();
+    logWithTimestamp(`🟢 Guest connected: ${socket.id} (${guestName}, ${guestId})`);
 
-  // Track user connections
-  if (!userConnections.has(userId)) {
-    userConnections.set(userId, new Set());
+    // Guest messaging event
+    socket.on('guestSendMessage', async (msg: { text: string; image?: string }) => {
+      try {
+        // Save to DB
+        const messageData = {
+          messageId: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          guestId,
+          guestName,
+          message: msg.text,
+          image: msg.image,
+          chatId: `chat_${guestId}`,
+          type: 'guest_message' as const,
+          senderId: guestId
+        };
+        
+        await insertGuestMessage(messageData);
+        logWithTimestamp(`📨 Guest message from ${guestName} (${guestId}): ${msg.text}`);
+        
+        // Create payload with timestamp
+        const messagePayload = {
+          ...messageData,
+          timestamp: new Date().toISOString()
+        };
+
+        // Emit to guest's room
+        io!.to(`guest_${guestId}`).emit('guestMessage', messagePayload);
+        
+        // Emit to support team room
+        io!.to('support_team').emit('guestMessage', messagePayload);
+      } catch (error) {
+        logWithTimestamp(`❌ Error saving guest message:`, error);
+        socket.emit('messageError', { error: 'Failed to save message' });
+      }
+    });
+
+    // Optionally, allow support to reply
+    socket.on('supportReplyToGuest', async (msg: {
+      messageId: string;
+      guestId: string;
+      message: string;
+      image?: string;
+      chatId: string;
+      type: 'support_reply';
+      senderId: string;
+    }) => {
+      try {
+        // Save to DB
+        const messageData = {
+          messageId: msg.messageId,
+          guestId: msg.guestId,
+          guestName: 'Support Team',
+          message: msg.message,
+          image: msg.image,
+          chatId: msg.chatId,
+          type: 'support_reply' as const,
+          senderId: msg.senderId
+        };
+        
+        await insertGuestMessage(messageData);
+        
+        // Emit to both guest room and support room for real-time updates
+        const messagePayload = {
+          ...messageData,
+          timestamp: new Date().toISOString()
+        };
+
+        // Emit to guest's room
+        io!.to(`guest_${msg.guestId}`).emit('guestMessage', messagePayload);
+        
+        // Emit to support team room
+        io!.to('support_team').emit('guestMessage', messagePayload);
+        
+        logWithTimestamp(`📨 Support reply to guest ${msg.guestId}: ${msg.message}`);
+      } catch (error) {
+        logWithTimestamp(`❌ Error saving support reply:`, error);
+        socket.emit('messageError', { error: 'Failed to save message' });
+      }
+    });
+
+    // Guest disconnect
+    socket.on('disconnect', (reason: string) => {
+      logWithTimestamp(`🔴 Guest disconnected: ${socket.id} (${guestId}), reason: ${reason}`);
+      const guestSockets = userConnections.get(guestId);
+      if (guestSockets) {
+        guestSockets.delete(socket.id);
+        if (guestSockets.size === 0) {
+          userConnections.delete(guestId);
+        }
+      }
+      socketUsers.delete(socket.id);
+      emitOnlineUsers();
+      socket.removeAllListeners();
+    });
+    return;
   }
-  userConnections.get(userId)!.add(socket.id);
-  socketUsers.set(socket.id, userId);
-  emitOnlineUsers();
+  // ...existing code for authenticated users below
 
-  logWithTimestamp(`🟢 User connected: ${socket.id} (${userEmail}, ${userId})`);
+  // Declare userId for authenticated users
+  const userId = socket.data.userId as string;
 
   // Admin acknowledgments
   socket.on('tokenUpdateReceived', (data: { timestamp: string; reason: string }) => {
@@ -296,6 +456,19 @@ export const initializeSocketIO = (): SocketIOServer => {
     }
 
     logWithTimestamp('✅ Socket.IO server initialized successfully');
+    
+    // Start cleanup interval for expired guests (every hour)
+    setInterval(async () => {
+      try {
+        const deletedCount = await cleanupExpiredGuests();
+        if (deletedCount > 0) {
+          logWithTimestamp(`🧹 Cleaned up ${deletedCount} expired guest users`);
+        }
+      } catch (error) {
+        logWithTimestamp('❌ Error cleaning up expired guests:', error);
+      }
+    }, 60 * 60 * 1000); // 1 hour
+    
     return io;
   } catch (error: unknown) {
     const err = error as Error;
