@@ -11,7 +11,7 @@ export default function ModeToggle() {
     <Button
       variant="outline"
       size="icon"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       className="group relative h-10 w-10 rounded-lg transition-all duration-300 ease-in-out cursor-pointer
         bg-amber-50 dark:bg-amber-950/50
         border-2 border-amber-200 dark:border-amber-800

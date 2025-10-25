@@ -1,17 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
 import { createMessage, checkUserExists, Message } from '@/controllers/messageService';
-import { getGuestUserById, insertGuestMessage } from '@/controllers/guestUserService';
 import { v2 as cloudinary } from 'cloudinary';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX';
-
-console.log('🔑 JWT_SECRET configured:', JWT_SECRET ? 'Yes' : 'No');
-console.log('🔑 JWT_SECRET value (first 10 chars):', JWT_SECRET.substring(0, 10));
-// Remove client-side Socket.IO imports - we'll use HTTP requests to the Socket.IO server
 
 // Configure Cloudinary
 cloudinary.config({
@@ -43,145 +34,15 @@ export async function POST(
   try {
     console.log('📤 POST /api/messages/send/[userId] called');
 
-    // Parse request body
-    const { text, image, receiverId, senderId: incomingSenderId } = await request.json();
-    console.log('🔍 Message context:', {
-      receiverId,
-      senderId: incomingSenderId
-    });
+    // Parse request body and path param
+    const body = await request.json().catch(() => ({}));
+    const { text, image } = body || {};
+    const paramsObj = await params;
+    const receiverId = paramsObj?.userId;
 
-    // Check if the message involves a guest user
-    const isGuestMessage = receiverId.startsWith('guest_') || incomingSenderId.startsWith('guest_');
-    console.log('🛠 Is guest message:', isGuestMessage);
+    console.log('🔍 Message context:', { receiverId, hasText: !!text, hasImage: !!image });
 
-    if (isGuestMessage) {
-      console.log('🛠 Handling guest message logic...');
-
-      // Validation for guest
-      if (!text && !image) {
-        return NextResponse.json({ 
-          error: 'Text or image is required for guest messages' 
-        }, { status: 400 });
-      }
-
-      // Initialize MongoDB client for duplicate checking
-      await client.connect();
-      const db = client.db(DB_NAME);
-      const guestMessagesCollection = db.collection('guest_messages');
-
-      // Check for duplicate text message
-      if (text) {
-        const existingTextMessage = await guestMessagesCollection.findOne({
-          senderId: incomingSenderId,
-          receiverId,
-          message: text,
-          timestamp: { $gte: new Date(Date.now() - 5000) }, // Within last 5 seconds
-        });
-
-        if (existingTextMessage) {
-          console.warn('Duplicate guest text message detected:', {
-            messageId: existingTextMessage.messageId,
-            text: text.substring(0, 50),
-            senderId: incomingSenderId,
-            receiverId,
-          });
-          return NextResponse.json(existingTextMessage, { status: 200 });
-        }
-      }
-
-      // Handle image upload for guest if present
-      let imageUrl: string | undefined;
-      if (image) {
-        try {
-          console.log('📷 Uploading guest image to Cloudinary...');
-          const uploadResponse = await cloudinary.uploader.upload(image, {
-            folder: 'guest_chat_images',
-            resource_type: 'auto',
-          });
-          imageUrl = uploadResponse.secure_url;
-          console.log('✅ Guest image uploaded successfully:', imageUrl);
-
-          // Check for duplicate image message
-          const existingImageMessage = await guestMessagesCollection.findOne({
-            senderId: incomingSenderId,
-            receiverId,
-            image: imageUrl,
-            timestamp: { $gte: new Date(Date.now() - 5000) }, // Within last 5 seconds
-          });
-
-          if (existingImageMessage) {
-            console.warn('Duplicate guest image message detected:', {
-              messageId: existingImageMessage.messageId,
-              senderId: incomingSenderId,
-              receiverId,
-              imageUrl,
-            });
-            return NextResponse.json(existingImageMessage, { status: 200 });
-          }
-        } catch (uploadError) {
-          console.error('❌ Error uploading guest image to Cloudinary:', uploadError);
-          return NextResponse.json({ 
-            error: 'Failed to upload image' 
-          }, { status: 500 });
-        }
-      }
-
-      // Save guest message to database using insertGuestMessage
-      const messageData = {
-        messageId: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        guestId: receiverId.startsWith('guest_') ? receiverId : incomingSenderId, // Determine guestId
-        guestName: receiverId.startsWith('guest_') ? 'Guest User' : 'Support Team',
-        message: text || '',
-        image: imageUrl,
-        chatId: 'support_chat',
-        type: 'guest_message' as const, // Explicitly set type to "guest_message"
-        senderId: incomingSenderId,
-      };
-
-      const insertResult = await insertGuestMessage(messageData);
-      console.log(`💾 Guest message insert result:`, insertResult);
-
-      if (!insertResult.acknowledged) {
-        console.error('❌ Failed to insert guest message into database');
-        return NextResponse.json({ error: 'Failed to save guest message' }, { status: 500 });
-      }
-
-      console.log(`💾 Guest message saved to database`);
-
-      // Emit to socket server for real-time
-      const SOCKET_SERVER_URL = process.env.SOCKET_URL || 
-        (process.env.NODE_ENV === 'development' ? 'http://localhost:3008' : 'https://server-wp4r.onrender.com');
-
-      try {
-        console.log(`🚀 Sending guest message to socket server`);
-
-        await fetch(`${SOCKET_SERVER_URL}/emit-message`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: 'support_chat', 
-            event: 'receiveGuestMessage', 
-            data: {
-              senderId: incomingSenderId,
-              receiverId,
-              text: text || '',
-              image: imageUrl,
-              timestamp: new Date().toISOString(),
-              messageId: messageData.messageId
-            }
-          })
-        });
-
-        console.log(`📨 Guest message sent to socket successfully`);
-      } catch (socketError) {
-        console.warn('⚠️ Socket.IO server not available for guest message:', socketError);
-      }
-
-      console.log(`✅ Guest message processed successfully: ${text.substring(0, 50)}...`);
-      return NextResponse.json(messageData, { status: 201 });
-    }
-
-    // Handle authenticated user messages (existing logic)
+    // Handle authenticated user messages
     const authResult = await verifyAuth(request);
     if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -190,6 +51,10 @@ export async function POST(
     // Validation
     if (!text && !image) {
       return NextResponse.json({ message: 'Text or image is required.' }, { status: 400 });
+    }
+
+    if (!receiverId) {
+      return NextResponse.json({ message: 'Receiver ID is required.' }, { status: 400 });
     }
 
     if (!ObjectId.isValid(receiverId)) {

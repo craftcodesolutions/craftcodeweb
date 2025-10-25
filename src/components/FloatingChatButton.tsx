@@ -2,12 +2,18 @@
 
 import { Send, Users } from "lucide-react";
 import { useGlobalChat } from "@/context/GlobalChatContext";
+import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
 
 function FloatingChatButton() {
   const { isOpen, toggleChatBox } = useGlobalChat();
+  const { user } = useAuth();
   const pathname = usePathname();
 
+  // Only show to authenticated users
+  if (!user) {
+    return null;
+  }
 
   // Don't show on admin routes or meeting area - only show on client routes (root folder)
   if (pathname.includes('/(admin)') || pathname.includes('/admin/') || pathname.includes('/meeting-area/') || pathname.includes('/meeting/')) {

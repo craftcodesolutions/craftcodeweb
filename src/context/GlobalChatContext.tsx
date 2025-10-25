@@ -1,9 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useState, useEffect, useCallback, ReactNode, useContext } from 'react';
 import { useAuth } from './AuthContext';
-import { useGuest } from './GuestContext';
 import { MessageType } from '@/types/Message';
 import { showMessageNotification, showSentMessageNotification } from '@/lib/notificationService';
 import { debounce } from 'lodash';
@@ -47,7 +46,6 @@ export function useGlobalChat(): GlobalChatContextType {
 
 export function GlobalChatProvider({ children }: { children: ReactNode }) {
   const { user: authUser, socket, connectSocket, isSocketConnected } = useAuth();
-  const { guestUser, guestSocket, createGuestSession, sendGuestMessage } = useGuest();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [targetUser, setTargetUser] = useState<Contact | null>(null);
@@ -55,7 +53,7 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@craftcode.com';
+  const SUPPORT_EMAIL = 'somethinn999awkwardd@gmail.com';
 
   useEffect(() => {
     setIsHydrated(true);
@@ -66,20 +64,17 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      if (authUser && !isSocketConnected) {
-        console.log('📨 Chat opened - initializing auth socket connection...');
-        connectSocket();
-      } else if (!authUser && !guestUser) {
-        console.log('📨 Chat opened - creating guest session...');
-        createGuestSession();
-      }
+    if (isOpen && authUser && !isSocketConnected) {
+      console.log('📨 Chat opened - initializing socket connection...');
+      connectSocket();
     }
-  }, [isOpen, authUser, connectSocket, isSocketConnected, guestUser, createGuestSession]);
+  }, [isOpen, authUser, connectSocket, isSocketConnected]);
 
   const toggleChatBox = () => setIsOpen(!isOpen);
   const closeChatBox = () => setIsOpen(false);
-  const openChatBox = () => setIsOpen(true);
+  const openChatBox = () => {
+    setIsOpen(true);
+  };
 
   const toggleSound = () => {
     const newSoundState = !isSoundEnabled;
@@ -90,84 +85,13 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   };
 
   const initializeTargetUser = useCallback(async () => {
-    if (!authUser && !guestUser) {
-      console.warn('Cannot initialize target user: No authenticated user or guest session');
+    if (!authUser) {
+      console.warn('Cannot initialize target user: No authenticated user');
       return;
     }
-    
-    if (guestUser) {
-      // For guests, fetch the actual support user ID from the database
-      console.log('🔍 Initializing target user for guest:', guestUser.guestName);
-      
-      try {
-        // Create a guest-accessible endpoint to get support user info
-        const response = await fetch('/api/users/support', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.ok) {
-          const supportUser = await response.json();
-          setTargetUser({
-            _id: supportUser._id,
-            email: supportUser.email,
-            firstName: supportUser.firstName || 'Support',
-            lastName: supportUser.lastName || 'Team',
-            isAdmin: true
-          });
-          console.log('✅ Guest target user set to real support user:', supportUser._id);
-          return;
-        } else {
-          console.warn('⚠️ Could not fetch support user, falling back to email query');
-        }
-      } catch (error) {
-        console.error('❌ Failed to fetch support user:', error);
-      }
-
-      // Fallback: Try to fetch from contacts (though this might not work for guests)
-      try {
-        const response = await fetch('/api/messages/contacts', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.ok) {
-          const contacts: Contact[] = await response.json();
-          const supportUser = contacts.find(
-            (contact: Contact) => contact.email.toLowerCase() === SUPPORT_EMAIL.toLowerCase()
-          );
-
-          if (supportUser) {
-            setTargetUser({
-              _id: supportUser._id,
-              email: supportUser.email,
-              firstName: supportUser.firstName || 'Support',
-              lastName: supportUser.lastName || 'Team',
-              isAdmin: true
-            });
-            console.log('✅ Guest target user set via contacts fallback:', supportUser._id);
-            return;
-          }
-        }
-      } catch (error) {
-        console.warn('⚠️ Contacts fallback also failed:', error);
-      }
-
-      // Final fallback: use placeholder
-      console.warn('⚠️ Using placeholder ID for guest support');
-      setTargetUser({
-        _id: 'guest_support',
-        email: SUPPORT_EMAIL,
-        firstName: 'Support',
-        lastName: 'Team',
-        isAdmin: true
-      });
-      return;
-    }
-    
-    console.log('🔍 Initializing target user for:', authUser!.email);
+    console.log('🔍 Initializing target user for:', authUser.email);
     try {
-      const isAdmin = authUser!.email.toLowerCase() === SUPPORT_EMAIL.toLowerCase();
+      const isAdmin = authUser.email.toLowerCase() === SUPPORT_EMAIL.toLowerCase();
       
       // Fetch contacts from API instead of direct database call
       const response = await fetch('/api/messages/contacts', {
@@ -198,51 +122,11 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to initialize target user:', error);
     }
-  }, [authUser, guestUser, SUPPORT_EMAIL]);
+  }, [authUser]);
 
   const getMessagesByUserId = useCallback(async (userId: string) => {
     setIsMessagesLoading(true);
     try {
-      // For guests, use the unified API with guestToken query param
-      if (guestUser && !authUser) {
-        const response = await fetch(`/api/messages/${userId}?guestToken=${guestUser.guestToken}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch guest messages');
-        }
-
-        const guestMessages = await response.json();
-        
-        console.log('📬 Raw guest messages from unified API:', guestMessages);
-        
-        // Messages are already formatted by the API
-        const formattedMessages: Message[] = guestMessages.map((msg: { 
-          _id: string; 
-          senderId: string; 
-          receiverId: string;
-          text?: string; 
-          image?: string; 
-          createdAt: string;
-        }) => ({
-          _id: msg._id,
-          senderId: msg.senderId,
-          receiverId: msg.receiverId,
-          text: msg.text,
-          image: msg.image, // Include image field
-          createdAt: new Date(msg.createdAt),
-          isOptimistic: false,
-        }));
-        
-        console.log('📬 Formatted guest messages:', formattedMessages);
-        setMessages(formattedMessages);
-        console.log(`📬 Fetched ${formattedMessages.length} guest messages`);
-        return;
-      }
-
-      // For authenticated users, use regular API
       const response = await fetch(`/api/messages/${userId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -261,110 +145,14 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
       console.log(`📬 Fetched ${uniqueMessages.length} unique messages for user ${userId}`);
     } catch (error) {
       console.error('Get messages error:', error);
-      // Set empty array on error to prevent loading state stuck
-      setMessages([]);
     } finally {
       setIsMessagesLoading(false);
     }
-  }, [guestUser, authUser]);
+  }, []);
 
   const sendMessage = async (messageData: { text?: string; image?: string }) => {
-    if (!targetUser) {
-      console.warn('Cannot send message: Missing targetUser');
-      return;
-    }
-
-    // Handle guest messages
-    if (guestUser && !authUser) {
-      if (!messageData.text && !messageData.image) {
-        console.warn('Guest messages require either text or image');
-        return;
-      }
-
-      console.log('📤 Sending guest message:', messageData.text || 'Image only message');
-      console.log('🖼️ Guest message image data:', messageData.image ? 'Present' : 'Not present');
-      if (messageData.image) {
-        console.log('🖼️ Image data length:', messageData.image.length);
-        console.log('🖼️ Image data preview:', messageData.image.substring(0, 100) + '...');
-      }
-      const tempId = `guest-temp-${Date.now()}-${Math.random().toString(36).substring(2)}`;
-      
-      // Add optimistic message for guest
-      const optimisticMessage: Message = {
-        _id: tempId,
-        senderId: guestUser.guestId,
-        receiverId: 'support',
-        text: messageData.text || '',
-        image: messageData.image, // Include image in optimistic message
-        createdAt: new Date(),
-        isOptimistic: true,
-      };
-      
-      console.log('📤 Adding optimistic message:', optimisticMessage);
-      setMessages((prevMessages) => [...prevMessages, optimisticMessage]);
-
-      try {
-        // Send via socket for real-time
-        console.log('📤 Sending via socket...');
-        sendGuestMessage(messageData.text || '', messageData.image);
-        
-        // Also send via unified API for persistence
-        console.log('📤 Sending via unified API...');
-        const response = await fetch(`/api/messages/send/${targetUser._id}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: messageData.text || '',
-            image: messageData.image, // Include image for guest messages
-            guestToken: guestUser.guestToken
-          }),
-        });
-
-        console.log('📤 API Response status:', response.status);
-        if (!response.ok) {
-          throw new Error('Failed to send guest message to API');
-        }
-
-        const result = await response.json();
-        console.log('📤 API Response result:', result);
-        console.log('🖼️ API Response image:', result.image ? 'Present' : 'Not present');
-        if (result.image) {
-          console.log('🖼️ API Response image URL:', result.image);
-        }
-        
-        // Replace optimistic message with real message
-        setMessages((prevMessages) => {
-          const filteredMessages = prevMessages.filter((msg) => msg._id !== tempId);
-          const realMessage: Message = {
-            _id: result.messageId,
-            senderId: guestUser.guestId,
-            receiverId: 'support',
-            text: messageData.text || '',
-            image: result.image || messageData.image, // Include image from API response or original
-            createdAt: new Date(),
-            isOptimistic: false,
-          };
-          return [...filteredMessages, realMessage];
-        });
-
-        if (isSoundEnabled && typeof Audio !== 'undefined') {
-          const notificationSound = new Audio('/sounds/notification.mp3');
-          notificationSound.currentTime = 0;
-          notificationSound.play().catch((e) => console.log('Audio play failed:', e));
-        }
-
-        console.log('✅ Guest message sent successfully');
-      } catch (error) {
-        console.error('❌ Failed to send guest message:', error);
-        // Remove optimistic message on error
-        setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== tempId));
-      }
-      
-      return;
-    }
-
-    if (!authUser) {
-      console.warn('Cannot send message: Not authenticated and not guest');
+    if (!targetUser || !authUser) {
+      console.warn('Cannot send message: Missing targetUser or authUser');
       return;
     }
 
@@ -450,64 +238,9 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   );
 
   const subscribeToMessages = useCallback(() => {
-    if (!targetUser) {
-      console.log('⚠️ Cannot subscribe to messages: no target user');
-      return;
-    }
-
-    // For guests, subscribe to guest-specific events using guestSocket from GuestContext
-    if (guestUser && !authUser && guestSocket) {
-      console.log('📡 Subscribing to guest messages for:', guestUser.guestName);
-      
-      // Subscribe to support replies
-      guestSocket.on('supportReply', (replyData: { text: string; timestamp: string }) => {
-        console.log('📨 Received support reply:', replyData);
-        
-        const supportMessage: Message = {
-          _id: `support-reply-${Date.now()}-${Math.random().toString(36).substring(2)}`,
-          senderId: 'support',
-          receiverId: guestUser.guestId,
-          text: replyData.text,
-          createdAt: new Date(replyData.timestamp),
-          isOptimistic: false,
-        };
-        
-        setMessages((prevMessages) => [...prevMessages, supportMessage]);
-        
-        if (isSoundEnabled && typeof Audio !== 'undefined') {
-          const notificationSound = new Audio('/sounds/notification.mp3');
-          notificationSound.currentTime = 0;
-          notificationSound.play().catch((e) => console.log('Audio play failed:', e));
-        }
-      });
-
-      // Subscribe to other guest-specific events
-      guestSocket.on('supportReplyToGuest', (replyData: { text: string; timestamp: string }) => {
-        console.log('📨 Received support reply to guest:', replyData);
-        
-        const supportMessage: Message = {
-          _id: `support-reply-${Date.now()}-${Math.random().toString(36).substring(2)}`,
-          senderId: 'support',
-          receiverId: guestUser.guestId,
-          text: replyData.text,
-          createdAt: new Date(replyData.timestamp),
-          isOptimistic: false,
-        };
-        
-        setMessages((prevMessages) => [...prevMessages, supportMessage]);
-        
-        if (isSoundEnabled && typeof Audio !== 'undefined') {
-          const notificationSound = new Audio('/sounds/notification.mp3');
-          notificationSound.currentTime = 0;
-          notificationSound.play().catch((e) => console.log('Audio play failed:', e));
-        }
-      });
-      
-      return;
-    }
-
-    if (!socket || !isSocketConnected) {
+    if (!targetUser || !socket || !isSocketConnected) {
       console.log('⚠️ Cannot subscribe to messages:', {
+        targetUser: !!targetUser,
         socket: !!socket,
         isSocketConnected,
       });
@@ -582,23 +315,15 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
         return [...prevMessages, sentMessage];
       });
     });
-  }, [targetUser, socket, guestSocket, isSoundEnabled, isSocketConnected, debouncedShowNotification, authUser, guestUser]);
+  }, [targetUser, socket, isSoundEnabled, isSocketConnected, debouncedShowNotification]);
 
   const unsubscribeFromMessages = useCallback(() => {
-    // Cleanup regular socket events
-    if (socket) {
-      socket.off('newMessage');
-      socket.off('messageSent');
-      socket.off('userTyping');
-      socket.off('userOnlineStatus');
-    }
-    
-    // Cleanup guest socket events
-    if (guestSocket) {
-      guestSocket.off('supportReply');
-      guestSocket.off('supportReplyToGuest');
-    }
-  }, [socket, guestSocket]);
+    if (!socket) return;
+    socket.off('newMessage');
+    socket.off('messageSent');
+    socket.off('userTyping');
+    socket.off('userOnlineStatus');
+  }, [socket]);
 
   useEffect(() => {
     if (authUser) {
@@ -608,33 +333,24 @@ export function GlobalChatProvider({ children }: { children: ReactNode }) {
   }, [authUser, initializeTargetUser]);
 
   useEffect(() => {
-    if (guestUser) {
-      console.log('🔔 Initializing target user for guest user:', guestUser.guestName);
-      initializeTargetUser();
-    }
-  }, [guestUser, initializeTargetUser]);
-
-  useEffect(() => {
-    // Subscribe for authenticated users
-    if (targetUser && socket && isSocketConnected && isOpen && authUser) {
-      subscribeToMessages();
-    }
-    
-    // Subscribe for guest users
-    if (targetUser && guestSocket && isOpen && guestUser && !authUser) {
+    // Subscribe to socket events for authenticated users
+    if (authUser && targetUser && socket && isSocketConnected && isOpen) {
       subscribeToMessages();
     }
 
     return () => {
       unsubscribeFromMessages();
     };
-  }, [targetUser, socket, guestSocket, isSocketConnected, isOpen, authUser, guestUser, subscribeToMessages, unsubscribeFromMessages]);
+  }, [targetUser, socket, isSocketConnected, isOpen, subscribeToMessages, unsubscribeFromMessages, authUser]);
 
   useEffect(() => {
-    if (isOpen && targetUser && targetUser._id) {
-      getMessagesByUserId(targetUser._id);
+    if (isOpen) {
+      // For authenticated users, fetch messages with target user
+      if (targetUser && targetUser._id) {
+        getMessagesByUserId(targetUser._id);
+      }
     }
-  }, [isOpen, targetUser, getMessagesByUserId]);
+  }, [isOpen, targetUser, getMessagesByUserId, authUser]);
 
   return (
     <GlobalChatContext.Provider

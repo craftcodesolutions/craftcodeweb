@@ -1,3 +1,4 @@
+
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 "use client";
@@ -5,7 +6,6 @@
 import { useEffect, useRef } from "react";
 import { X, Minimize2, VolumeOff, Volume2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useGuest } from "@/context/GuestContext";
 import { useGlobalChat } from "@/context/GlobalChatContext";
 import GlobalMessageInput from "@/components/GlobalMessageInput";
 import Image from "next/image";
@@ -22,7 +22,6 @@ function GlobalChatBox() {
     toggleSound,
   } = useGlobalChat();
   const { user: authUser } = useAuth();
-  const { guestUser } = useGuest();
   const messageEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
@@ -122,8 +121,8 @@ function GlobalChatBox() {
         ) : messages.length > 0 ? (
           <div className="space-y-4">
             {messages.map((msg, index) => {
-              // Handle both authenticated users and guests
-              const currentUserId = authUser?.userId || guestUser?.guestId;
+              // Handle authenticated users only
+              const currentUserId = authUser?.userId;
               const isMyMessage = msg.senderId?.toString() === currentUserId?.toString();
               const uniqueKey = msg.isOptimistic ? `optimistic-${msg._id}` : `${msg._id}-${index}`;
               

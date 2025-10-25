@@ -24,12 +24,9 @@ function ContactList() {
         const contact: Contact = chat.participants.find(
           (participant) => participant._id !== chat._id
         ) || chat.participants[0];
-        const isGuest = contact.isGuest || contact._id.startsWith('guest_');
-        const displayName = isGuest
-          ? `${contact.firstName || 'Guest'} (Guest)`
-          : contact.firstName
-            ? `${contact.firstName} ${contact.lastName || ""}`.trim()
-            : contact.email;
+        const displayName = contact.firstName
+          ? `${contact.firstName} ${contact.lastName || ""}`.trim()
+          : contact.email;
         const isOnline = onlineUsers?.includes(contact._id) || false;
 
         return (

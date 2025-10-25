@@ -3,7 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
-import { GuestProvider } from "@/context/GuestContext";
+
 import { DisabledAccountsProvider } from "@/context/DisabledAccountsContext";
 import { GlobalChatProvider } from "@/context/GlobalChatContext";
 import GlobalChatBox from "@/components/GlobalChatBox";
@@ -59,12 +59,12 @@ export default function RootLayout({
         />
         <ThemeProvider 
           attribute="class" 
-          defaultTheme="system" 
+          defaultTheme="dark" 
           enableSystem 
           disableTransitionOnChange
         >
           <AuthProvider>
-            <GuestProvider>
+       
               <DisabledAccountsProvider>
                 <GlobalChatProvider>
                   {children}
@@ -84,7 +84,7 @@ export default function RootLayout({
                   />
                 </GlobalChatProvider>
               </DisabledAccountsProvider>
-            </GuestProvider>
+        
           </AuthProvider>
         </ThemeProvider>
       </body>

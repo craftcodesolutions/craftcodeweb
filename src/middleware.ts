@@ -109,8 +109,7 @@ export async function middleware(request: NextRequest) {
   // Updated route definitions for OAuth system
   const protectedRoutes = [
     '/dashboard',     // Main dashboard (non-admin users can access)
-    '/profile', 
-    '/conferance',    // Conference system requires authentication
+    '/profile',     // Conference system requires authentication
     '/messenger',     // Messaging system requires authentication
     '/reset-password',
     '/forgot-password'

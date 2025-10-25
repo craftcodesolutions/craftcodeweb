@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { verifyAuth } from '@/lib/auth';
 import { createMessage, checkUserExists, getMessagesByUserId, Message } from '@/controllers/messageService';
-import { getGuestMessages } from '@/controllers/guestUserService';
 import { v2 as cloudinary } from 'cloudinary';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'b7Kq9rL8x2N5fG4vD1sZ3uP6wT0yH8mX';
-
-console.log('🔑 JWT_SECRET configured:', JWT_SECRET ? 'Yes' : 'No');
-// Remove client-side Socket.IO imports - we'll use HTTP requests to the Socket.IO server
 
 // Configure Cloudinary
 cloudinary.config({
@@ -40,33 +34,7 @@ export async function GET(
     console.log('📨 GET /api/messages/[userId] called');
     const { userId: otherUserId } = await params;
 
-    // Check if the userId starts with 'guest_'
-    if (otherUserId.startsWith('guest_')) {
-      console.log('🔍 Detected guest user ID:', otherUserId);
-
-      // Fetch guest messages directly without requiring a guestToken
-      const guestMessages = await getGuestMessages(otherUserId, 50);
-
-      // Convert to standard message format
-      const formattedMessages = guestMessages.map((msg) => {
-        const isSupport = msg.type === 'support_reply' || msg.guestName === 'Support Team';
-
-        return {
-          _id: msg._id?.toString() || msg.messageId,
-          senderId: isSupport ? 'support' : msg.guestId,
-          receiverId: isSupport ? msg.guestId : 'support',
-          text: msg.message,
-          image: msg.image, // Include image field for guest messages
-          createdAt: new Date(msg.timestamp),
-          updatedAt: new Date(msg.timestamp),
-        };
-      });
-
-      console.log(`📬 Retrieved ${formattedMessages.length} guest messages`);
-      return NextResponse.json(formattedMessages, { status: 200 });
-    }
-
-    // Handle authenticated user messages (existing logic)
+    // Handle authenticated user messages
     const authResult = await verifyAuth(request);
     if (!authResult.isAuthenticated || !authResult.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
