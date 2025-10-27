@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Search, Edit, Trash2, Plus, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog, Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
@@ -17,6 +17,7 @@ interface User {
     userId: string;
     firstName?: string;
     lastName?: string;
+    isAdmin?: boolean;
 }
 
 interface Client {
@@ -103,10 +104,8 @@ interface ProjectForm {
 const Projects: React.FC = () => {
     const { user, isAuthenticated, isLoading } = useAuth() as AuthContextType;
     const [projects, setProjects] = useState<Project[]>([]);
-    const [users, setUsers] = useState<{ userId: string; name: string }[]>([]);
-    console.log(users)
+    const [users, setUsers] = useState<{ userId: string; name: string; isAdmin: boolean }[]>([]);
     const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
-    console.log(clients)
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -157,6 +156,10 @@ const Projects: React.FC = () => {
     const paymentStatusOptions = ['pending', 'paid', 'overdue'];
     const currencyOptions = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'BDT'];
     const itemsPerPage = 6;
+    const adminUsers = useMemo(
+        () => users.filter((userOption) => userOption.isAdmin),
+        [users]
+    );
 
     // Slug generation function
     const generateSlug = (title: string): string => {
@@ -167,101 +170,95 @@ const Projects: React.FC = () => {
     };
 
     useEffect(() => {
-        if (isAuthenticated && user?.userId) {
-            setNewProject((prev) => ({
-                ...prev,
-                author: user.userId,
-            }));
+        if (!isAuthenticated) {
+            return;
         }
-    }, [user, isAuthenticated]);
+
+        const fetchProjectUsers = async () => {
+            try {
+                const response = await fetch('/api/project-users');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Project users data', data); // Debug the response
+                    if (Array.isArray(data.clients)) {
+                        const formattedUsers: { userId: string; name: string; isAdmin: boolean }[] =
+                            data.clients.map((u: any) => ({
+                                userId: u.id,
+                                name: u.name || 'Unknown',
+                                isAdmin: Boolean(u.isAdmin),
+                            }));
+                        setUsers(formattedUsers);
+                        setClients(
+                            formattedUsers.map((u) => ({
+                                id: u.userId,
+                                name: u.name,
+                            }))
+                        );
+                    } else {
+                        console.error('Clients data is not an array:', data.clients);
+                        setUsers([]);
+                        setClients([]);
+                    }
+                } else {
+                    console.error('Failed to fetch project users:', response.statusText);
+                    setUsers([]);
+                    setClients([]);
+                }
+            } catch (error) {
+                console.error('Fetch project users error:', error);
+                setUsers([]);
+                setClients([]);
+            }
+        };
+
+        fetchProjectUsers();
+    }, [isAuthenticated]);
 
     useEffect(() => {
-        if (isAuthenticated) {
-            const fetchUsers = async () => {
-                try {
-                    const response = await fetch('/api/users');
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log(data); // Debug the response
-                        if (Array.isArray(data.users)) {
-                            setUsers(
-                                data.users.map((u: any) => ({
-                                    userId: u._id,
-                                    name: u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.name || 'Unknown'
-                                }))
-                            );
-                        } else {
-                            console.error('Users data is not an array:', data.users);
-                            setUsers([]);
-                        }
-                    } else {
-                        console.error('Failed to fetch users:', response.statusText);
-                        setUsers([]);
-                    }
-                } catch (error) {
-                    console.error('Fetch users error:', error);
-                    setUsers([]);
-                }
-            };
-
-            /* const fetchClients = async () => {
-                try {
-                    const response = await fetch('/api/clients');
-                    if (response.ok) {
-                        const data = await response.json();
-                        
-                        console.log(data); // Debug the response
-                        if (Array.isArray(data.clients)) {
-                            setClients(
-                                data.clients.map((c: any) => ({
-                                    id: c._id,
-                                    name: c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown'
-                                }))
-                            );
-                        } else {
-                            console.error('Clients data is not an array:', data.clients);
-                            setClients([]);
-                        }
-                    } else {
-                        console.error('Failed to fetch clients:', response.statusText);
-                        setClients([]);
-                    }
-                } catch (error) {
-                    console.error('Fetch clients error:', error);
-                    setClients([]);
-                }
-            }; */
-            const fetchClients = async () => {
-                try {
-                    const response = await fetch('/api/clients');
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log("clients",data); // Debug the response
-                        if (Array.isArray(data.clients)) {
-                            setClients(
-                                data.clients.map((c: any) => ({
-                                    id: c._id,
-                                    name: c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown'
-                                }))
-                            );
-                        } else {
-                            console.error('Clients data is not an array:', data.clients);
-                            setClients([]);
-                        }
-                    } else {
-                        console.error('Failed to fetch clients:', response.statusText);
-                        setClients([]);
-                    }
-                } catch (error) {
-                    console.error('Fetch clients error:', error);
-                    setClients([]);
-                }
-            };
-
-            fetchUsers();
-            fetchClients();
+        if (!isAuthenticated) {
+            return;
         }
-    }, [isAuthenticated]);
+
+        setNewProject((prev) => {
+            const currentAuthor = prev.author;
+            const currentUserId = user?.userId ?? '';
+            const isAuthorValid =
+                currentAuthor && adminUsers.some((admin) => admin.userId === currentAuthor);
+            const isCurrentUserAdmin =
+                Boolean(currentUserId) &&
+                adminUsers.some((admin) => admin.userId === currentUserId);
+
+            if (isAuthorValid) {
+                return prev;
+            }
+
+            if (isCurrentUserAdmin) {
+                if (currentAuthor === currentUserId) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    author: currentUserId,
+                };
+            }
+
+            if (adminUsers.length > 0) {
+                return {
+                    ...prev,
+                    author: adminUsers[0].userId,
+                };
+            }
+
+            if (currentAuthor) {
+                return {
+                    ...prev,
+                    author: '',
+                };
+            }
+
+            return prev;
+        });
+    }, [isAuthenticated, user?.userId, adminUsers]);
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -428,30 +425,39 @@ const Projects: React.FC = () => {
             toast.error(error.message || 'Failed to upload image');
             console.error('Image upload error:', error);
         } finally {
+            const inputId = isUpdate ? 'updateProjectImage' : 'newProjectImage';
+            const input = document.getElementById(inputId) as HTMLInputElement | null;
+            if (input) {
+                input.value = '';
+            }
             setIsUploadingImage(false);
         }
     };
 
-    const handleRemoveImage = async (isUpdate: boolean) => {
-        if (isUpdate && selectedProject?.publicId) {
-            try {
-                const response = await fetch(`/api/cloudinary_project_image?publicId=${encodeURIComponent(selectedProject.publicId)}`, {
-                    method: 'DELETE',
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete image');
-                }
-                setSelectedProject({ ...selectedProject, imageUrl: null, publicId: null });
-                setUpdateProjectImagePreview(null);
-                toast.success('Image removed successfully!');
-            } catch (error: any) {
-                toast.error(error.message || 'Failed to remove image');
-                console.error('Remove image error:', error);
+    const handleRemoveImage = (isUpdate: boolean) => {
+        if (isUpdate) {
+            setSelectedProject((prev) =>
+                prev
+                    ? {
+                          ...prev,
+                          imageUrl: null,
+                          publicId: null,
+                      }
+                    : prev
+            );
+            setUpdateProjectImagePreview(null);
+            const input = document.getElementById('updateProjectImage') as HTMLInputElement | null;
+            if (input) {
+                input.value = '';
             }
+            toast.success('Image cleared. Select a new file to replace it.');
         } else {
             setNewProject({ ...newProject, imageUrl: null, publicId: null });
             setNewProjectImagePreview(null);
+            const input = document.getElementById('newProjectImage') as HTMLInputElement | null;
+            if (input) {
+                input.value = '';
+            }
             toast.success('Image removed successfully!');
         }
     };
@@ -657,6 +663,13 @@ const Projects: React.FC = () => {
         }
         .dark .custom-select__option--is-selected {
           background-color: #818cf8;
+        }
+        ul[role='listbox'] {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        ul[role='listbox']::-webkit-scrollbar {
+          display: none;
         }
         .skeleton-pulse {
           background: linear-gradient(
@@ -915,17 +928,44 @@ const Projects: React.FC = () => {
                                                 required
                                             />
                                         </div>
-                                        <div>
+                                        <div className="relative">
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                                 Author
                                             </label>
-                                            <input
-                                                type="text"
-                                                value={`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
-                                                disabled
-                                                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100/80 dark:bg-gray-700/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300 shadow-sm cursor-not-allowed"
-                                                placeholder="Author name"
-                                            />
+                                            <Listbox
+                                                value={newProject.author}
+                                                onChange={(value: string) =>
+                                                    setNewProject((prev) => {
+                                                        const updatedCoAuthors = prev.coAuthors.filter((id) => id !== value);
+                                                        return {
+                                                            ...prev,
+                                                            author: value,
+                                                            coAuthors: updatedCoAuthors,
+                                                        };
+                                                    })
+                                                }
+                                            >
+                                                <Listbox.Button className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300 cursor-pointer">
+                                                    {newProject.author ? getUserName(newProject.author) : 'Select an author'}
+                                                </Listbox.Button>
+                                                <Listbox.Options className="absolute w-full mt-1 max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                                    {adminUsers.map((admin) => (
+                                                        <Listbox.Option
+                                                            key={admin.userId}
+                                                            value={admin.userId}
+                                                            className={({ active }) =>
+                                                                `cursor-pointer select-none py-2 px-4 text-sm rounded transition-colors ${
+                                                                    active
+                                                                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-200'
+                                                                        : 'text-gray-900 dark:text-white'
+                                                                }`
+                                                            }
+                                                        >
+                                                            {admin.name}
+                                                        </Listbox.Option>
+                                                    ))}
+                                                </Listbox.Options>
+                                            </Listbox>
                                         </div>
 
                                         <div className="space-y-4">
@@ -960,24 +1000,34 @@ const Projects: React.FC = () => {
                                                 <Listbox
                                                     value=""
                                                     onChange={(value: string) => {
-                                                        if (value && !newProject.coAuthors.includes(value)) {
-                                                            setNewProject({
-                                                                ...newProject,
-                                                                coAuthors: [...newProject.coAuthors, value],
-                                                            });
+                                                        if (!value) {
+                                                            return;
                                                         }
+                                                        setNewProject((prev) => {
+                                                            if (prev.coAuthors.includes(value) || value === prev.author) {
+                                                                return prev;
+                                                            }
+                                                            return {
+                                                                ...prev,
+                                                                coAuthors: [...prev.coAuthors, value],
+                                                            };
+                                                        });
                                                     }}
                                                 >
                                                     <Listbox.Button className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300 cursor-pointer">
                                                         Select to add co-author
                                                     </Listbox.Button>
                                                     <Listbox.Options className="absolute w-full mt-1 max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                                                        {users
-                                                            .filter((u) => u.userId !== user?.userId && !newProject.coAuthors.includes(u.userId))
-                                                            .map((u) => (
+                                                        {adminUsers
+                                                            .filter(
+                                                                (admin) =>
+                                                                    admin.userId !== newProject.author &&
+                                                                    !newProject.coAuthors.includes(admin.userId)
+                                                            )
+                                                            .map((admin) => (
                                                                 <Listbox.Option
-                                                                    key={u.userId}
-                                                                    value={u.userId}
+                                                                    key={admin.userId}
+                                                                    value={admin.userId}
                                                                     className={({ active }) =>
                                                                         `cursor-pointer select-none py-2 px-4 text-sm rounded transition-colors ${active
                                                                             ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-200'
@@ -985,7 +1035,7 @@ const Projects: React.FC = () => {
                                                                         }`
                                                                     }
                                                                 >
-                                                                    {u.name}
+                                                                    {admin.name}
                                                                 </Listbox.Option>
                                                             ))}
                                                     </Listbox.Options>
@@ -1639,7 +1689,15 @@ const Projects: React.FC = () => {
 
             {/* Update Project Modal */}
             <Transition appear show={isUpdateModalOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={() => setIsUpdateModalOpen(false)}>
+                <Dialog
+                    as="div"
+                    className="relative z-50"
+                    onClose={() => {
+                        setIsUpdateModalOpen(false);
+                        setUpdateProjectImagePreview(null);
+                        setSelectedProject(null);
+                    }}
+                >
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -1687,17 +1745,49 @@ const Projects: React.FC = () => {
                                                     required
                                                 />
                                             </div>
-                                            <div>
+                                            <div className="relative">
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                                     Author
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    value={`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
-                                                    disabled
-                                                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100/80 dark:bg-gray-700/80 py-3 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300 shadow-sm cursor-not-allowed"
-                                                    placeholder="Author name"
-                                                />
+                                                <Listbox
+                                                    value={selectedProject.author}
+                                                    onChange={(value: string) =>
+                                                        setSelectedProject((prev) => {
+                                                            if (!prev) {
+                                                                return prev;
+                                                            }
+                                                            const updatedCoAuthors = prev.coAuthors.filter((id) => id !== value);
+                                                            return {
+                                                                ...prev,
+                                                                author: value,
+                                                                coAuthors: updatedCoAuthors,
+                                                            };
+                                                        })
+                                                    }
+                                                >
+                                                    <Listbox.Button className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300 cursor-pointer">
+                                                        {selectedProject.author
+                                                            ? getUserName(selectedProject.author)
+                                                            : 'Select an author'}
+                                                    </Listbox.Button>
+                                                    <Listbox.Options className="absolute w-full mt-1 max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                                        {adminUsers.map((admin) => (
+                                                            <Listbox.Option
+                                                                key={admin.userId}
+                                                                value={admin.userId}
+                                                                className={({ active }) =>
+                                                                    `cursor-pointer select-none py-2 px-4 text-sm rounded transition-colors ${
+                                                                        active
+                                                                            ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-200'
+                                                                            : 'text-gray-900 dark:text-white'
+                                                                    }`
+                                                                }
+                                                            >
+                                                                {admin.name}
+                                                            </Listbox.Option>
+                                                        ))}
+                                                    </Listbox.Options>
+                                                </Listbox>
                                             </div>
                                             <div className="relative">
                                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -1713,9 +1803,14 @@ const Projects: React.FC = () => {
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    setSelectedProject({
-                                                                        ...selectedProject,
-                                                                        coAuthors: selectedProject.coAuthors.filter((a) => a !== id),
+                                                                    setSelectedProject((prev) => {
+                                                                        if (!prev) {
+                                                                            return prev;
+                                                                        }
+                                                                        return {
+                                                                            ...prev,
+                                                                            coAuthors: prev.coAuthors.filter((a) => a !== id),
+                                                                        };
                                                                     })
                                                                 }
                                                                 className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 transition-colors"
@@ -1728,24 +1823,37 @@ const Projects: React.FC = () => {
                                                 <Listbox
                                                     value=""
                                                     onChange={(value: string) => {
-                                                        if (value && !selectedProject.coAuthors.includes(value)) {
-                                                            setSelectedProject({
-                                                                ...selectedProject,
-                                                                coAuthors: [...selectedProject.coAuthors, value],
-                                                            });
+                                                        if (!value) {
+                                                            return;
                                                         }
+                                                        setSelectedProject((prev) => {
+                                                            if (!prev) {
+                                                                return prev;
+                                                            }
+                                                            if (prev.coAuthors.includes(value) || value === prev.author) {
+                                                                return prev;
+                                                            }
+                                                            return {
+                                                                ...prev,
+                                                                coAuthors: [...prev.coAuthors, value],
+                                                            };
+                                                        });
                                                     }}
                                                 >
                                                     <Listbox.Button className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/80 py-3 px-4 text-sm text-gray-900 dark:text-white text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-300 cursor-pointer">
                                                         Select to add co-author
                                                     </Listbox.Button>
                                                     <Listbox.Options className="absolute w-full mt-1 max-h-60 overflow-auto rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                                                        {users
-                                                            .filter((u) => u.userId !== user?.userId && !selectedProject.coAuthors.includes(u.userId))
-                                                            .map((u) => (
+                                                        {adminUsers
+                                                            .filter(
+                                                                (admin) =>
+                                                                    admin.userId !== selectedProject.author &&
+                                                                    !selectedProject.coAuthors.includes(admin.userId)
+                                                            )
+                                                            .map((admin) => (
                                                                 <Listbox.Option
-                                                                    key={u.userId}
-                                                                    value={u.userId}
+                                                                    key={admin.userId}
+                                                                    value={admin.userId}
                                                                     className={({ active }) =>
                                                                         `cursor-pointer select-none py-2 px-4 text-sm rounded transition-colors ${active
                                                                             ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-900 dark:text-indigo-200'
@@ -1753,7 +1861,7 @@ const Projects: React.FC = () => {
                                                                         }`
                                                                     }
                                                                 >
-                                                                    {u.name}
+                                                                    {admin.name}
                                                                 </Listbox.Option>
                                                             ))}
                                                     </Listbox.Options>
@@ -2374,6 +2482,7 @@ const Projects: React.FC = () => {
                                                     onClick={() => {
                                                         setIsUpdateModalOpen(false);
                                                         setUpdateProjectImagePreview(null);
+                                                        setSelectedProject(null);
                                                     }}
                                                     className="inline-flex justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                                 >
