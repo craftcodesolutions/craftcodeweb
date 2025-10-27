@@ -775,7 +775,7 @@ const Projects: React.FC = () => {
                                             {project.title}
                                         </h4>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                            {user?.firstName} {user?.lastName}
+                                            {getUserName(project.author)}
                                         </p>
                                         <p className="text-sm text-gray-400 dark:text-gray-500">
                                             {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'No start date'}
@@ -1084,7 +1084,7 @@ const Projects: React.FC = () => {
                                                 onChange={(date: Date | null) => {
                                                     setNewProject({
                                                         ...newProject,
-                                                        deadline: date ? date.toISOString().split('T')[0] : '',
+                                                        startDate: date ? date.toISOString().split('T')[0] : '',
                                                     });
                                                 }}
                                             />
