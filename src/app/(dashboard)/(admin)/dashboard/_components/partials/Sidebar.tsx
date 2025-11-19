@@ -79,7 +79,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
       <div
         id="sidebar"
         ref={sidebar}
-        className={`flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll overflow-x-hidden no-scrollbar lg:overflow-y-auto shrink-0 bg-white dark:bg-gray-900 text-[#6b4f27] dark:text-gray-100 border-r border-[#bfa77a] dark:border-[#232323] shadow-3xl p-1 transition-all duration-200 ease-in-out w-80 ${sidebarOpen ? 'translate-x-0' : '-translate-x-80'} ${sidebarExpanded ? 'lg:w-56' : 'lg:w-16'} ${variant === 'v2' ? 'border-r border-[#bfa77a] dark:border-gray-900' : 'rounded-r-md shadow-xs'}`}
+        className={`flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll overflow-x-hidden no-scrollbar lg:overflow-y-auto shrink-0 bg-white dark:bg-gray-900 text-[#6b4f27] dark:text-gray-100 border-r border-[#bfa77a] dark:border-[#232323] shadow-3xl p-1 transition-all duration-200 ease-in-out w-80 ${sidebarOpen ? 'translate-x-0' : '-translate-x-80'} ${sidebarExpanded ? 'lg:w-64' : 'lg:w-16'} ${variant === 'v2' ? 'border-r border-[#bfa77a] dark:border-gray-900' : 'rounded-r-md shadow-xs'}`}
       >
         {/* Sidebar header */}
         <div className="flex justify-between mb-4 pr-1 sm:px-0 items-center">
@@ -97,7 +97,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
           </button>
           <Link
             href="/dashboard"
-            className={`inline-flex items-center justify-center w-10 h-10 rounded-md transition-all duration-300 ease-in-out
+            className={`inline-flex items-center justify-center w-12 h-12 rounded-md transition-all duration-300 ease-in-out
     ${pathname?.includes('/dashboard')
                 ? 'bg-gradient-to-r from-teal-500 to-emerald-600 shadow-lg text-white'
                 : 'bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 hover:shadow-md'
@@ -121,26 +121,26 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
             <ul className="mt-2">
               {/* Dashboard */}
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('/dashboard') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('/dashboard') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/dashboard"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('/dashboard') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 16 16"
                         >
                           <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                           <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
@@ -152,25 +152,25 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('messenger') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('messenger') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/messenger"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('messenger') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 24 24"
                         >
                           <path d="M20 2H4C2.897 2 2 2.897 2 4v16l4-4h14c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm0 12H5.172L4 16.172V4h16v10z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
@@ -182,25 +182,25 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('reviews') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('reviews') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/reviews"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('reviews') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 24 24"
                         >
                           <path d="M12 .587l3.668 7.431L24 9.169l-6 5.832 1.417 8.312L12 18.897l-7.417 4.416L6 15.001 0 9.169l8.332-1.151z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
@@ -212,7 +212,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('meeting')
+                className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('meeting')
                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
                     : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'
                   }`}
@@ -222,21 +222,21 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 transition-all duration-200 ease-in-out hover:bg-indigo-100 hover:shadow-sm dark:hover:bg-indigo-900/40 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('meeting')
                               ? 'text-indigo-600'
                               : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
                             }`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 24 24"
                         >
                           <path d="M19 6h-1V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM8 4h8v2H8V4zm11 16H5V8h14v12zM7 10h2v2H7v-2zm0 4h2v2H7v-2zm4-4h6v2h-6v-2zm0 4h6v2h-6v-2z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
@@ -264,22 +264,22 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                     }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('professionals')
                             ? 'text-indigo-600'
                             : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'
                             }`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 24 24"
                         >
                           {/* Briefcase icon */}
                           <path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 0h-4V4h4v2zm6 14H4V8h16v12z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
@@ -293,24 +293,24 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
 
 
 
-              <li className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('/deployments') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
+              <li className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('/deployments') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
                 <Link
                   href="/deployments"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('products') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 16 16"
                         >
                           <path d="M3.5 0C2.119 0 1 1.119 1 2.5v11c0 1.381 1.119 2.5 2.5 2.5h9c1.381 0 2.5-1.119 2.5-2.5v-11c0-1.381-1.119-2.5-2.5-2.5h-9zM7 2h2v2H7V2zM7 5h2v2H7V5zM7 8h2v2H7V8zM7 11h2v2H7v-2zM3 2h1v11H3V2zM10 2h1v11h-1V2zM13 2h1v11h-1V2z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'} 2xl:opacity-100 sidebar-text`}
                       >
@@ -322,24 +322,24 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
               </li>
 
 
-              <li className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('insights') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
+              <li className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('insights') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}>
                 <Link
                   href="/insights"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('blogs') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 24 24"
                         >
                           <path d="M4 4h16v2H4zm0 6h10v2H4zm0 6h16v2H4z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'} 2xl:opacity-100 sidebar-text`}
                       >
@@ -350,25 +350,25 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
                 </Link>
               </li>
               <li
-                className={`pl-2 pr-2 py-2 rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${pathname?.includes('users') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
+                className={`rounded-sm mb-1 last:mb-0 transition-all duration-200 ease-in-out ${sidebarExpanded ? 'pl-2 pr-2 py-2' : 'pl-1 pr-1 py-1'} ${pathname?.includes('users') ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 hover:bg-indigo-100 hover:shadow-md dark:bg-slate-800 dark:hover:bg-indigo-900/50'}`}
               >
                 <Link
                   href="/users"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition-all duration-200 ease-in-out hover:text-indigo-600 dark:hover:text-indigo-400`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="grow flex items-center">
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-sm bg-white/60 dark:bg-slate-800/60">
+                    <div className={`grow flex items-center ${sidebarExpanded ? 'justify-start' : 'justify-center'}`}>
+                      <div className={`inline-flex items-center justify-center rounded-sm bg-white/60 dark:bg-slate-800/60 ${sidebarExpanded ? 'w-11 h-11' : 'w-10 h-10'}`}>
                         <svg
                           className={`shrink-0 fill-current transition-all duration-200 ease-in-out ${pathname?.includes('users') ? 'text-indigo-600' : 'text-slate-600 group-hover:text-indigo-500 dark:text-slate-400 dark:group-hover:text-indigo-400'}`}
                           xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                          width={sidebarExpanded ? "20" : "16"}
+                          height={sidebarExpanded ? "20" : "16"}
                           viewBox="0 0 24 24"
                         >
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                         </svg>
-                      </span>
+                      </div>
                       <span
                         className={`text-sm font-medium ml-4 duration-200 ${sidebarExpanded ? 'lg:opacity-100' : 'lg:opacity-0'
                           } 2xl:opacity-100 sidebar-text`}
@@ -413,7 +413,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = 'default' }: SidebarHe
 
         {/* Expand / collapse button */}
         <div className="pt-2 hidden lg:inline-flex 2xl:hidden  justify-end mt-auto">
-          <div className="w-10 pl-2 pb-12 pr-2 py-1">
+          <div className="w-10 pl-2 pb-6 pr-2 py-1">
             <button
               className="text-gray-400 cursor-pointer  hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
               onClick={toggleSidebarExpand}

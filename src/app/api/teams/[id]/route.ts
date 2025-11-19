@@ -58,6 +58,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       references,
       supportiveEmail,
       designation, // Added designation field
+      // User data fields
+      firstName,
+      lastName,
+      bio,
+      profileImage,
+      publicIdProfile,
       debug,
     } = await req.json();
 
@@ -91,6 +97,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // Validation for team-specific fields
     if (!userId || typeof userId !== 'string') {
       return NextResponse.json({ error: 'Valid userId is required' }, { status: 400 });
+    }
+    
+    // Validation for user fields (if provided)
+    if (firstName && (typeof firstName !== 'string' || firstName.length < 1)) {
+      return NextResponse.json({ error: 'First name must be a non-empty string' }, { status: 400 });
+    }
+    if (lastName && (typeof lastName !== 'string' || lastName.length < 1)) {
+      return NextResponse.json({ error: 'Last name must be a non-empty string' }, { status: 400 });
+    }
+    if (bio && (typeof bio !== 'string' || bio.length > 500)) {
+      return NextResponse.json({ error: 'Bio must be a string and less than 500 characters' }, { status: 400 });
+    }
+    if (profileImage && typeof profileImage !== 'string') {
+      return NextResponse.json({ error: 'Profile image must be a string' }, { status: 400 });
     }
     if (banner && (typeof banner !== 'string' || banner.length > 1000)) {
       return NextResponse.json(
@@ -249,14 +269,41 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Team profile not found or unauthorized' }, { status: 404 });
     }
 
-    // Fetch user data to get firstName and lastName
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }); // Adjusted to users collection
-    if (!user) {
+    // Fetch existing user data
+    const usersCollection = db.collection('users');
+    const existingUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    if (!existingUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Update user data if provided
+    if (firstName || lastName || bio || profileImage || publicIdProfile) {
+      const updateData: any = {
+        updatedAt: new Date()
+      };
+      
+      // Update firstName and lastName fields directly
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      
+      if (bio !== undefined) updateData.bio = bio;
+      if (profileImage !== undefined) updateData.profileImage = profileImage;
+      if (publicIdProfile !== undefined) updateData.publicIdProfile = publicIdProfile;
+      
+      // Update user in database
+      await usersCollection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: updateData }
+      );
+    }
+
+    // Get updated user data for slug generation
+    const updatedUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    const userFirstName = updatedUser?.firstName || '';
+    const userLastName = updatedUser?.lastName || '';
+
     // Generate slug (use providedSlug if valid, otherwise generate from firstName and lastName)
-    let slug = providedSlug || generateSlug(user.firstName || '', user.lastName || '');
+    let slug = providedSlug || generateSlug(userFirstName, userLastName);
     slug = await ensureUniqueSlug(db, slug, id); // Exclude current team ID from uniqueness check
 
     // Create updated team object

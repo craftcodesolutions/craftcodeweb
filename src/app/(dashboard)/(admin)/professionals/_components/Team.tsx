@@ -78,7 +78,7 @@ interface Reference {
     contact: string;
 }
 
-interface TeamMember extends User {
+interface TeamMember {
     _id: string;
     userId: string; // Link to user
     slug: string;
@@ -95,8 +95,15 @@ interface TeamMember extends User {
     references: Reference[];
     supportiveEmail: string;
     designation: string;
-    blogs: any[];
-    projects: any[];
+    blogs?: any[];
+    projects?: any[];
+    // User data (fetched separately)
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    bio?: string;
+    profileImage?: string | null;
+    publicIdProfile?: string | null;
 }
 
 interface TeamMemberForm {
@@ -162,6 +169,9 @@ const Team: React.FC = () => {
     const [isDraggingBanner, setIsDraggingBanner] = useState(false);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
+    const [isAddingTeamMember, setIsAddingTeamMember] = useState(false);
+    const [isUpdatingTeamMember, setIsUpdatingTeamMember] = useState(false);
+    const [isDeletingTeamMember, setIsDeletingTeamMember] = useState(false);
     const proficiencyOptions = ['Native', 'Fluent', 'Intermediate', 'Basic'];
     const itemsPerPage = 6;
     const [hasTeamData, setHasTeamData] = useState(false);
@@ -224,69 +234,8 @@ const Team: React.FC = () => {
                 const teams = data.teams || [];
                 setTotalPages(data.totalPages || 1);
 
-                // Fetch user data for each team member
-                const userPromises = teams.map((team: TeamMember) =>
-                    fetch(`/api/users/${team.userId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }).then(async (res) => {
-                        if (res.ok) {
-                            const userData = await res.json();
-                            console.log(`User data for userId ${team.userId}:`, userData); // Debug log
-                            return {
-                                userId: team.userId,
-                                firstName: userData.firstName || 'Unknown',
-                                lastName: userData.lastName || '',
-                                email: userData.email || 'N/A',
-                                bio: userData.bio || 'No bio available',
-                                profileImage: userData.avatar || null,
-                                publicIdProfile: userData.publicIdProfile || null,
-                            };
-                        } else {
-                            const errorData = await res.json();
-                            console.error(`Failed to fetch user data for userId ${team.userId}:`, errorData?.error || 'Unknown error');
-                            return {
-                                userId: team.userId,
-                                firstName: 'Unknown',
-                                lastName: '',
-                                email: 'N/A',
-                                bio: 'No bio available',
-                                profileImage: null,
-                                publicIdProfile: null,
-                            };
-                        }
-                    }).catch((error) => {
-                        console.error(`Error fetching user data for userId ${team.userId}:`, error);
-                        return {
-                            userId: team.userId,
-                            firstName: 'Unknown',
-                            lastName: '',
-                            email: 'N/A',
-                            bio: 'No bio available',
-                            profileImage: null,
-                            publicIdProfile: null,
-                        };
-                    })
-                );
-
-                const users = await Promise.all(userPromises);
-                console.log('Fetched users:', users); // Debug log
-
-                // Combine team and user data
-                const enrichedTeams = teams.map((team: TeamMember, i: number) => ({
-                    ...team,
-                    firstName: users[i].firstName || 'Unknown',
-                    lastName: users[i].lastName || '',
-                    email: users[i].email || 'N/A',
-                    bio: users[i].bio || 'No bio available',
-                    profileImage: users[i].profileImage || null,
-                    publicIdProfile: users[i].publicIdProfile || null,
-                }));
-
-                console.log('Enriched teams:', enrichedTeams); // Debug log
-                setTeamMembers(enrichedTeams);
+                // /teams API now returns complete data (team + user data)
+                setTeamMembers(teams);
             } else {
                 const errorData = await response.json();
                 toast.error(errorData?.error || 'Failed to fetch team members');
@@ -302,11 +251,9 @@ const Team: React.FC = () => {
     const checkTeamData = async () => {
         if (isAuthenticated && user?.userId) {
             try {
-                const response = await fetch(`/api/teams?userId=${user.userId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setHasTeamData(data.teams.length > 0);
-                }
+                // Check if any of the existing team members belong to current user
+                const userTeam = teamMembers.find(member => member.userId === user.userId);
+                setHasTeamData(!!userTeam);
             } catch (error: any) {
                 console.error('Check team data error:', error);
             }
@@ -329,22 +276,9 @@ const Team: React.FC = () => {
         const teamMember = teamMembers.find((m) => m._id === memberId);
         if (teamMember && isAuthenticated && teamMember.userId === user?.userId) {
             try {
-                const userResponse = await fetch(`/api/users/${user.userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!userResponse.ok) {
-                    const errorData = await userResponse.json();
-                    toast.error(errorData?.error || 'Failed to fetch user data');
-                    return;
-                }
-
-                const userData = await userResponse.json();
-                const profileImageToUse = userData.profileImage || user?.profileImage || null;
-                const publicIdProfileToUse = userData.publicIdProfile || user?.publicIdProfile || null;
+                // Use data directly from teamMember (which now includes user data from /teams API)
+                const profileImageToUse = teamMember.profileImage || user?.profileImage || null;
+                const publicIdProfileToUse = teamMember.publicIdProfile || user?.publicIdProfile || null;
 
                 // Set team-specific fields including slug
                 setSelectedTeamMember({
@@ -352,7 +286,7 @@ const Team: React.FC = () => {
                     userId: teamMember.userId,
                     banner: teamMember.banner || null,
                     publicIdBanner: teamMember.publicIdBanner || null,
-                    slug: teamMember.slug || generateSlug(userData.firstName || user?.firstName || '', userData.lastName || user?.lastName || ''), // Initialize slug
+                    slug: teamMember.slug || generateSlug(teamMember.firstName || '', teamMember.lastName || ''), // Initialize slug
                     skills: teamMember.skills || [],
                     previousJobs: teamMember.previousJobs || [],
                     projectLinks: teamMember.projectLinks || [],
@@ -376,16 +310,16 @@ const Team: React.FC = () => {
                     designation: teamMember.designation || '',
                 });
 
-                // Set user-specific fields
-                setUpdateFirstName(userData.firstName || user?.firstName || '');
-                setUpdateLastName(userData.lastName || user?.lastName || '');
-                setUpdateBio(userData.bio || user?.bio || '');
+                // Set user-specific fields (now available directly from teamMember)
+                setUpdateFirstName(teamMember.firstName || '');
+                setUpdateLastName(teamMember.lastName || '');
+                setUpdateBio(teamMember.bio || '');
                 setUpdateProfileImage(profileImageToUse);
                 setUpdatePublicIdProfile(publicIdProfileToUse);
                 setUpdateProfileImagePreview(profileImageToUse);
                 setUpdateBannerPreview(teamMember.banner || null);
                 setUpdateSupportiveEmail(teamMember.supportiveEmail || '');
-                setUpdateSlug(teamMember.slug || generateSlug(userData.firstName || user?.firstName || '', userData.lastName || user?.lastName || '')); // Set updateSlug
+                setUpdateSlug(teamMember.slug || generateSlug(teamMember.firstName || '', teamMember.lastName || '')); // Set updateSlug
                 setIsUpdateModalOpen(true);
             } catch (error: any) {
                 toast.error(error.message || 'Failed to fetch user data');
@@ -571,29 +505,19 @@ const Team: React.FC = () => {
 
     const handleAddSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isAddingTeamMember) return; // Prevent double submission
+        
         if (!firstName || !lastName || !bio) {
             toast.error('Please fill in all required fields.');
             return;
         }
 
+        setIsAddingTeamMember(true);
         try {
-            // Update user profile in users collection
-            /* const updateData: Partial<User> = {
-                firstName,
-                lastName,
-                bio,
-                profileImage,
-                publicIdProfile,
-            };
-            const updateResult = await updateProfile(updateData);
-            if (!updateResult.success) {
-                toast.error(updateResult.error || 'Failed to update user profile');
-                return;
-            } */
-
-            // Create team data in teams collection
-            const teamData: TeamMemberForm = {
-                userId: user!.userId,  // Fixed here with non-null assertion
+            // Create team data with user data - /teams API will handle both
+            const teamData = {
+                userId: user!.userId,
+                // Team-specific data
                 banner: newTeamMember.banner,
                 publicIdBanner: newTeamMember.publicIdBanner,
                 slug: newSlug,
@@ -608,7 +532,12 @@ const Team: React.FC = () => {
                 references: newTeamMember.references,
                 supportiveEmail,
                 designation: newTeamMember.designation,
-                // Do not include skillsString or hobbiesString
+                // User-specific data (will be handled by /teams API)
+                firstName,
+                lastName,
+                bio,
+                profileImage,
+                publicIdProfile,
             };
 
             const response = await fetch('/api/teams', {
@@ -658,11 +587,15 @@ const Team: React.FC = () => {
         } catch (error: any) {
             toast.error(error.message || 'Failed to add team member');
             console.error('Add team member error:', error);
+        } finally {
+            setIsAddingTeamMember(false);
         }
     };
 
     const handleUpdateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isUpdatingTeamMember) return; // Prevent double submission
+        
         if (!selectedTeamMember) {
             toast.error('No team member selected for update.');
             return;
@@ -673,29 +606,16 @@ const Team: React.FC = () => {
             return;
         }
 
+        setIsUpdatingTeamMember(true);
         try {
-            // Update user profile in users collection
-            const updateData: Partial<User> = {
-                userId: user?.userId,  // Fixed here with non-null assertion
-                firstName: updateFirstName,
-                lastName: updateLastName,
-                bio: updateBio,
-                profileImage: updateProfileImage,
-                publicIdProfile: updatePublicIdProfile,
-            };
-            const updateResult = await updateProfile(updateData);
-            if (!updateResult.success) {
-                toast.error(updateResult.error || 'Failed to update user profile');
-                return;
-            }
-
-            // Update team data in teams collection
-            const teamData: TeamMemberForm = {
-                userId: user!.userId,  // Fixed here with non-null assertion
+            // Update team data with user data - /teams API will handle both
+            const teamData = {
+                userId: user!.userId,
+                // Team-specific data
                 _id: selectedTeamMember._id,
                 banner: selectedTeamMember.banner,
                 publicIdBanner: selectedTeamMember.publicIdBanner,
-                slug: updateSlug, // Include slug
+                slug: updateSlug,
                 skills: selectedTeamMember.skills,
                 previousJobs: selectedTeamMember.previousJobs,
                 projectLinks: selectedTeamMember.projectLinks,
@@ -707,6 +627,12 @@ const Team: React.FC = () => {
                 references: selectedTeamMember.references,
                 supportiveEmail: updateSupportiveEmail,
                 designation: selectedTeamMember.designation,
+                // User-specific data (will be handled by /teams API)
+                firstName: updateFirstName,
+                lastName: updateLastName,
+                bio: updateBio,
+                profileImage: updateProfileImage,
+                publicIdProfile: updatePublicIdProfile,
             };
 
             const response = await fetch(`/api/teams/${selectedTeamMember._id}`, {
@@ -733,10 +659,15 @@ const Team: React.FC = () => {
         } catch (error: any) {
             toast.error(error.message || 'Failed to update team member');
             console.error('Update team member error:', error);
+        } finally {
+            setIsUpdatingTeamMember(false);
         }
     };
     const handleDeleteConfirm = async () => {
+        if (isDeletingTeamMember) return; // Prevent double submission
+        
         if (teamMemberToDelete) {
+            setIsDeletingTeamMember(true);
             try {
                 const response = await fetch(`/api/teams/${teamMemberToDelete}`, {
                     method: 'DELETE',
@@ -758,6 +689,8 @@ const Team: React.FC = () => {
             } catch (error: any) {
                 toast.error(error.message || 'Failed to delete team member');
                 console.error('Delete team member error:', error);
+            } finally {
+                setIsDeletingTeamMember(false);
             }
         }
     };
@@ -846,33 +779,37 @@ const Team: React.FC = () => {
                     <h3 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Team Members
                     </h3>
-                    {isAuthenticated && (
-                        <button
-                            onClick={() => {
-                                const myTeam = teamMembers.find((m) => m.userId === user?.userId);
+                    <div className="flex items-center gap-3">
+                        {isAuthenticated && (
+                            <button
+                                onClick={() => {
+                                    const myTeam = teamMembers.find((m) => m.userId === user?.userId);
 
-                                if (myTeam) {
-                                    handleUpdateTeamMember(myTeam._id);
-                                } else {
-                                    setFirstName(user?.firstName || '');
-                                    setLastName(user?.lastName || '');
-                                    setBio(user?.bio || '');
-                                    setProfileImage(user?.profileImage || null);
-                                    setPublicIdProfile(user?.publicIdProfile || null);
-                                    setNewProfileImagePreview(user?.profileImage || null);
-                                    setIsAddModalOpen(true);
-                                }
-                            }}
-                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-medium text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                        >
-                            <Plus className="h-5 w-5" />
-                            <span>
-                                {teamMembers.some((m) => m.userId === user?.userId) ? 'Update Profile' : 'Add Profile'}
-                            </span>
-                        </button>
-                    )}
+                                    if (myTeam) {
+                                        handleUpdateTeamMember(myTeam._id);
+                                    } else {
+                                        setFirstName(user?.firstName || '');
+                                        setLastName(user?.lastName || '');
+                                        setBio(user?.bio || '');
+                                        setProfileImage(user?.profileImage || null);
+                                        setPublicIdProfile(user?.publicIdProfile || null);
+                                        setNewProfileImagePreview(user?.profileImage || null);
+                                        setIsAddModalOpen(true);
+                                    }
+                                }}
+                                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-medium text-white hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                            >
+                                <Plus className="h-5 w-5" />
+                                <span>
+                                    {teamMembers.some((m) => m.userId === user?.userId) ? 'Update Profile' : 'Add Profile'}
+                                </span>
+                            </button>
+                        )}
+                    </div>
 
                 </div>
+
+                
                 <div className="border-t border-gray-600 dark:border-gray-700 p-6 md:p-10">
                     {/* Search */}
                     <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
@@ -934,10 +871,8 @@ const Team: React.FC = () => {
                                                     fill
                                                     className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                                                     onError={(e) => {
-                                                        console.error(`Failed to load image for ${member.firstName} (${member.userId}): ${member.profileImage}`); // Debug log
                                                         e.currentTarget.src = '/default-profile.png'; // Fallback image
                                                     }}
-                                                    onLoadingComplete={() => console.log(`Image loaded for ${member.firstName}: ${member.profileImage}`)} // Debug log
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                             </div>
@@ -1067,7 +1002,7 @@ const Team: React.FC = () => {
             {/* Add New Team Member Modal */}
 
             <Transition appear show={isAddModalOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={() => setIsAddModalOpen(false)}>
+                <Dialog as="div" className="relative z-50" onClose={() => !isAddingTeamMember && setIsAddModalOpen(false)}>
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -1098,8 +1033,13 @@ const Team: React.FC = () => {
                                             Add Profile
                                         </Dialog.Title>
                                         <button
-                                            onClick={() => setIsAddModalOpen(false)}
-                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                            onClick={() => !isAddingTeamMember && setIsAddModalOpen(false)}
+                                            disabled={isAddingTeamMember}
+                                            className={`transition-colors ${
+                                                isAddingTeamMember 
+                                                    ? 'text-gray-300 cursor-not-allowed' 
+                                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                                            }`}
                                         >
                                             <X className="h-6 w-6" />
                                         </button>
@@ -1114,8 +1054,10 @@ const Team: React.FC = () => {
                                                     Profile Image
                                                 </label>
                                                 <div
-                                                    className={`relative h-48 rounded-xl border-2 border-dashed transition-all duration-200 ${isDraggingProfile
-                                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                                                    className={`relative h-48 rounded-xl border-2 border-dashed transition-all duration-300 ${isDraggingProfile
+                                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 scale-[1.02] shadow-lg border-4'
+                                                        : isUploadingImage
+                                                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
                                                         : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                                                         } flex flex-col items-center justify-center cursor-pointer overflow-hidden group`}
                                                     onDragOver={(e) => handleDragOver(e, 'profile')}
@@ -1141,18 +1083,38 @@ const Team: React.FC = () => {
                                                                     e.stopPropagation();
                                                                     handleRemoveImage(false, 'profile');
                                                                 }}
-                                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
+                                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors cursor-pointer"
                                                             >
                                                                 <X className="h-4 w-4" />
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <div className="text-center p-4">
-                                                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 mb-3">
-                                                                <Photo className="h-6 w-6 text-gray-400" />
+                                                        <div className={`text-center p-4 transition-all duration-200 ${
+                                                            isDraggingProfile ? 'transform scale-110' : ''
+                                                        }`}>
+                                                            <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-3 transition-all duration-200 ${
+                                                                isDraggingProfile 
+                                                                    ? 'bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300' 
+                                                                    : isUploadingImage 
+                                                                    ? 'bg-blue-100 dark:bg-blue-800 animate-pulse' 
+                                                                    : 'bg-gray-100 dark:bg-gray-700'
+                                                            }`}>
+                                                                {isUploadingImage ? (
+                                                                    <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                                                ) : (
+                                                                    <Photo className={`h-6 w-6 ${
+                                                                        isDraggingProfile ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-400'
+                                                                    }`} />
+                                                                )}
                                                             </div>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                                                Drag & drop or click to upload
+                                                            <p className={`text-sm mb-1 transition-colors duration-200 ${
+                                                                isDraggingProfile 
+                                                                    ? 'text-indigo-600 dark:text-indigo-300 font-medium' 
+                                                                    : isUploadingImage 
+                                                                    ? 'text-blue-600 dark:text-blue-300' 
+                                                                    : 'text-gray-500 dark:text-gray-400'
+                                                            }`}>
+                                                                {isUploadingImage ? 'Uploading...' : isDraggingProfile ? 'Drop image here!' : 'Drag & drop or click to upload'}
                                                             </p>
                                                             <p className="text-xs text-gray-400 dark:text-gray-500">
                                                                 PNG, JPG up to 5MB
@@ -1176,8 +1138,10 @@ const Team: React.FC = () => {
                                                     Banner Image
                                                 </label>
                                                 <div
-                                                    className={`relative h-32 rounded-xl border-2 border-dashed transition-all duration-200 ${isDraggingBanner
-                                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                                                    className={`relative h-32 rounded-xl border-2 border-dashed transition-all duration-300 ${isDraggingBanner
+                                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 scale-[1.02] shadow-lg border-4'
+                                                        : isUploadingImage
+                                                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
                                                         : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                                                         } flex flex-col items-center justify-center cursor-pointer overflow-hidden group`}
                                                     onDragOver={(e) => handleDragOver(e, 'banner')}
@@ -1203,18 +1167,38 @@ const Team: React.FC = () => {
                                                                     e.stopPropagation();
                                                                     handleRemoveImage(false, 'banner');
                                                                 }}
-                                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
+                                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors cursor-pointer"
                                                             >
                                                                 <X className="h-4 w-4" />
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <div className="text-center p-4">
-                                                            <div className="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 mb-2">
-                                                                <Photo className="h-5 w-5 text-gray-400" />
+                                                        <div className={`text-center p-4 transition-all duration-200 ${
+                                                            isDraggingBanner ? 'transform scale-110' : ''
+                                                        }`}>
+                                                            <div className={`mx-auto flex items-center justify-center h-10 w-10 rounded-full mb-2 transition-all duration-200 ${
+                                                                isDraggingBanner 
+                                                                    ? 'bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300' 
+                                                                    : isUploadingImage 
+                                                                    ? 'bg-blue-100 dark:bg-blue-800 animate-pulse' 
+                                                                    : 'bg-gray-100 dark:bg-gray-700'
+                                                            }`}>
+                                                                {isUploadingImage ? (
+                                                                    <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                                                ) : (
+                                                                    <Photo className={`h-5 w-5 ${
+                                                                        isDraggingBanner ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-400'
+                                                                    }`} />
+                                                                )}
                                                             </div>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                Drag & drop or click to upload
+                                                            <p className={`text-sm transition-colors duration-200 ${
+                                                                isDraggingBanner 
+                                                                    ? 'text-indigo-600 dark:text-indigo-300 font-medium' 
+                                                                    : isUploadingImage 
+                                                                    ? 'text-blue-600 dark:text-blue-300' 
+                                                                    : 'text-gray-500 dark:text-gray-400'
+                                                            }`}>
+                                                                {isUploadingImage ? 'Uploading...' : isDraggingBanner ? 'Drop banner image here!' : 'Drag & drop or click to upload'}
                                                             </p>
                                                         </div>
                                                     )}
@@ -1419,7 +1403,7 @@ const Team: React.FC = () => {
                                                         ...newTeamMember,
                                                         previousJobs: [...newTeamMember.previousJobs, { title: '', company: '', startDate: '', endDate: '', description: '' }]
                                                     })}
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Job
@@ -1541,7 +1525,7 @@ const Team: React.FC = () => {
                                                         ...newTeamMember,
                                                         projectLinks: [...newTeamMember.projectLinks, { title: '', url: '', description: '' }]
                                                     })}
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Project
@@ -1632,7 +1616,7 @@ const Team: React.FC = () => {
                                                         ...newTeamMember,
                                                         education: [...newTeamMember.education, { degree: '', institution: '', startYear: 0, endYear: 0, description: '' }]
                                                     })}
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Education
@@ -1762,7 +1746,7 @@ const Team: React.FC = () => {
                                                         ...newTeamMember,
                                                         certifications: [...newTeamMember.certifications, { title: '', issuer: '', year: 0 }]
                                                     })}
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Certification
@@ -1857,7 +1841,7 @@ const Team: React.FC = () => {
                                                             languages: [...newTeamMember.languages, { name: '', proficiency: '' }],
                                                         })
                                                     }
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Language
@@ -1946,7 +1930,7 @@ const Team: React.FC = () => {
                                                         ...newTeamMember,
                                                         awards: [...newTeamMember.awards, { title: '', issuer: '', year: 0, description: '' }]
                                                     })}
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Award
@@ -2058,7 +2042,7 @@ const Team: React.FC = () => {
                                                         ...newTeamMember,
                                                         references: [...newTeamMember.references, { name: '', designation: '', contact: '' }]
                                                     })}
-                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="h-3.5 w-3.5" />
                                                     Add Reference
@@ -2140,16 +2124,26 @@ const Team: React.FC = () => {
                                         <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                             <button
                                                 type="button"
-                                                onClick={() => setIsAddModalOpen(false)}
-                                                className="px-5 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                                                onClick={() => !isAddingTeamMember && setIsAddModalOpen(false)}
+                                                disabled={isAddingTeamMember}
+                                                className={`px-5 py-2.5 text-sm font-medium rounded-lg border transition-colors ${
+                                                    isAddingTeamMember 
+                                                        ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer'
+                                                }`}
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 type="submit"
-                                                className="px-5 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                                                disabled={isAddingTeamMember}
+                                                className={`px-5 py-2.5 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors ${
+                                                    isAddingTeamMember 
+                                                        ? 'bg-indigo-400 cursor-not-allowed' 
+                                                        : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                                                }`}
                                             >
-                                                Add Profile
+                                                {isAddingTeamMember ? 'Adding...' : 'Add Profile'}
                                             </button>
                                         </div>
                                     </form>
@@ -2162,7 +2156,7 @@ const Team: React.FC = () => {
 
             {/* Update Team Member Modal */}
             <Transition appear show={isUpdateModalOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={() => setIsUpdateModalOpen(false)}>
+                <Dialog as="div" className="relative z-50" onClose={() => !isUpdatingTeamMember && setIsUpdateModalOpen(false)}>
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -2193,8 +2187,13 @@ const Team: React.FC = () => {
                                             Update Profile
                                         </Dialog.Title>
                                         <button
-                                            onClick={() => setIsUpdateModalOpen(false)}
-                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                            onClick={() => !isUpdatingTeamMember && setIsUpdateModalOpen(false)}
+                                            disabled={isUpdatingTeamMember}
+                                            className={`transition-colors ${
+                                                isUpdatingTeamMember 
+                                                    ? 'text-gray-300 cursor-not-allowed' 
+                                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                                            }`}
                                         >
                                             <X className="h-6 w-6" />
                                         </button>
@@ -2243,12 +2242,32 @@ const Team: React.FC = () => {
                                                                 </button>
                                                             </div>
                                                         ) : (
-                                                            <div className="text-center p-4">
-                                                                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 mb-3">
-                                                                    <Photo className="h-6 w-6 text-gray-400" />
+                                                            <div className={`text-center p-4 transition-all duration-200 ${
+                                                                isDraggingProfile ? 'transform scale-110' : ''
+                                                            }`}>
+                                                                <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-3 transition-all duration-200 ${
+                                                                    isDraggingProfile 
+                                                                        ? 'bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300' 
+                                                                        : isUploadingImage 
+                                                                        ? 'bg-blue-100 dark:bg-blue-800 animate-pulse' 
+                                                                        : 'bg-gray-100 dark:bg-gray-700'
+                                                                }`}>
+                                                                    {isUploadingImage ? (
+                                                                        <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                                                    ) : (
+                                                                        <Photo className={`h-6 w-6 ${
+                                                                            isDraggingProfile ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-400'
+                                                                        }`} />
+                                                                    )}
                                                                 </div>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                                                    Drag & drop or click to upload
+                                                                <p className={`text-sm mb-1 transition-colors duration-200 ${
+                                                                    isDraggingProfile 
+                                                                        ? 'text-indigo-600 dark:text-indigo-300 font-medium' 
+                                                                        : isUploadingImage 
+                                                                        ? 'text-blue-600 dark:text-blue-300' 
+                                                                        : 'text-gray-500 dark:text-gray-400'
+                                                                }`}>
+                                                                    {isUploadingImage ? 'Uploading...' : isDraggingProfile ? 'Drop image here!' : 'Drag & drop or click to upload'}
                                                                 </p>
                                                                 <p className="text-xs text-gray-400 dark:text-gray-500">
                                                                     PNG, JPG up to 5MB
@@ -2272,8 +2291,10 @@ const Team: React.FC = () => {
                                                         Banner Image
                                                     </label>
                                                     <div
-                                                        className={`relative h-32 rounded-xl border-2 border-dashed transition-all duration-200 ${isDraggingBanner
-                                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                                                        className={`relative h-32 rounded-xl border-2 border-dashed transition-all duration-300 ${isDraggingBanner
+                                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 scale-[1.02] shadow-lg border-4'
+                                                            : isUploadingImage
+                                                            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
                                                             : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                                                             } flex flex-col items-center justify-center cursor-pointer overflow-hidden group`}
                                                         onDragOver={(e) => handleDragOver(e, 'banner')}
@@ -2305,12 +2326,32 @@ const Team: React.FC = () => {
                                                                 </button>
                                                             </div>
                                                         ) : (
-                                                            <div className="text-center p-4">
-                                                                <div className="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 mb-2">
-                                                                    <Photo className="h-5 w-5 text-gray-400" />
+                                                            <div className={`text-center p-4 transition-all duration-200 ${
+                                                                isDraggingBanner ? 'transform scale-110' : ''
+                                                            }`}>
+                                                                <div className={`mx-auto flex items-center justify-center h-10 w-10 rounded-full mb-2 transition-all duration-200 ${
+                                                                    isDraggingBanner 
+                                                                        ? 'bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-300' 
+                                                                        : isUploadingImage 
+                                                                        ? 'bg-blue-100 dark:bg-blue-800 animate-pulse' 
+                                                                        : 'bg-gray-100 dark:bg-gray-700'
+                                                                }`}>
+                                                                    {isUploadingImage ? (
+                                                                        <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                                                    ) : (
+                                                                        <Photo className={`h-5 w-5 ${
+                                                                            isDraggingBanner ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-400'
+                                                                        }`} />
+                                                                    )}
                                                                 </div>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Drag & drop or click to upload
+                                                                <p className={`text-sm transition-colors duration-200 ${
+                                                                    isDraggingBanner 
+                                                                        ? 'text-indigo-600 dark:text-indigo-300 font-medium' 
+                                                                        : isUploadingImage 
+                                                                        ? 'text-blue-600 dark:text-blue-300' 
+                                                                        : 'text-gray-500 dark:text-gray-400'
+                                                                }`}>
+                                                                    {isUploadingImage ? 'Uploading...' : isDraggingBanner ? 'Drop banner image here!' : 'Drag & drop or click to upload'}
                                                                 </p>
                                                             </div>
                                                         )}
@@ -2866,7 +2907,7 @@ const Team: React.FC = () => {
                                                             ...selectedTeamMember,
                                                             certifications: [...selectedTeamMember.certifications, { title: '', issuer: '', year: 0 }]
                                                         })}
-                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                     >
                                                         <Plus className="h-3.5 w-3.5" />
                                                         Add Certification
@@ -2959,7 +3000,7 @@ const Team: React.FC = () => {
                                                             ...selectedTeamMember,
                                                             languages: [...selectedTeamMember.languages, { name: '', proficiency: '' }]
                                                         })}
-                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                     >
                                                         <Plus className="h-3.5 w-3.5" />
                                                         Add Language
@@ -3036,7 +3077,7 @@ const Team: React.FC = () => {
                                                             ...selectedTeamMember,
                                                             awards: [...selectedTeamMember.awards, { title: '', issuer: '', year: 0, description: '' }]
                                                         })}
-                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                     >
                                                         <Plus className="h-3.5 w-3.5" />
                                                         Add Award
@@ -3148,7 +3189,7 @@ const Team: React.FC = () => {
                                                             ...selectedTeamMember,
                                                             references: [...selectedTeamMember.references, { name: '', designation: '', contact: '' }]
                                                         })}
-                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                                                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors cursor-pointer"
                                                     >
                                                         <Plus className="h-3.5 w-3.5" />
                                                         Add Reference
@@ -3230,16 +3271,26 @@ const Team: React.FC = () => {
                                             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                                 <button
                                                     type="button"
-                                                    onClick={() => setIsUpdateModalOpen(false)}
-                                                    className="px-5 py-2.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                                                    onClick={() => !isUpdatingTeamMember && setIsUpdateModalOpen(false)}
+                                                    disabled={isUpdatingTeamMember}
+                                                    className={`px-5 py-2.5 text-sm font-medium rounded-lg border transition-colors ${
+                                                        isUpdatingTeamMember 
+                                                            ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer'
+                                                    }`}
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     type="submit"
-                                                    className="px-5 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                                                    disabled={isUpdatingTeamMember}
+                                                    className={`px-5 py-2.5 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors ${
+                                                        isUpdatingTeamMember 
+                                                            ? 'bg-indigo-400 cursor-not-allowed' 
+                                                            : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                                                    }`}
                                                 >
-                                                    Update Profile
+                                                    {isUpdatingTeamMember ? 'Updating...' : 'Update Profile'}
                                                 </button>
                                             </div>
                                         </form>
@@ -3253,7 +3304,7 @@ const Team: React.FC = () => {
 
             {/* Delete Confirmation Modal */}
             <Transition appear show={isDeleteModalOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={() => setIsDeleteModalOpen(false)}>
+                <Dialog as="div" className="relative z-50" onClose={() => !isDeletingTeamMember && setIsDeleteModalOpen(false)}>
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -3288,17 +3339,27 @@ const Team: React.FC = () => {
                                     <div className="mt-6 flex justify-end gap-4">
                                         <button
                                             type="button"
-                                            onClick={() => setIsDeleteModalOpen(false)}
-                                            className="inline-flex justify-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                            onClick={() => !isDeletingTeamMember && setIsDeleteModalOpen(false)}
+                                            disabled={isDeletingTeamMember}
+                                            className={`inline-flex justify-center rounded-lg border px-6 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300 ${
+                                                isDeletingTeamMember 
+                                                    ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                                    : 'border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transform hover:scale-105 cursor-pointer'
+                                            }`}
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handleDeleteConfirm}
-                                            className="inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-red-500 to-red-600 px-6 py-3 text-sm font-semibold text-white hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                            disabled={isDeletingTeamMember}
+                                            className={`inline-flex justify-center rounded-lg border border-transparent px-6 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300 ${
+                                                isDeletingTeamMember 
+                                                    ? 'bg-red-400 cursor-not-allowed text-white' 
+                                                    : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transform hover:scale-105 cursor-pointer'
+                                            }`}
                                         >
-                                            Delete Team Member
+                                            {isDeletingTeamMember ? 'Deleting...' : 'Delete Team Member'}
                                         </button>
                                     </div>
                                 </Dialog.Panel>

@@ -65,7 +65,26 @@ export async function getUserById(id: string) {
         const collection = db.collection(COLLECTION);
 
         // Use 'any' to bypass type error for ObjectId in filter
-        return await collection.findOne({ _id: new ObjectId(id) } as any);
+        const user = await collection.findOne({ _id: new ObjectId(id) } as any);
+        
+        if (!user) {
+            return null;
+        }
+
+        // Map database fields to expected frontend fields
+        const nameParts = (user.name || '').split(' ');
+        const mappedUser = {
+            ...user,
+            userId: user._id.toString(),
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            profileImage: user.picture || null,
+            // Keep original fields for backward compatibility
+            name: user.name,
+            picture: user.picture
+        };
+
+        return mappedUser;
     } catch (error) {
         console.error("Error getting user by id:", error);
         throw error;
@@ -173,7 +192,7 @@ export async function updateUserAdminStatus(id: string, isAdmin: boolean): Promi
 }
 
 // Update user profile (name, email, image)
-export async function updateUserProfile(id: string, profileData: { firstName?: string; lastName?: string; email?: string; image?: string }): Promise<User | null> {
+export async function updateUserProfile(id: string, profileData: { firstName?: string; lastName?: string; email?: string; profileImage?: string; bio?: string; publicId?: string; isAdmin?: boolean; status?: boolean; designations?: string[] }): Promise<User | null> {
     try {
         const client = await clientPromise;
         const db = client.db(DB_NAME);
@@ -196,11 +215,30 @@ export async function updateUserProfile(id: string, profileData: { firstName?: s
             }
         }
 
-        // Prepare update object
+        // Prepare update object with field conversion
         const updateObject: any = {
-            ...profileData,
             updatedAt: new Date()
         };
+
+        // Convert firstName + lastName to name field (for compatibility with existing storage)
+        if (profileData.firstName !== undefined || profileData.lastName !== undefined) {
+            const firstName = profileData.firstName || '';
+            const lastName = profileData.lastName || '';
+            updateObject.name = `${firstName} ${lastName}`.trim();
+        }
+
+        // Convert profileImage to picture field (for compatibility with existing storage)
+        if (profileData.profileImage !== undefined) {
+            updateObject.picture = profileData.profileImage;
+        }
+
+        // Add other fields directly
+        if (profileData.email !== undefined) updateObject.email = profileData.email;
+        if (profileData.bio !== undefined) updateObject.bio = profileData.bio;
+        if (profileData.publicId !== undefined) updateObject.publicId = profileData.publicId;
+        if (profileData.isAdmin !== undefined) updateObject.isAdmin = profileData.isAdmin;
+        if (profileData.status !== undefined) updateObject.status = profileData.status;
+        if (profileData.designations !== undefined) updateObject.designations = profileData.designations;
 
         // Remove undefined fields
         Object.keys(updateObject).forEach(key => {

@@ -56,13 +56,17 @@ interface Reference {
 
 interface User {
   _id?: ObjectId;
-  userId: string;
   firstName?: string;
   lastName?: string;
   email?: string;
   bio?: string;
   profileImage?: string | null;
   publicIdProfile?: string | null;
+  isAdmin?: boolean;
+  status?: boolean;
+  designations?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 interface Team {
@@ -100,6 +104,7 @@ interface TeamsResponse {
 
 interface PostRequestBody {
   userId: string;
+  // Team-specific fields
   banner?: string;
   publicIdBanner?: string;
   slug?: string;
@@ -114,6 +119,12 @@ interface PostRequestBody {
   references?: Reference[];
   supportiveEmail: string;
   designation?: string;
+  // User-specific fields (to update users collection)
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  profileImage?: string;
+  publicIdProfile?: string;
   debug?: boolean;
 }
 
@@ -156,12 +167,12 @@ export async function GET(req: NextRequest) {
     const teamsCollection = db.collection<Team>(COLLECTION);
     const usersCollection = db.collection<User>('users');
 
-    // Build query for search
+    // Build query for search (team-specific fields + user search via user lookup)
     const query: Partial<Team> & { $or?: any[] } = {};
     if (search) {
       const searchRegex = new RegExp(search, 'i');
 
-      // Search users by name, email, bio
+      // First, find users that match the search criteria
       const matchingUsers = await usersCollection
         .find({
           $or: [
@@ -171,17 +182,18 @@ export async function GET(req: NextRequest) {
             { bio: searchRegex },
           ],
         })
-        .project<Pick<User, 'userId'>>({ userId: 1 })
+        .project({ _id: 1 })
         .toArray();
 
-      const matchingUserIds = matchingUsers.map((u) => u.userId);
+      const matchingUserIds = matchingUsers.map((u) => u._id.toString());
 
-      // Search teams by userId, supportiveEmail, slug, designation
+      // Search both team-specific fields and matching user IDs
       query.$or = [
-        { userId: { $in: matchingUserIds } },
-        { supportiveEmail: searchRegex },
+        { userId: { $in: matchingUserIds } }, // Users matching search
+        { supportiveEmail: searchRegex },      // Team fields
         { slug: searchRegex },
         { designation: searchRegex },
+        { skills: { $elemMatch: { $regex: searchRegex } } },
       ];
     }
 
@@ -196,17 +208,22 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .toArray();
 
-    // Enrich team data with user data
+    // Fetch user data for each team member and combine with team data
     const formattedTeams = await Promise.all(
       teams.map(async (team: WithId<Team>) => {
-        const user = await usersCollection.findOne({ userId: team.userId });
+        const user = await usersCollection.findOne({ _id: new ObjectId(team.userId) });
+        // Get firstName and lastName directly from user data
+        const firstName = user?.firstName || '';
+        const lastName = user?.lastName || '';
+        
         return {
           ...team,
           _id: team._id.toString(),
           slug: team.slug,
           designation: team.designation || '',
-          firstName: user?.firstName || '',
-          lastName: user?.lastName || '',
+          // User data from users collection
+          firstName,
+          lastName,
           email: user?.email || '',
           bio: user?.bio || '',
           profileImage: user?.profileImage || null,
@@ -261,9 +278,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validation for team-specific fields
+    // Validation for required fields
     if (!userId || typeof userId !== 'string') {
       return NextResponse.json({ error: 'Valid userId is required' }, { status: 400 });
+    }
+    
+    // Validation for user fields (if provided)
+    if (body.firstName && (typeof body.firstName !== 'string' || body.firstName.length < 1)) {
+      return NextResponse.json({ error: 'First name must be a non-empty string' }, { status: 400 });
+    }
+    if (body.lastName && (typeof body.lastName !== 'string' || body.lastName.length < 1)) {
+      return NextResponse.json({ error: 'Last name must be a non-empty string' }, { status: 400 });
+    }
+    if (body.bio && (typeof body.bio !== 'string' || body.bio.length > 500)) {
+      return NextResponse.json({ error: 'Bio must be a string and less than 500 characters' }, { status: 400 });
+    }
+    if (body.profileImage && typeof body.profileImage !== 'string') {
+      return NextResponse.json({ error: 'Profile image must be a string' }, { status: 400 });
     }
     if (banner && (typeof banner !== 'string' || banner.length > 1000)) {
       return NextResponse.json({ error: 'Banner URL must be a string and less than 1000 characters' }, { status: 400 });
@@ -328,14 +359,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User already has a team profile' }, { status: 400 });
     }
 
-    // Fetch user data to get firstName and lastName
-    const user = await db.collection<User>('users').findOne({ _id: new ObjectId(userId) });
-    if (!user) {
+    // Fetch existing user data
+    const usersCollection = db.collection<User>('users');
+    const existingUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    if (!existingUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Update user data if provided
+    if (body.firstName || body.lastName || body.bio || body.profileImage || body.publicIdProfile) {
+      const updateData: any = {
+        updatedAt: new Date()
+      };
+      
+      // Update firstName and lastName fields directly
+      if (body.firstName !== undefined) updateData.firstName = body.firstName;
+      if (body.lastName !== undefined) updateData.lastName = body.lastName;
+      
+      if (body.bio !== undefined) updateData.bio = body.bio;
+      if (body.profileImage !== undefined) updateData.profileImage = body.profileImage;
+      if (body.publicIdProfile !== undefined) updateData.publicIdProfile = body.publicIdProfile;
+      
+      // Update user in database
+      await usersCollection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: updateData }
+      );
+    }
+
+    // Get updated user data for slug generation
+    const updatedUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    const firstName = updatedUser?.firstName || '';
+    const lastName = updatedUser?.lastName || '';
+
     // Generate slug (use providedSlug if valid, otherwise generate from firstName and lastName)
-    let slug = providedSlug || generateSlug(user.firstName || '', user.lastName || '');
+    let slug = providedSlug || generateSlug(firstName, lastName);
     slug = await ensureUniqueSlug(db, slug);
 
     // Create team object

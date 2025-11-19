@@ -30,14 +30,14 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       userId: user.userId || user._id?.toString?.() || '',
       firstName: user.firstName || 'Unknown',
       lastName: user.lastName || 'User',
-      email: user.email || 'N/A',
-      bio: user.bio || 'No bio available',
+      email: (user as any).email || 'N/A',
+      bio: (user as any).bio || 'No bio available',
       avatar:
         user.profileImage && typeof user.profileImage === 'string' && user.profileImage.trim() !== ''
           ? user.profileImage
           : null,
-      designations: user.designations || [],
-      publicId: user.publicId || '',
+      designations: (user as any).designations || [],
+      publicId: (user as any).publicId || '',
     };
 
     return NextResponse.json(userData, { status: 200 });
