@@ -29,15 +29,17 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     const userData = {
       userId: user.userId || user._id?.toString?.() || '',
       firstName: user.firstName || 'Unknown',
-      lastName: user.lastName || 'User',
+      lastName: user.lastName || 'User', 
       email: (user as any).email || 'N/A',
       bio: (user as any).bio || 'No bio available',
-      avatar:
-        user.profileImage && typeof user.profileImage === 'string' && user.profileImage.trim() !== ''
-          ? user.profileImage
-          : null,
+      avatar: user.profileImage || user.avatar || null,
+      profileImage: user.profileImage || user.avatar || null,
       designations: (user as any).designations || [],
-      publicId: (user as any).publicId || '',
+      publicId: (user as any).publicId || (user as any).publicIdProfile || null,
+      isAdmin: (user as any).isAdmin || false,
+      status: (user as any).status !== undefined ? (user as any).status : true,
+      createdAt: (user as any).createdAt,
+      updatedAt: (user as any).updatedAt,
     };
 
     return NextResponse.json(userData, { status: 200 });

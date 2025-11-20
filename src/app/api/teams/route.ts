@@ -58,10 +58,13 @@ interface User {
   _id?: ObjectId;
   firstName?: string;
   lastName?: string;
+  name?: string; // For backward compatibility
   email?: string;
   bio?: string;
   profileImage?: string | null;
+  picture?: string | null; // For backward compatibility
   publicIdProfile?: string | null;
+  publicId?: string | null; // For backward compatibility
   isAdmin?: boolean;
   status?: boolean;
   designations?: string[];
@@ -211,24 +214,76 @@ export async function GET(req: NextRequest) {
     // Fetch user data for each team member and combine with team data
     const formattedTeams = await Promise.all(
       teams.map(async (team: WithId<Team>) => {
-        const user = await usersCollection.findOne({ _id: new ObjectId(team.userId) });
-        // Get firstName and lastName directly from user data
-        const firstName = user?.firstName || '';
-        const lastName = user?.lastName || '';
-        
-        return {
-          ...team,
-          _id: team._id.toString(),
-          slug: team.slug,
-          designation: team.designation || '',
-          // User data from users collection
-          firstName,
-          lastName,
-          email: user?.email || '',
-          bio: user?.bio || '',
-          profileImage: user?.profileImage || null,
-          publicIdProfile: user?.publicIdProfile || null,
-        };
+        try {
+          const user = await usersCollection.findOne({ _id: new ObjectId(team.userId) });
+          
+          // Extract firstName and lastName from user data
+          let firstName = '';
+          let lastName = '';
+          
+          if (user) {
+            if (user.firstName && user.lastName) {
+              firstName = user.firstName;
+              lastName = user.lastName;
+            } else if (user.name) {
+              const nameParts = user.name.trim().split(' ');
+              firstName = nameParts[0] || '';
+              lastName = nameParts.slice(1).join(' ') || '';
+            }
+          }
+          
+          return {
+            ...team,
+            _id: team._id.toString(),
+            userId: team.userId,
+            slug: team.slug,
+            designation: team.designation || '',
+            // User data from users collection with fallbacks
+            firstName: firstName || 'Unknown',
+            lastName: lastName || 'User',
+            email: user?.email || 'N/A',
+            bio: user?.bio || 'No bio available.',
+            profileImage: user?.profileImage || user?.picture || null,
+            avatar: user?.profileImage || user?.picture || null,
+            publicIdProfile: user?.publicIdProfile || user?.publicId || null,
+            // Ensure all team arrays are properly initialized
+            skills: Array.isArray(team.skills) ? team.skills : [],
+            previousJobs: Array.isArray(team.previousJobs) ? team.previousJobs : [],
+            projectLinks: Array.isArray(team.projectLinks) ? team.projectLinks : [],
+            education: Array.isArray(team.education) ? team.education : [],
+            certifications: Array.isArray(team.certifications) ? team.certifications : [],
+            languages: Array.isArray(team.languages) ? team.languages : [],
+            hobbies: Array.isArray(team.hobbies) ? team.hobbies : [],
+            awards: Array.isArray(team.awards) ? team.awards : [],
+            references: Array.isArray(team.references) ? team.references : [],
+          };
+        } catch (error) {
+          console.error(`Error fetching user data for team member ${team.userId}:`, error);
+          // Return team data with default user values if user fetch fails
+          return {
+            ...team,
+            _id: team._id.toString(),
+            userId: team.userId,
+            slug: team.slug,
+            designation: team.designation || '',
+            firstName: 'Unknown',
+            lastName: 'User',
+            email: 'N/A',
+            bio: 'No bio available.',
+            profileImage: null,
+            avatar: null,
+            publicIdProfile: null,
+            skills: Array.isArray(team.skills) ? team.skills : [],
+            previousJobs: Array.isArray(team.previousJobs) ? team.previousJobs : [],
+            projectLinks: Array.isArray(team.projectLinks) ? team.projectLinks : [],
+            education: Array.isArray(team.education) ? team.education : [],
+            certifications: Array.isArray(team.certifications) ? team.certifications : [],
+            languages: Array.isArray(team.languages) ? team.languages : [],
+            hobbies: Array.isArray(team.hobbies) ? team.hobbies : [],
+            awards: Array.isArray(team.awards) ? team.awards : [],
+            references: Array.isArray(team.references) ? team.references : [],
+          };
+        }
       })
     );
 
@@ -368,23 +423,45 @@ export async function POST(req: NextRequest) {
 
     // Update user data if provided
     if (body.firstName || body.lastName || body.bio || body.profileImage || body.publicIdProfile) {
-      const updateData: any = {
-        updatedAt: new Date()
-      };
-      
-      // Update firstName and lastName fields directly
-      if (body.firstName !== undefined) updateData.firstName = body.firstName;
-      if (body.lastName !== undefined) updateData.lastName = body.lastName;
-      
-      if (body.bio !== undefined) updateData.bio = body.bio;
-      if (body.profileImage !== undefined) updateData.profileImage = body.profileImage;
-      if (body.publicIdProfile !== undefined) updateData.publicIdProfile = body.publicIdProfile;
-      
-      // Update user in database
-      await usersCollection.updateOne(
-        { _id: new ObjectId(userId) },
-        { $set: updateData }
-      );
+      try {
+        const updateData: any = {
+          updatedAt: new Date()
+        };
+        
+        // Update firstName and lastName fields directly
+        if (body.firstName !== undefined) updateData.firstName = body.firstName;
+        if (body.lastName !== undefined) updateData.lastName = body.lastName;
+        
+        // Update name field for backward compatibility
+        if (body.firstName !== undefined || body.lastName !== undefined) {
+          const firstName = body.firstName || existingUser.firstName || '';
+          const lastName = body.lastName || existingUser.lastName || '';
+          updateData.name = `${firstName} ${lastName}`.trim();
+        }
+        
+        if (body.bio !== undefined) updateData.bio = body.bio;
+        if (body.profileImage !== undefined) {
+          updateData.profileImage = body.profileImage;
+          updateData.picture = body.profileImage; // For backward compatibility
+        }
+        if (body.publicIdProfile !== undefined) {
+          updateData.publicIdProfile = body.publicIdProfile;
+          updateData.publicId = body.publicIdProfile; // For backward compatibility
+        }
+        
+        // Update user in database
+        const userUpdateResult = await usersCollection.updateOne(
+          { _id: new ObjectId(userId) },
+          { $set: updateData }
+        );
+        
+        if (userUpdateResult.matchedCount === 0) {
+          return NextResponse.json({ error: 'Failed to update user data' }, { status: 500 });
+        }
+      } catch (error) {
+        console.error('Error updating user data:', error);
+        return NextResponse.json({ error: 'Failed to update user information' }, { status: 500 });
+      }
     }
 
     // Get updated user data for slug generation

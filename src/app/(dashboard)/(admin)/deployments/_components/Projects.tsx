@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useState, useEffect, Fragment, useMemo } from 'react';
-import { Search, Edit, Trash2, Plus, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Search, Edit, Trash2, Plus, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react';
 import { Dialog, Listbox, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { toast, ToastContainer } from 'react-toastify';
@@ -37,12 +37,31 @@ interface Milestone {
     date: string;
 }
 
+interface AuthorData {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    name: string;
+    avatar?: string | null;
+}
+
+interface ClientData {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    name: string;
+    avatar?: string | null;
+}
+
 interface Project {
     _id: string;
     title: string;
     author: string; // userId
+    authorData?: AuthorData; // Enriched author information
     coAuthors: string[]; // array of userIds
+    coAuthorDetails?: AuthorData[]; // Enriched co-author information
     client: string; // clientId
+    clientData?: ClientData; // Enriched client information
     startDate?: string;
     deadline?: string;
     deliveryDate?: string;
@@ -149,6 +168,7 @@ const Projects: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
+    const [avatarErrors, setAvatarErrors] = useState<Record<string, boolean>>({});
     const categories = ['Web Development', 'Mobile Development', 'Backend', 'Frontend', 'Fullstack', 'Design', 'Other'];
     const statusOptions = ['ongoing', 'completed', 'paused', 'cancelled'];
     const priorityOptions = ['low', 'medium', 'high'];
@@ -275,7 +295,102 @@ const Projects: React.FC = () => {
                 );
                 if (response.ok) {
                     const data = await response.json();
-                    setProjects(data.projects || []);
+                    const rawProjects = data.projects || [];
+                    
+                    // Fetch author and client details for each project
+                    const projectsWithDetails = await Promise.all(
+                        rawProjects.map(async (project: Project) => {
+                            const enrichedProject = { ...project };
+                            
+                            // Fetch author data
+                            try {
+                                const authorResponse = await fetch(`/api/users/${project.author}`);
+                                if (authorResponse.ok) {
+                                    const authorData = await authorResponse.json();
+                                    enrichedProject.authorData = {
+                                        userId: authorData.userId,
+                                        firstName: authorData.firstName || 'Unknown',
+                                        lastName: authorData.lastName || 'User',
+                                        name: `${authorData.firstName || 'Unknown'} ${authorData.lastName || 'User'}`.trim(),
+                                        avatar: authorData.avatar || authorData.profileImage || null,
+                                    };
+                                }
+                            } catch (error) {
+                                console.error(`Failed to fetch author for project ${project._id}:`, error);
+                                enrichedProject.authorData = {
+                                    userId: project.author,
+                                    firstName: 'Unknown',
+                                    lastName: 'User',
+                                    name: 'Unknown User',
+                                    avatar: null,
+                                };
+                            }
+                            
+                            // Fetch client data
+                            try {
+                                const clientResponse = await fetch(`/api/users/${project.client}`);
+                                if (clientResponse.ok) {
+                                    const clientData = await clientResponse.json();
+                                    enrichedProject.clientData = {
+                                        userId: clientData.userId,
+                                        firstName: clientData.firstName || 'Unknown',
+                                        lastName: clientData.lastName || 'Client',
+                                        name: `${clientData.firstName || 'Unknown'} ${clientData.lastName || 'Client'}`.trim(),
+                                        avatar: clientData.avatar || clientData.profileImage || null,
+                                    };
+                                }
+                            } catch (error) {
+                                console.error(`Failed to fetch client for project ${project._id}:`, error);
+                                enrichedProject.clientData = {
+                                    userId: project.client,
+                                    firstName: 'Unknown',
+                                    lastName: 'Client',
+                                    name: 'Unknown Client',
+                                    avatar: null,
+                                };
+                            }
+                            
+                            // Fetch co-author details
+                            if (project.coAuthors && project.coAuthors.length > 0) {
+                                try {
+                                    const coAuthorDetails = await Promise.all(
+                                        project.coAuthors.map(async (coAuthorId) => {
+                                            try {
+                                                const coAuthorResponse = await fetch(`/api/users/${coAuthorId}`);
+                                                if (coAuthorResponse.ok) {
+                                                    const coAuthorData = await coAuthorResponse.json();
+                                                    return {
+                                                        userId: coAuthorData.userId,
+                                                        firstName: coAuthorData.firstName || 'Unknown',
+                                                        lastName: coAuthorData.lastName || 'User',
+                                                        name: `${coAuthorData.firstName || 'Unknown'} ${coAuthorData.lastName || 'User'}`.trim(),
+                                                        avatar: coAuthorData.avatar || coAuthorData.profileImage || null,
+                                                    };
+                                                }
+                                            } catch (error) {
+                                                console.error(`Failed to fetch co-author ${coAuthorId}:`, error);
+                                            }
+                                            return {
+                                                userId: coAuthorId,
+                                                firstName: 'Unknown',
+                                                lastName: 'User',
+                                                name: 'Unknown User',
+                                                avatar: null,
+                                            };
+                                        })
+                                    );
+                                    enrichedProject.coAuthorDetails = coAuthorDetails;
+                                } catch (error) {
+                                    console.error(`Failed to fetch co-authors for project ${project._id}:`, error);
+                                    enrichedProject.coAuthorDetails = [];
+                                }
+                            }
+                            
+                            return enrichedProject;
+                        })
+                    );
+                    
+                    setProjects(projectsWithDetails);
                     setTotalPages(data.totalPages || 1);
                 } else {
                     const errorData = await response.json();
@@ -755,70 +870,241 @@ const Projects: React.FC = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {projects.map((project) => (
-                                    <div
-                                        key={project._id}
-                                        className="group rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-                                    >
-                                        {project.imageUrl && (
-                                            <div className="relative w-full h-52 rounded-2xl overflow-hidden mb-4 group-hover:shadow-lg">
-                                                <Image
-                                                    src={project.imageUrl}
-                                                    alt={project.title}
-                                                    fill
-                                                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                {projects.map((project) => {
+                                    const authorName = project.authorData?.name || getUserName(project.author);
+                                    const isValidAvatar = project.authorData?.avatar && 
+                                        typeof project.authorData.avatar === 'string' && 
+                                        project.authorData.avatar.trim() !== '' && 
+                                        !avatarErrors[project._id];
+                                    
+                                    const authorInitials = authorName
+                                        ? authorName.split(' ')
+                                            .map(n => n[0])
+                                            .join('')
+                                            .slice(0, 2)
+                                            .toUpperCase()
+                                        : 'AU';
+
+                                    return (
+                                        <div
+                                            key={project._id}
+                                            className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
+                                        >
+                                            {/* Project Cover Image with Overlay */}
+                                            <div className="relative w-full h-48 overflow-hidden">
+                                                {project.imageUrl ? (
+                                                    <>
+                                                        <Image
+                                                            src={project.imageUrl}
+                                                            alt={project.title}
+                                                            fill
+                                                            className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                                    </>
+                                                ) : (
+                                                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                                        <div className="text-white text-4xl font-bold opacity-20">
+                                                            {project.title.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Status Badge on Image */}
+                                                <div className="absolute top-4 right-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full backdrop-blur-md ${
+                                                        project.status === 'completed' 
+                                                            ? 'bg-green-500/20 text-green-100 border border-green-400/30'
+                                                            : project.status === 'ongoing'
+                                                            ? 'bg-blue-500/20 text-blue-100 border border-blue-400/30'
+                                                            : project.status === 'paused'
+                                                            ? 'bg-yellow-500/20 text-yellow-100 border border-yellow-400/30'
+                                                            : 'bg-red-500/20 text-red-100 border border-red-400/30'
+                                                    }`}>
+                                                        {project.status}
+                                                    </span>
+                                                </div>
+                                                
+                                                {/* Author Avatar Overlay */}
+                                                <div className="absolute bottom-4 left-4 flex items-center gap-3">
+                                                    <div className="relative w-10 h-10 rounded-full bg-white dark:bg-gray-800 p-0.5 shadow-lg">
+                                                        <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
+                                                            {isValidAvatar ? (
+                                                                <Image
+                                                                    src={project.authorData!.avatar!}
+                                                                    alt={authorName}
+                                                                    width={26}
+                                                                    height={26}
+                                                                    className="object-cover w-9 h-9 rounded-full"
+                                                                    onError={() => {
+                                                                        setAvatarErrors(prev => ({ ...prev, [project._id]: true }));
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="text-white font-bold text-sm">
+                                                                    {authorInitials}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-white">
+                                                        <p className="text-sm font-semibold drop-shadow-md">{authorName}</p>
+                                                        <p className="text-xs opacity-90 drop-shadow-md">Project Lead</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        )}
-                                        <h4 className="text-xl font-semibold text-gray-900 dark:text-white truncate tracking-tight" title={project.title}>
-                                            {project.title}
-                                        </h4>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                            {getUserName(project.author)}
-                                        </p>
-                                        <p className="text-sm text-gray-400 dark:text-gray-500">
-                                            {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'No start date'}
-                                        </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-2" title={project.description}>
-                                            {project.description}
-                                        </p>
-                                        <div className="flex flex-wrap gap-2 mt-3">
-                                            <span className="text-xs rounded-full px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 font-medium shadow-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer">
-                                                {project.category}
-                                            </span>
-                                            <span className="text-xs rounded-full px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 font-medium shadow-sm hover:bg-green-200 dark:hover:bg-green-800/50 transition-all duration-200 cursor-pointer">
-                                                {project.status}
-                                            </span>
-                                            {project.techStack.map((tech, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="text-xs rounded-full px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 font-medium shadow-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer"
-                                                >
-                                                    {tech}
-                                                </span>
-                                            ))}
+
+                                            {/* Project Content */}
+                                            <div className="p-6">
+                                                {/* Project Title & Date */}
+                                                <div className="mb-4">
+                                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2" title={project.title}>
+                                                        {project.title}
+                                                    </h3>
+                                                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 gap-4">
+                                                        <span className="flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3" />
+                                                            {project.startDate ? new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No start date'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Project Description */}
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 leading-relaxed" title={project.description}>
+                                                    {project.description}
+                                                </p>
+                                            
+                                                {/* Tech Stack & Category */}
+                                                <div className="flex flex-wrap gap-1.5 mb-4">
+                                                    <span className="inline-flex items-center text-xs rounded-md px-2.5 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-sm">
+                                                        {project.category}
+                                                    </span>
+                                                    {project.techStack.slice(0, 3).map((tech, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="inline-flex items-center text-xs rounded-md px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                                        >
+                                                            {tech}
+                                                        </span>
+                                                    ))}
+                                                    {project.techStack.length > 3 && (
+                                                        <span className="inline-flex items-center text-xs rounded-md px-2.5 py-1 bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 font-medium border border-gray-200 dark:border-gray-700">
+                                                            +{project.techStack.length - 3}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Team & Client Info */}
+                                                <div className="space-y-3 mb-4">
+                                                    {/* Co-Authors */}
+                                                    {project.coAuthorDetails && project.coAuthorDetails.length > 0 && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 min-w-0 flex-shrink-0">Team:</span>
+                                                            <div className="flex -space-x-1.5 overflow-hidden">
+                                                                {project.coAuthorDetails.slice(0, 4).map((coAuthor, index) => {
+                                                                    const coAuthorInitials = coAuthor.name
+                                                                        ? coAuthor.name.split(' ')
+                                                                            .map(n => n[0])
+                                                                            .join('')
+                                                                            .slice(0, 2)
+                                                                            .toUpperCase()
+                                                                        : 'CA';
+                                                                    
+                                                                    return (
+                                                                        <div
+                                                                            key={index}
+                                                                            className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center ring-2 ring-white dark:ring-gray-900 overflow-hidden shadow-sm"
+                                                                            title={coAuthor.name}
+                                                                        >
+                                                                            {coAuthor.avatar && !avatarErrors[`coauthor-${project._id}-${index}`] ? (
+                                                                                <Image
+                                                                                    src={coAuthor.avatar}
+                                                                                    alt={coAuthor.name}
+                                                                                    width={28}
+                                                                                    height={28}
+                                                                                    className="object-cover w-7 h-7 rounded-full"
+                                                                                    onError={() => {
+                                                                                        setAvatarErrors(prev => ({ ...prev, [`coauthor-${project._id}-${index}`]: true }));
+                                                                                    }}
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="text-white font-bold text-xs">
+                                                                                    {coAuthorInitials}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                                {project.coAuthorDetails.length > 4 && (
+                                                                    <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center ring-2 ring-white dark:ring-gray-900 shadow-sm">
+                                                                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
+                                                                            +{project.coAuthorDetails.length - 4}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Client Info */}
+                                                    {project.clientData && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 min-w-0 flex-shrink-0">Client:</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center overflow-hidden shadow-sm">
+                                                                    {project.clientData.avatar && !avatarErrors[`client-${project._id}`] ? (
+                                                                        <Image
+                                                                            src={project.clientData.avatar}
+                                                                            alt={project.clientData.name}
+                                                                            width={20}
+                                                                            height={20}
+                                                                            className="object-cover w-5 h-5 rounded-full"
+                                                                            onError={() => {
+                                                                                setAvatarErrors(prev => ({ ...prev, [`client-${project._id}`]: true }));
+                                                                            }}
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="text-white font-bold text-xs">
+                                                                            {project.clientData.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                                                                    {project.clientData.name}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                {!isLoading && isAuthenticated && user?.userId && project.author && user.userId === project.author && (
+                                                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                                                            <span>Created {new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => handleUpdateProject(project._id)}
+                                                                className="flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 cursor-pointer group"
+                                                                title="Edit Project"
+                                                            >
+                                                                <Edit className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteProject(project._id)}
+                                                                className="flex items-center justify-center h-8 w-8 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all duration-200 cursor-pointer group"
+                                                                title="Delete Project"
+                                                            >
+                                                                <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        {!isLoading && isAuthenticated && user?.userId && project.author && user.userId === project.author && (
-                                            <div className="flex items-center justify-end gap-3 mt-4">
-                                                <button
-                                                    onClick={() => handleUpdateProject(project._id)}
-                                                    className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all duration-200 cursor-pointer"
-                                                    title="Edit Project"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteProject(project._id)}
-                                                    className="flex items-center justify-center h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/50 transition-all duration-200 cursor-pointer"
-                                                    title="Delete Project"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

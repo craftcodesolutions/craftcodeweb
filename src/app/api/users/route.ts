@@ -156,16 +156,21 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user object
+    // Create user object with consistent field mapping
     const userData = {
-      name: `${firstName} ${lastName}`,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      name: `${firstName} ${lastName}`.trim(), // For backward compatibility
       email: email.toLowerCase(),
       password: hashedPassword,
-      picture: picture || '',
+      profileImage: picture || null,
+      picture: picture || null, // For backward compatibility
       bio: bio || '',
       isAdmin: false,
       status: true,
       designations: [], // Initialize designations
+      publicId: null,
+      publicIdProfile: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -191,13 +196,19 @@ export async function POST(req: NextRequest) {
       success: true, 
       message: 'User created successfully',
       userId: result.insertedId.toString(),
-      firstName,
-      lastName,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      name: `${firstName} ${lastName}`.trim(),
       email: email.toLowerCase(),
       isAdmin: false,
-      profileImage: picture || '',
+      profileImage: picture || null,
+      avatar: picture || null,
+      picture: picture || null,
       bio: bio || '',
       designations: [],
+      status: true,
+      publicId: null,
+      publicIdProfile: null,
       createdAt: new Date(),
       updatedAt: new Date()
     }, { status: 201 });
@@ -284,10 +295,31 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .toArray();
 
-    const formattedUsers = users.map((user) => ({
-      ...user,
-      _id: user._id.toString(),
-    }));
+    const formattedUsers = users.map((user) => {
+      // Extract firstName and lastName from name field if not available
+      let firstName = user.firstName || '';
+      let lastName = user.lastName || '';
+      
+      if (!firstName && !lastName && user.name) {
+        const nameParts = user.name.trim().split(' ');
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+      }
+      
+      return {
+        ...user,
+        _id: user._id.toString(),
+        userId: user._id.toString(),
+        firstName,
+        lastName,
+        profileImage: user.profileImage || user.picture || null,
+        avatar: user.profileImage || user.picture || null,
+        publicId: user.publicId || user.publicIdProfile || null,
+        bio: user.bio || '',
+        designations: user.designations || [],
+        name: user.name || `${firstName} ${lastName}`.trim(),
+      };
+    });
 
     // Get lastId for next page (cursor-based)
     const nextLastId = formattedUsers.length > 0 ? formattedUsers[formattedUsers.length - 1]._id : '';

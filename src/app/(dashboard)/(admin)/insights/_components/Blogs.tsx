@@ -31,10 +31,19 @@ interface Section {
     publicId?: string | null;
 }
 
+interface AuthorData {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    name: string;
+    avatar?: string | null;
+}
+
 interface Blog {
     _id: string;
     title: string;
     author: string; // userId
+    authorData?: AuthorData; // Enriched author information
     date: string;
     content: string | Section[];
     tags: string[];
@@ -123,7 +132,55 @@ const Blogs: React.FC = () => {
                 );
                 if (response.ok) {
                     const data = await response.json();
-                    setBlogs(data.blogs || []);
+                    const rawBlogs = data.blogs || [];
+                    
+                    // Fetch author details for each blog
+                    const blogsWithAuthors = await Promise.all(
+                        rawBlogs.map(async (blog: Blog) => {
+                            try {
+                                const authorResponse = await fetch(`/api/users/${blog.author}`);
+                                if (authorResponse.ok) {
+                                    const authorData = await authorResponse.json();
+                                    return {
+                                        ...blog,
+                                        authorData: {
+                                            userId: authorData.userId,
+                                            firstName: authorData.firstName || 'Unknown',
+                                            lastName: authorData.lastName || 'User',
+                                            name: `${authorData.firstName || 'Unknown'} ${authorData.lastName || 'User'}`.trim(),
+                                            avatar: authorData.avatar || authorData.profileImage || null,
+                                        }
+                                    };
+                                } else {
+                                    console.warn(`Failed to fetch author for blog ${blog._id}`);
+                                    return {
+                                        ...blog,
+                                        authorData: {
+                                            userId: blog.author,
+                                            firstName: 'Unknown',
+                                            lastName: 'User',
+                                            name: 'Unknown User',
+                                            avatar: null,
+                                        }
+                                    };
+                                }
+                            } catch (error) {
+                                console.error(`Error fetching author for blog ${blog._id}:`, error);
+                                return {
+                                    ...blog,
+                                    authorData: {
+                                        userId: blog.author,
+                                        firstName: 'Unknown',
+                                        lastName: 'User',
+                                        name: 'Unknown User',
+                                        avatar: null,
+                                    }
+                                };
+                            }
+                        })
+                    );
+                    
+                    setBlogs(blogsWithAuthors);
                     setTotalPages(data.totalPages || 1);
                 } else {
                     const errorData = await response.json();
@@ -731,7 +788,7 @@ const Blogs: React.FC = () => {
                                                 {blog.title}
                                             </h4>
                                             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                                {user?.firstName} {user?.lastName}
+                                                {blog.authorData?.name || 'Unknown Author'}
                                             </p>
                                             <p className="text-sm text-gray-400 dark:text-gray-500">
                                                 {new Date(blog.date).toLocaleDateString()}

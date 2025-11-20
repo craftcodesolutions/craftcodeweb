@@ -159,7 +159,7 @@ export default function DemoProjectPage() {
               return {
                 userId,
                 name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Unknown User',
-                avatar: userData.avatar && typeof userData.avatar === 'string' && userData.avatar.trim() !== '' ? userData.avatar : null,
+                avatar: userData.avatar || userData.profileImage || null,
                 email: userData.email && typeof userData.email === 'string' ? userData.email : null,
                 bio: userData.bio || 'No bio available',
                 createdAt: userData.createdAt,
@@ -648,19 +648,23 @@ export default function DemoProjectPage() {
                   Project Lead
                 </h2>
                 <div className="flex items-start gap-5 relative z-10">
-                  <div className="relative">
-                    <Image
-                      src={
-                        isValidImageUrl(authorDetails?.avatar || "")
-                          ? (authorDetails?.avatar as string)
-                          : "https://source.unsplash.com/100x100/?portrait,professional"
-                      }
-                      alt={authorDetails?.name || "Author"}
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20 shadow-lg"
-                    />
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="relative flex flex-col items-center">
+                    <div className="relative w-14 h-14 rounded-md bg-gradient-to-b from-indigo-500 via-purple-500 to-sky-500 p-0.5 shadow-lg shadow-indigo-900/30">
+                      <div className="w-full h-full rounded-md bg-slate-900/20 dark:bg-white/10 overflow-hidden flex items-stretch justify-center">
+                        <Image
+                          src={
+                            isValidImageUrl(authorDetails?.avatar || "")
+                              ? (authorDetails?.avatar as string)
+                              : "https://source.unsplash.com/200x400/?portrait,professional"
+                          }
+                          alt={authorDetails?.name || "Author"}
+                          width={80}
+                          height={80}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full border-2 border-slate-900/70 bg-emerald-400 shadow shadow-emerald-700/40" />
+                    </div>
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-white text-lg">{authorDetails.name}</h3>

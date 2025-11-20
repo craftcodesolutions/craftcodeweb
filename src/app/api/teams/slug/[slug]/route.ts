@@ -1,85 +1,30 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/config/mongodb';
 import { ObjectId } from 'mongodb';
 
-const DB_NAME = 'CraftCode';
-const COLLECTION = 'teams';
-
-interface PreviousJob {
-  title: string;
-  company: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-}
-
-interface ProjectLink {
-  title: string;
-  url: string;
-  description: string;
-}
-
-interface Education {
-  degree: string;
-  institution: string;
-  startYear: number;
-  endYear: number;
-  description: string;
-}
-
-interface Certification {
-  title: string;
-  issuer: string;
-  year: number;
-}
-
-interface Language {
-  name: string;
-  proficiency: string;
-}
-
-interface Award {
-  title: string;
-  issuer: string;
-  year: number;
-  description: string;
-}
-
-interface Reference {
-  name: string;
-  designation: string;
-  contact: string;
-}
-
-interface TeamMember {
-  _id: string;
-  userId: string;
-  slug: string;
+// Interface for user data consistency
+interface User {
+  _id?: ObjectId;
   firstName?: string;
   lastName?: string;
+  name?: string; // For backward compatibility
   email?: string;
   bio?: string;
   profileImage?: string | null;
+  picture?: string | null; // For backward compatibility
   publicIdProfile?: string | null;
-  banner?: string | null;
-  publicIdBanner?: string | null;
-  skills: string[];
-  previousJobs: PreviousJob[];
-  projectLinks: ProjectLink[];
-  education: Education[];
-  certifications: Certification[];
-  languages: Language[];
-  hobbies: string[];
-  awards: Award[];
-  references: Reference[];
-  supportiveEmail?: string;
-  blogs: any[];
-  projects: any[];
-  createdAt: string;
-  updatedAt: string;
-  designation: string;
+  publicId?: string | null; // For backward compatibility
+  isAdmin?: boolean;
+  status?: boolean;
+  designations?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
+
+const DB_NAME = 'CraftCode';
+const COLLECTION = 'teams';
 
 function normalizeDate(date: any): string {
   try {
@@ -100,30 +45,53 @@ export async function GET(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const teamMembersCollection = db.collection(COLLECTION);
+    const teamsCollection = db.collection(COLLECTION);
+    const usersCollection = db.collection('users');
 
-    const teamMember = await teamMembersCollection.findOne({ slug });
+    // Find team member by slug
+    const teamMember = await teamsCollection.findOne({ slug });
 
     if (!teamMember) {
       return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
     }
 
-    // Fetch user data to enrich team member information
-    const usersCollection = db.collection('users');
+    // Fetch user data to enrich team member information (similar to /teams API)
     const user = await usersCollection.findOne({ _id: new ObjectId(teamMember.userId) });
 
-    const formattedTeamMember: TeamMember = {
+    if (!user) {
+      return NextResponse.json({ error: 'Associated user not found' }, { status: 404 });
+    }
+
+    // Extract firstName and lastName from user data
+    let firstName = '';
+    let lastName = '';
+    
+    if (user.firstName && user.lastName) {
+      firstName = user.firstName;
+      lastName = user.lastName;
+    } else if (user.name) {
+      const nameParts = user.name.trim().split(' ');
+      firstName = nameParts[0] || '';
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
+
+    // Format the response similar to /teams API structure
+    const formattedTeamMember = {
+      ...teamMember,
       _id: teamMember._id.toString(),
       userId: teamMember.userId.toString(),
       slug: teamMember.slug,
-      firstName: user?.firstName || 'Unknown',
-      lastName: user?.lastName || '',
-      email: user?.email || 'N/A',
-      bio: user?.bio || 'No bio available',
-      profileImage: user?.profileImage || null,
-      publicIdProfile: user?.publicIdProfile || null,
+      designation: teamMember.designation || '',
+      // User data from users collection (matching /teams API structure)
+      firstName: firstName || 'Unknown',
+      lastName: lastName || 'User',
+      email: user.email || 'N/A',
+      bio: user.bio || 'No bio available.',
+      profileImage: user.profileImage || user.picture || null,
+      avatar: user.profileImage || user.picture || null,
+      publicIdProfile: user.publicIdProfile || user.publicId || null,
+      // Team-specific fields with proper array validation
       banner: teamMember.banner || null,
-      designation: teamMember.designation || '', 
       publicIdBanner: teamMember.publicIdBanner || null,
       skills: Array.isArray(teamMember.skills) ? teamMember.skills : [],
       previousJobs: Array.isArray(teamMember.previousJobs) ? teamMember.previousJobs : [],

@@ -5,11 +5,24 @@ import { useState, useEffect } from 'react';
 import ProjectCard from './ProjectCard';
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface AuthorData {
+  userId: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string | null;
+  email?: string | null;
+  bio: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 interface Project {
   _id: string;
   title: string;
   author: Author;
   coAuthors?: string[];
+  coAuthorDetails?: AuthorData[]; // Enriched co-author data
   client: Client;
   startDate?: string;
   deadline?: string;
@@ -71,7 +84,10 @@ interface RawProject {
 interface Author {
   userId: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string | null;
+  profileImage?: string | null;
   email?: string | null;
   bio: string;
   createdAt?: string;
@@ -81,7 +97,10 @@ interface Author {
 interface Client {
   userId: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string | null;
+  profileImage?: string | null;
   email?: string | null;
   bio: string;
   createdAt?: string;
@@ -143,9 +162,15 @@ const ProjectsPage = () => {
               console.log(clientData)
               clientCache[userId] = {
                 userId,
+                firstName: clientData.firstName || '',
+                lastName: clientData.lastName || '',
                 name: `${clientData.firstName || ''} ${clientData.lastName || ''}`.trim() || 'Unknown Client',
-                avatar: clientData.avatar && typeof clientData.avatar === 'string' && clientData.avatar.trim() !== '' ? clientData.avatar : null,
+                avatar: clientData.avatar || clientData.profileImage || null,
+                profileImage: clientData.profileImage || clientData.avatar || null,
+                email: clientData.email || null,
                 bio: clientData.bio || 'No bio available',
+                createdAt: clientData.createdAt,
+                updatedAt: clientData.updatedAt,
               };
             } else {
               clientCache[userId] = { userId, name: 'Unknown Client', avatar: null, bio: 'No bio available' };
@@ -159,7 +184,57 @@ const ProjectsPage = () => {
           ongoing: 'in-progress',
         };
 
-        const mappedProjects: Project[] = rawProjects.map(project => ({
+        // Fetch co-author details for projects that have co-authors
+        const projectsWithCoAuthors = await Promise.all(
+          rawProjects.map(async (project) => {
+            let coAuthorDetails: AuthorData[] = [];
+            
+            if (project.coAuthors && project.coAuthors.length > 0) {
+              coAuthorDetails = await Promise.all(
+                project.coAuthors.map(async (coAuthorId) => {
+                  if (authorCache[coAuthorId]) {
+                    return authorCache[coAuthorId];
+                  }
+                  
+                  try {
+                    const coAuthorResponse = await fetch(`/api/users/${coAuthorId}`);
+                    if (coAuthorResponse.ok) {
+                      const coAuthorData = await coAuthorResponse.json();
+                      return {
+                        userId: coAuthorId,
+                        firstName: coAuthorData.firstName || '',
+                        lastName: coAuthorData.lastName || '',
+                        name: `${coAuthorData.firstName || ''} ${coAuthorData.lastName || ''}`.trim() || 'Unknown Co-Author',
+                        avatar: coAuthorData.avatar || coAuthorData.profileImage || null,
+                        email: coAuthorData.email || null,
+                        bio: coAuthorData.bio || 'No bio available',
+                        createdAt: coAuthorData.createdAt,
+                        updatedAt: coAuthorData.updatedAt,
+                      };
+                    }
+                  } catch (error) {
+                    console.error(`Failed to fetch co-author ${coAuthorId}:`, error);
+                  }
+                  
+                  return {
+                    userId: coAuthorId,
+                    name: 'Unknown Co-Author',
+                    avatar: null,
+                    email: null,
+                    bio: 'No bio available',
+                  };
+                })
+              );
+            }
+            
+            return {
+              ...project,
+              coAuthorDetails,
+            };
+          })
+        );
+
+        const mappedProjects: Project[] = projectsWithCoAuthors.map(project => ({
           ...project,
           title: project.title || 'Untitled',
           description: project.description || '',
@@ -169,8 +244,8 @@ const ProjectsPage = () => {
           repoUrl: project.repoUrl || '',
           deployment: project.deployment || '',
           status: statusMap[project.status] || project.status,
-          author: authorCache[project.author] || { userId: project.author || 'unknown', name: 'Unknown Author', avatar: null, bio: 'No bio available' },
-          client: clientCache[project.client] || { userId: project.client || 'unknown', name: 'Unknown Client', avatar: null, bio: 'No bio available' },
+          author: authorCache[project.author] || { userId: project.author || 'unknown', name: 'Unknown Author', firstName: '', lastName: '', avatar: null, bio: 'No bio available' },
+          client: clientCache[project.client] || { userId: project.client || 'unknown', name: 'Unknown Client', firstName: '', lastName: '', avatar: null, bio: 'No bio available' },
           date: project.startDate || project.createdAt || new Date().toISOString(), // ✅ always a string
         }));
 

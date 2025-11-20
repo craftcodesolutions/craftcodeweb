@@ -161,7 +161,7 @@ const ProfileImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
             sizes="(max-width: 768px) 100vw, 192px"
             className="object-cover"
             priority
-            onError={(e) => { e.currentTarget.src = '/default-profile.png'; }}
+            onError={(e) => { e.currentTarget.src = '/avatar.png'; }}
         />
     </div>
 );
@@ -230,6 +230,12 @@ const TeamProfile: React.FC = () => {
         ? (Array.isArray(params.slug) ? params.slug[0] : params.slug || '')
         : '';
     const { user, isAuthenticated, isLoading: authLoading } = useAuth() as AuthContextType;
+    
+    // Enhanced slug validation and debugging
+    console.log('TeamProfile - Route params:', params);
+    console.log('TeamProfile - Extracted slug:', slug);
+    console.log('TeamProfile - Slug type:', typeof slug);
+    console.log('TeamProfile - Is slug valid:', Boolean(slug && slug.trim()));
     const [teamMember, setTeamMember] = useState<TeamMember | null>(null);
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [additionalProjects, setAdditionalProjects] = useState<AdditionalProject[]>([]);
@@ -238,13 +244,22 @@ const TeamProfile: React.FC = () => {
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const fetchTeamMember = useCallback(async () => {
-        if (!slug) {
-            toast.error('No profile slug provided', { toastId: 'no-slug' });
+        // Enhanced slug validation
+        if (!slug || typeof slug !== 'string' || slug.trim() === '') {
+            console.error('Invalid slug provided:', { slug, type: typeof slug });
+            toast.error('Invalid profile slug provided', { toastId: 'invalid-slug' });
             return;
         }
+        
+        const trimmedSlug = slug.trim();
+        console.log('Fetching team member with slug:', trimmedSlug);
+        
         abortControllerRef.current = new AbortController();
         try {
-            const response = await fetch(`/api/teams/slug/${encodeURIComponent(slug)}`, {
+            const apiUrl = `/api/teams/slug/${encodeURIComponent(trimmedSlug)}`;
+            console.log('Team API URL:', apiUrl);
+            
+            const response = await fetch(apiUrl, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
                 signal: abortControllerRef.current.signal,
@@ -256,35 +271,45 @@ const TeamProfile: React.FC = () => {
             }
 
             const data = await response.json();
-            console.log('Team API Response:', JSON.stringify(data, null, 2)); // Debug log
+            console.log('Team API Response:', JSON.stringify(data, null, 2));
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
             const team: any = data.team;
+            console.log('Extracted team data:', team);
+            console.log('Team slug from response:', team?.slug);
+            console.log('Team userId from response:', team?.userId);
 
             if (!team) {
-                throw new Error('Team member not found');
+                console.error('Team member not found in response for slug:', trimmedSlug);
+                throw new Error(`Team member with slug '${trimmedSlug}' not found`);
+            }
+            
+            // Validate team data structure
+            if (!team.userId) {
+                console.error('Team member missing userId:', team);
+                throw new Error('Invalid team member data: missing userId');
             }
 
-            const userResponse = await fetch(`/api/users/${team.userId}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                signal: abortControllerRef.current.signal,
+            // The improved slug API now includes all user data, so no separate user API call is needed
+            console.log('Processing team data (user data already included from improved slug API)...');
+            console.log('Available user data in team response:', {
+                firstName: team.firstName,
+                lastName: team.lastName,
+                email: team.email,
+                bio: team.bio,
+                profileImage: team.profileImage
             });
-
-            if (!userResponse.ok) {
-                const userErrorData = await userResponse.json().catch(() => ({ error: 'Failed to fetch user data' }));
-                throw new Error(userErrorData?.error || 'Failed to fetch user data');
-            }
-
-            const userData = await userResponse.json();
-            console.log('User API Response:', JSON.stringify(userData, null, 2)); // Debug log
+            
             const enrichedTeam: TeamMember = {
                 ...team,
-                firstName: extractString(userData.firstName, 'Unknown'),
-                lastName: extractString(userData.lastName, ''),
-                email: extractString(userData.email, 'N/A'),
-                bio: extractString(userData.bio, 'No bio available'),
-                profileImage: extractString(userData.avatar, '/default-profile.png'),
-                publicIdProfile: extractString(userData.publicIdProfile, ''),
-                location: extractString(userData.location, ''),
+                firstName: extractString(team.firstName, 'Unknown'),
+                lastName: extractString(team.lastName, ''),
+                email: extractString(team.email, 'N/A'),
+                bio: extractString(team.bio, 'No bio available'),
+                profileImage: extractString(team.profileImage, '/avatar.png'),
+                publicIdProfile: extractString(team.publicIdProfile, ''),
+                location: extractString(team.location, ''),
                 skills: Array.isArray(team.skills)
                     ? team.skills.map((skill: any) => extractString(skill, 'Unknown Skill'))
                     : [],
@@ -344,21 +369,59 @@ const TeamProfile: React.FC = () => {
                 userId: extractString(team.userId, ''),
                 _id: extractString(team._id || team.id, ''),
                 slug: extractString(team.slug, ''),
-                banner: extractString(team.banner, ''),
+                banner: extractString(team.banner, '/banner.jpg'),
                 publicIdBanner: extractString(team.publicIdBanner, ''),
             };
 
+            console.log('Final enriched team member:', {
+                slug: enrichedTeam.slug,
+                userId: enrichedTeam.userId,
+                name: `${enrichedTeam.firstName} ${enrichedTeam.lastName}`,
+                email: enrichedTeam.email,
+                profileImage: enrichedTeam.profileImage,
+                designation: enrichedTeam.designation
+            });
+            
             setTeamMember(enrichedTeam);
             setIsOwner(isAuthenticated && enrichedTeam.userId === user?.userId);
+            
+            console.log('Team member set successfully using improved slug API (single API call). IsOwner:', isAuthenticated && enrichedTeam.userId === user?.userId);
+            console.log('Performance improvement: Eliminated separate user API call');
             return enrichedTeam.userId;
         } catch (error) {
             if (error instanceof Error && error.name !== 'AbortError') {
-                console.error('Fetch team member error:', error);
-                toast.error(error.message || 'Failed to fetch team member profile', { toastId: 'fetch-team-error' });
+                console.error('Fetch team member error:', {
+                    message: error.message,
+                    stack: error.stack,
+                    slug: trimmedSlug,
+                    error: error
+                });
+                
+                // More specific error messages based on error type
+                let errorMessage = 'Failed to fetch team member profile';
+                if (error.message.includes('not found')) {
+                    errorMessage = `Team member '${trimmedSlug}' not found. Please check the URL and try again.`;
+                } else if (error.message.includes('Network')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                } else if (error.message.includes('Invalid')) {
+                    errorMessage = error.message;
+                }
+                
+                toast.error(errorMessage, { toastId: 'fetch-team-error' });
             }
             return null;
         }
     }, [slug, isAuthenticated, user?.userId]);
+
+    // Add slug change detection
+    useEffect(() => {
+        console.log('Slug changed detected:', { slug, previousSlug: slug });
+        if (slug && slug.trim()) {
+            console.log('Valid slug detected, component will fetch data');
+        } else {
+            console.warn('Invalid or empty slug detected:', slug);
+        }
+    }, [slug]);
 
     const fetchBlogs = useCallback(async (userId: string) => {
         if (!userId) return;
@@ -519,13 +582,13 @@ const TeamProfile: React.FC = () => {
             >
                 <div className="relative h-48 md:h-64">
                     <Image
-                        src={memoizedTeamMember.banner || '/default-banner.png'}
+                        src={memoizedTeamMember.banner || '/banner.jpg'}
                         alt="Profile Banner"
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover"
                         loading="lazy"
-                        onError={(e) => { e.currentTarget.src = '/default-banner.png'; }}
+                        onError={(e) => { e.currentTarget.src = '/banner.jpg'; }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 dark:to-black/60" />
                 </div>
@@ -539,7 +602,7 @@ const TeamProfile: React.FC = () => {
                             <div className="relative flex-shrink-0">
                                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-xl opacity-50 animate-pulse" />
                                 <ProfileImage
-                                    src={memoizedTeamMember.profileImage || '/default-profile.png'}
+                                    src={memoizedTeamMember.profileImage || '/avatar.png'}
                                     alt={`${memoizedTeamMember.firstName || 'User'} ${memoizedTeamMember.lastName || ''}'s Profile Image`}
                                 />
                             </div>
@@ -555,7 +618,7 @@ const TeamProfile: React.FC = () => {
                                                     ? memoizedTeamMember.designation.charAt(0).toUpperCase() + memoizedTeamMember.designation.slice(1).toLowerCase()
                                                     : 'Team Member'}
                                             </p>
-                                            {memoizedTeamMember.location && (
+                                            {memoizedTeamMember.location && memoizedTeamMember.location.trim() !== '' && (
                                                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-600 dark:text-gray-400 text-sm mb-3">
                                                     <MapPin className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
                                                     <span>{memoizedTeamMember.location}</span>
@@ -566,7 +629,7 @@ const TeamProfile: React.FC = () => {
                                                     <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
                                                     <span className="truncate" title={memoizedTeamMember.email || 'N/A'}>{memoizedTeamMember.email || 'N/A'}</span>
                                                 </div>
-                                                {memoizedTeamMember.supportiveEmail && (
+                                                {memoizedTeamMember.supportiveEmail && memoizedTeamMember.supportiveEmail.trim() !== '' && (
                                                     <div className="flex items-center justify-center sm:justify-start gap-2">
                                                         <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
                                                         <span className="truncate" title={memoizedTeamMember.supportiveEmail}>{memoizedTeamMember.supportiveEmail}</span>
@@ -591,174 +654,172 @@ const TeamProfile: React.FC = () => {
                                             {memoizedTeamMember.bio || 'No bio available'}
                                         </p>
                                     </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                            <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                                            Skills
-                                        </h3>
-                                        <ul className="flex flex-wrap gap-2" role="list">
-                                            {memoizedTeamMember.skills.map((skill, idx) => (
-                                                <SkillBadge key={idx} skill={skill} />
-                                            ))}
-                                            {memoizedTeamMember.skills.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-sm">No skills listed</p>}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                            <UserCircle className="h-4 w-4 text-purple-500" aria-hidden="true" />
-                                            Hobbies
-                                        </h3>
-                                        <ul className="flex flex-wrap gap-2" role="list">
-                                            {memoizedTeamMember.hobbies.map((hobby, idx) => (
-                                                <HobbyBadge key={idx} hobby={hobby} />
-                                            ))}
-                                            {memoizedTeamMember.hobbies.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-sm">No hobbies listed</p>}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                            <Languages className="h-4 w-4 text-green-500" aria-hidden="true" />
-                                            Languages
-                                        </h3>
-                                        <ul className="space-y-2 text-gray-600 dark:text-gray-300" role="list">
-                                            {memoizedTeamMember.languages.map((lang, idx) => (
-                                                <motion.li
-                                                    key={idx}
-                                                    whileHover={{ x: 4 }}
-                                                    className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50/50 dark:bg-gray-700/30 hover:bg-white/20 dark:hover:bg-gray-700/40 transition-all duration-300"
-                                                    role="listitem"
-                                                >
-                                                    <span className="font-medium text-sm">{lang.name}</span>
-                                                    <span className="px-2.5 py-1 bg-green-100/50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-                                                        {lang.proficiency}
-                                                    </span>
-                                                </motion.li>
-                                            ))}
-                                            {memoizedTeamMember.languages.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No languages listed</p>}
-                                        </ul>
-                                    </div>
+                                    {memoizedTeamMember.skills.length > 0 && (
+                                        <div>
+                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
+                                                <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                                                Skills
+                                            </h3>
+                                            <ul className="flex flex-wrap gap-2" role="list">
+                                                {memoizedTeamMember.skills.map((skill, idx) => (
+                                                    <SkillBadge key={idx} skill={skill} />
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {memoizedTeamMember.hobbies.length > 0 && (
+                                        <div>
+                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
+                                                <UserCircle className="h-4 w-4 text-purple-500" aria-hidden="true" />
+                                                Hobbies
+                                            </h3>
+                                            <ul className="flex flex-wrap gap-2" role="list">
+                                                {memoizedTeamMember.hobbies.map((hobby, idx) => (
+                                                    <HobbyBadge key={idx} hobby={hobby} />
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {memoizedTeamMember.languages.length > 0 && (
+                                        <div>
+                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
+                                                <Languages className="h-4 w-4 text-green-500" aria-hidden="true" />
+                                                Languages
+                                            </h3>
+                                            <ul className="space-y-2 text-gray-600 dark:text-gray-300" role="list">
+                                                {memoizedTeamMember.languages.map((lang, idx) => (
+                                                    <motion.li
+                                                        key={idx}
+                                                        whileHover={{ x: 4 }}
+                                                        className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50/50 dark:bg-gray-700/30 hover:bg-white/20 dark:hover:bg-gray-700/40 transition-all duration-300"
+                                                        role="listitem"
+                                                    >
+                                                        <span className="font-medium text-sm">{lang.name}</span>
+                                                        <span className="px-2.5 py-1 bg-green-100/50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                                                            {lang.proficiency}
+                                                        </span>
+                                                    </motion.li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </motion.section>
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<Briefcase className="h-5 w-5" />} title="Work Experience" />
-                        <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-blue-200/60 to-transparent dark:from-blue-700/60 dark:to-transparent">
-                            {memoizedTeamMember.previousJobs.map((job, idx) => (
-                                <TimelineItem key={idx} icon={<Briefcase className="h-4 w-4 text-blue-500" aria-hidden="true" />} index={idx}>
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{job.title}</h3>
-                                    <p className="text-blue-600 dark:text-blue-400 font-medium text-sm mb-1">{job.company}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{job.startDate} - {job.endDate || 'Present'}</p>
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm">{job.description}</p>
-                                </TimelineItem>
-                            ))}
-                            {memoizedTeamMember.previousJobs.length === 0 && (
-                                <p className="text-gray-500 dark:text-gray-400 text-center py-6 text-sm">No work experience listed yet</p>
-                            )}
-                        </div>
-                    </motion.section>
+                    {memoizedTeamMember.previousJobs.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<Briefcase className="h-5 w-5" />} title="Work Experience" />
+                            <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-blue-200/60 to-transparent dark:from-blue-700/60 dark:to-transparent">
+                                {memoizedTeamMember.previousJobs.map((job, idx) => (
+                                    <TimelineItem key={idx} icon={<Briefcase className="h-4 w-4 text-blue-500" aria-hidden="true" />} index={idx}>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{job.title}</h3>
+                                        <p className="text-blue-600 dark:text-blue-400 font-medium text-sm mb-1">{job.company}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{job.startDate} - {job.endDate || 'Present'}</p>
+                                        <p className="text-gray-600 dark:text-gray-300 text-sm">{job.description}</p>
+                                    </TimelineItem>
+                                ))}
+                            </div>
+                        </motion.section>
+                    )}
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<GraduationCap className="h-5 w-5" />} title="Education" />
-                        <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-purple-200/60 to-transparent dark:from-purple-700/60 dark:to-transparent">
-                            {memoizedTeamMember.education.map((edu, idx) => (
-                                <TimelineItem key={idx} icon={<GraduationCap className="h-4 w-4 text-purple-500" aria-hidden="true" />} index={idx}>
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{edu.degree}</h3>
-                                    <p className="text-purple-600 dark:text-purple-400 font-medium text-sm mb-1">{edu.institution}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{edu.startYear} - {edu.endYear}</p>
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm">{edu.description}</p>
-                                </TimelineItem>
-                            ))}
-                            {memoizedTeamMember.education.length === 0 && (
-                                <p className="text-gray-500 dark:text-gray-400 text-center py-6 text-sm">No education listed yet</p>
-                            )}
-                        </div>
-                    </motion.section>
+                    {memoizedTeamMember.education.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<GraduationCap className="h-5 w-5" />} title="Education" />
+                            <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-purple-200/60 to-transparent dark:from-purple-700/60 dark:to-transparent">
+                                {memoizedTeamMember.education.map((edu, idx) => (
+                                    <TimelineItem key={idx} icon={<GraduationCap className="h-4 w-4 text-purple-500" aria-hidden="true" />} index={idx}>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{edu.degree}</h3>
+                                        <p className="text-purple-600 dark:text-purple-400 font-medium text-sm mb-1">{edu.institution}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{edu.startYear} - {edu.endYear}</p>
+                                        <p className="text-gray-600 dark:text-gray-300 text-sm">{edu.description}</p>
+                                    </TimelineItem>
+                                ))}
+                            </div>
+                        </motion.section>
+                    )}
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Certifications" />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {memoizedTeamMember.certifications.map((cert, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    variants={cardVariants}
-                                    className="p-4 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 group hover:border-green-200/50 dark:hover:border-green-700/30"
-                                    tabIndex={0}
-                                    role="article"
-                                    aria-label={`Certification: ${cert.title}`}
-                                >
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <BookOpen className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">{cert.title}</h4>
-                                    </div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{cert.issuer} | {cert.year}</p>
-                                </motion.div>
-                            ))}
-                            {memoizedTeamMember.certifications.length === 0 && (
-                                <p className="text-gray-500 dark:text-gray-400 col-span-2 text-center py-6 text-sm">No certifications listed yet</p>
-                            )}
-                        </div>
-                    </motion.section>
+                    {memoizedTeamMember.certifications.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Certifications" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {memoizedTeamMember.certifications.map((cert, idx) => (
+                                    <motion.div
+                                        key={idx}
+                                        variants={cardVariants}
+                                        className="p-4 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 group hover:border-green-200/50 dark:hover:border-green-700/30"
+                                        tabIndex={0}
+                                        role="article"
+                                        aria-label={`Certification: ${cert.title}`}
+                                    >
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <BookOpen className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
+                                            <h4 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">{cert.title}</h4>
+                                        </div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{cert.issuer} | {cert.year}</p>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.section>
+                    )}
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<Award className="h-5 w-5" />} title="Awards" />
-                        <div className="space-y-4">
-                            {memoizedTeamMember.awards.map((award, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    variants={cardVariants}
-                                    className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-amber-50/50 to-amber-100/30 dark:from-amber-900/20 dark:to-amber-800/10 hover:shadow-md transition-all duration-300 border border-amber-100/40 dark:border-amber-700/30"
-                                    tabIndex={0}
-                                    role="article"
-                                    aria-label={`Award: ${award.title}`}
-                                >
-                                    <div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-amber-100/60 dark:bg-amber-900/30">
-                                        <Award className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white">{award.title}</h4>
-                                        <p className="text-sm text-amber-600 dark:text-amber-400">{award.issuer} | {award.year}</p>
-                                        <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{award.description}</p>
-                                    </div>
-                                </motion.div>
-                            ))}
-                            {memoizedTeamMember.awards.length === 0 && (
-                                <p className="text-gray-500 dark:text-gray-400 text-center py-6 text-sm">No awards listed yet</p>
-                            )}
-                        </div>
-                    </motion.section>
+                    {memoizedTeamMember.awards.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<Award className="h-5 w-5" />} title="Awards" />
+                            <div className="space-y-4">
+                                {memoizedTeamMember.awards.map((award, idx) => (
+                                    <motion.div
+                                        key={idx}
+                                        variants={cardVariants}
+                                        className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-amber-50/50 to-amber-100/30 dark:from-amber-900/20 dark:to-amber-800/10 hover:shadow-md transition-all duration-300 border border-amber-100/40 dark:border-amber-700/30"
+                                        tabIndex={0}
+                                        role="article"
+                                        aria-label={`Award: ${award.title}`}
+                                    >
+                                        <div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-amber-100/60 dark:bg-amber-900/30">
+                                            <Award className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <h4 className="text-base font-semibold text-gray-900 dark:text-white">{award.title}</h4>
+                                            <p className="text-sm text-amber-600 dark:text-amber-400">{award.issuer} | {award.year}</p>
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{award.description}</p>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.section>
+                    )}
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Projects" />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {memoizedTeamMember.projectLinks.map((proj, idx) => (
-                                <motion.a
-                                    key={idx}
-                                    href={proj.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    variants={cardVariants}
-                                    className="group p-4 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:border-blue-200/50 dark:hover:border-blue-700/30"
-                                    aria-label={`View project: ${proj.title}`}
-                                    tabIndex={0}
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.title}</h4>
-                                        <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                                    </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{proj.description}</p>
-                                </motion.a>
-                            ))}
-                            {memoizedTeamMember.projectLinks.length === 0 && (
-                                <p className="text-gray-500 dark:text-gray-400 col-span-2 text-center py-6 text-sm">No projects listed yet</p>
-                            )}
-                        </div>
-                    </motion.section>
+                    {memoizedTeamMember.projectLinks.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Projects" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {memoizedTeamMember.projectLinks.map((proj, idx) => (
+                                    <motion.a
+                                        key={idx}
+                                        href={proj.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        variants={cardVariants}
+                                        className="group p-4 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:border-blue-200/50 dark:hover:border-blue-700/30"
+                                        aria-label={`View project: ${proj.title}`}
+                                        tabIndex={0}
+                                    >
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.title}</h4>
+                                            <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                                        </div>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{proj.description}</p>
+                                    </motion.a>
+                                ))}
+                            </div>
+                        </motion.section>
+                    )}
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Blogs" />
-                        {blogs.length > 0 ? (
+                    {blogs.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Blogs" />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {blogs.map((blog, idx) => (
                                     <motion.div
@@ -788,17 +849,12 @@ const TeamProfile: React.FC = () => {
                                     </motion.div>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="py-8 text-center">
-                                <BookOpen className="mx-auto h-8 w-8 text-gray-400 mb-3" aria-hidden="true" />
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">No blogs published yet</p>
-                            </div>
-                        )}
-                    </motion.section>
+                        </motion.section>
+                    )}
 
-                    <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
-                        <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Additional Projects" />
-                        {additionalProjects.length > 0 ? (
+                    {additionalProjects.length > 0 && (
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                            <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Additional Projects" />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {additionalProjects.map((proj, idx) => (
                                     <motion.div
@@ -828,13 +884,8 @@ const TeamProfile: React.FC = () => {
                                     </motion.div>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="py-8 text-center">
-                                <LinkIcon className="mx-auto h-8 w-8 text-gray-400 mb-3" aria-hidden="true" />
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">No additional projects available yet</p>
-                            </div>
-                        )}
-                    </motion.section>
+                        </motion.section>
+                    )}
                 </div>
             </motion.div>
             <ToastContainer position="top-right" autoClose={3000} theme="colored" />

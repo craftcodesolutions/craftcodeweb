@@ -47,6 +47,7 @@ interface DisplayTeamMember {
   description: string;
   image: string;
   userId: string;
+  slug: string;
   designation: string;
   email: string;
   bio: string;
@@ -81,12 +82,13 @@ interface TeamMember {
   publicIdBanner: string | null;
   skills: string[];
   previousJobs: PreviousJob[];
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  bio?: string;
-  profileImage?: string | null;
-  publicIdProfile?: string | null;
+  // User data fields included in teams API response
+  firstName: string;
+  lastName: string;
+  email: string;
+  bio: string;
+  profileImage: string | null;
+  publicIdProfile: string | null;
   designation: string;
 }
 
@@ -146,7 +148,16 @@ export default function TeamPage() {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('Teams API Response:', data);
         const teams: TeamMember[] = data.teams || [];
+        console.log('Processed teams:', teams);
+
+        // Validate teams data structure
+        if (!Array.isArray(teams)) {
+          console.error('Teams data is not an array:', teams);
+          setError('Invalid teams data structure received from server');
+          return;
+        }
 
         // Show loading toast for large teams
         if (teams.length > 20) {
@@ -154,85 +165,58 @@ export default function TeamPage() {
           console.log(`Loading details for ${teams.length} team members...`);
         }
 
-        const userPromises = teams.map((team: TeamMember) =>
-          fetch(`/api/users/${team.userId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }).then(async (res) => {
-            if (res.ok) {
-              const userData = await res.json();
-              return {
-                userId: team.userId,
-                firstName: userData.firstName || 'Unknown',
-                lastName: userData.lastName || '',
-                email: userData.email || 'N/A',
-                bio: userData.bio || 'No bio available',
-                profileImage: userData.avatar || '/default-profile.png',
-                publicIdProfile: userData.publicIdProfile || null,
-              };
-            } else {
-              console.warn(`Failed to fetch user data for ${team.userId}`);
-              return {
-                userId: team.userId,
-                firstName: 'Unknown',
-                lastName: '',
-                email: 'N/A',
-                bio: 'No bio available',
-                profileImage: '/default-profile.png',
-                publicIdProfile: null,
-              };
-            }
-          }).catch((error) => {
-            console.error(`Error fetching user ${team.userId}:`, error);
-            return {
+        // The teams API already includes user data, so we don't need additional API calls
+        const displayMembers: DisplayTeamMember[] = teams.map((team: TeamMember, index) => {
+          console.log(`Processing team member ${index + 1}:`, {
+            firstName: team.firstName,
+            lastName: team.lastName,
+            email: team.email,
+            bio: team.bio,
+            profileImage: team.profileImage,
+            designation: team.designation,
+            slug: team.slug,
+            userId: team.userId
+          });
+          
+          // Validate slug for proper navigation
+          if (!team.slug || team.slug.trim() === '') {
+            console.warn(`Team member ${index + 1} missing slug:`, {
+              name: `${team.firstName} ${team.lastName}`,
               userId: team.userId,
-              firstName: 'Unknown',
-              lastName: '',
-              email: 'N/A',
-              bio: 'No bio available',
-              profileImage: '/default-profile.png',
-              publicIdProfile: null,
-            };
-          })
-        );
+              slug: team.slug
+            });
+          }
+          
+          return {
+            name: `${team.firstName || 'Unknown'} ${team.lastName || ''}`.trim() || 'Unknown',
+            role: team.designation
+              ? team.designation.charAt(0).toUpperCase() + team.designation.slice(1).toLowerCase()
+              : 'Team Member',
+            description: team.bio || 'No description available',
+            image: (team.profileImage && team.profileImage.trim() !== '') ? team.profileImage : '/default-profile.png',
+            userId: team.userId || '',
+            slug: team.slug || team.userId || `user-${team.userId}`, // Fallback slug
+            designation: team.designation || 'Team Member',
+            email: team.email || '',
+            bio: team.bio || '',
+          };
+        });
 
-        const users = await Promise.all(userPromises);
-
-        const enrichedTeams = teams.map((team: TeamMember, i: number) => ({
-          ...team,
-          firstName: users[i].firstName,
-          lastName: users[i].lastName,
-          email: users[i].email,
-          bio: users[i].bio,
-          profileImage: users[i].profileImage,
-          publicIdProfile: users[i].publicIdProfile,
-        }));
-
-        const displayMembers: DisplayTeamMember[] = enrichedTeams.map((member) => ({
-          name: `${member.firstName} ${member.lastName || ''}`.trim() || 'Unknown',
-          role: member.designation
-            ? member.designation.charAt(0).toUpperCase() + member.designation.slice(1).toLowerCase()
-            : 'Team Member',
-          description: member.bio || 'No description available',
-          image: member.profileImage || '/default-profile.png',
-          userId: member.slug || member.userId,
-          designation: member.designation,
-          email: member.email || '',
-          bio: member.bio || '',
-        }));
-
+        console.log(`Successfully processed ${displayMembers.length} team members`);
         setTeamMembers(displayMembers);
+        
+        if (displayMembers.length === 0) {
+          console.warn('No team members found in the response');
+        }
       } else {
-        const errorData = await response.json();
-        const errorMessage = errorData?.error || 'Failed to fetch team members';
-        console.error('Failed to fetch team members:', errorMessage);
+        const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+        const errorMessage = errorData?.error || `Failed to fetch team members (${response.status})`;
+        console.error('Failed to fetch team members:', errorMessage, 'Status:', response.status);
         setError(errorMessage);
       }
     } catch (error: any) {
-      const errorMessage = error?.message || 'An unexpected error occurred';
-      console.error('Fetch team members error:', errorMessage);
+      const errorMessage = error?.message || 'Network error: Unable to fetch team members';
+      console.error('Fetch team members error:', error);
       setError(errorMessage);
     } finally {
       setIsFetching(false);
@@ -321,10 +305,10 @@ export default function TeamPage() {
             designation: primaryDesignation,
             bio: user.bio || user.description || 'Passionate developer creating amazing solutions',
             image: user.profileImage || user.picture || user.avatar || user.image || '/default-profile.png',
-            skills: user.skills || user.technologies || user.designations || [],
+            skills: Array.isArray(user.skills) ? user.skills : (Array.isArray(user.technologies) ? user.technologies : (Array.isArray(user.designations) ? user.designations : [])),
             experience: user.experience || user.yearsOfExperience || 'Not specified',
-            github: user.github || user.githubUrl || user.social?.github,
-            linkedin: user.linkedin || user.linkedinUrl || user.social?.linkedin
+            github: user.github || user.githubUrl || (user.social && typeof user.social === 'object' ? user.social.github : undefined),
+            linkedin: user.linkedin || user.linkedinUrl || (user.social && typeof user.social === 'object' ? user.social.linkedin : undefined)
           };
         });
 
@@ -716,14 +700,14 @@ export default function TeamPage() {
                 }>
                   {teamMembers.map((member, index) => (
                     <motion.div
-                      key={member.userId}
+                      key={member.slug || member.userId || index}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                       whileHover={{ y: -4, scale: 1.02 }}
                       className="group"
                     >
-                      <Link href={`/team/${member.userId}`}>
+                      <Link href={`/team/${member.slug}`}>
                         <div className={`
                           bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden
                           ${viewMode === 'list' ? 'flex items-center p-6' : 'p-6'}

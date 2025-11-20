@@ -71,17 +71,34 @@ export async function getUserById(id: string) {
             return null;
         }
 
+        // Extract firstName and lastName from name field or use direct fields
+        let firstName = '';
+        let lastName = '';
+        
+        if (user.firstName && user.lastName) {
+            // Use direct fields if available
+            firstName = user.firstName;
+            lastName = user.lastName;
+        } else if (user.name) {
+            // Extract from name field if firstName/lastName not available
+            const nameParts = user.name.trim().split(' ');
+            firstName = nameParts[0] || '';
+            lastName = nameParts.slice(1).join(' ') || '';
+        }
+
         // Map database fields to expected frontend fields
-        const nameParts = (user.name || '').split(' ');
         const mappedUser = {
             ...user,
             userId: user._id.toString(),
-            firstName: nameParts[0] || '',
-            lastName: nameParts.slice(1).join(' ') || '',
-            profileImage: user.picture || null,
+            firstName,
+            lastName,
+            profileImage: user.profileImage || user.picture || null,
+            avatar: user.profileImage || user.picture || null, // For consistency
+            publicId: user.publicId || user.publicIdProfile || null,
+            bio: user.bio || 'No bio available.',
             // Keep original fields for backward compatibility
-            name: user.name,
-            picture: user.picture
+            name: user.name || `${firstName} ${lastName}`.trim(),
+            picture: user.picture || user.profileImage
         };
 
         return mappedUser;
@@ -220,16 +237,23 @@ export async function updateUserProfile(id: string, profileData: { firstName?: s
             updatedAt: new Date()
         };
 
-        // Convert firstName + lastName to name field (for compatibility with existing storage)
+        // Handle firstName and lastName (store both individually and as name)
         if (profileData.firstName !== undefined || profileData.lastName !== undefined) {
-            const firstName = profileData.firstName || '';
-            const lastName = profileData.lastName || '';
+            const firstName = profileData.firstName || existingUser.firstName || '';
+            const lastName = profileData.lastName || existingUser.lastName || '';
+            
+            // Store individual fields
+            updateObject.firstName = firstName;
+            updateObject.lastName = lastName;
+            
+            // Also update name field for backward compatibility
             updateObject.name = `${firstName} ${lastName}`.trim();
         }
 
-        // Convert profileImage to picture field (for compatibility with existing storage)
+        // Handle profile image (store in both fields for compatibility)
         if (profileData.profileImage !== undefined) {
-            updateObject.picture = profileData.profileImage;
+            updateObject.profileImage = profileData.profileImage;
+            updateObject.picture = profileData.profileImage; // For backward compatibility
         }
 
         // Add other fields directly
