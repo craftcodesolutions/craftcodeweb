@@ -10,23 +10,57 @@ function HomeSection() {
     const [wordIndex, setWordIndex] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // Detect if user is on mobile device
+    const isMobile = () => {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
+
     // Handle WhatsApp button click
     const handleWhatsAppClick = async () => {
         try {
-            const response = await fetch('/api/whatsapp');
+            const mobile = isMobile();
+            const customMessage = "Hi! I'm interested in your digital solutions services. Could you please provide more information about how CraftCode can help my business?";
+            
+            const response = await fetch('/api/whatsapp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: customMessage,
+                    isMobile: mobile
+                })
+            });
             const data = await response.json();
             
             if (data.success && data.whatsappUrl) {
-                window.open(data.whatsappUrl, '_blank');
+                if (mobile) {
+                    // On mobile, try to open WhatsApp app first, then fallback to web
+                    window.location.href = data.whatsappUrl;
+                } else {
+                    // On desktop, open in new tab
+                    window.open(data.whatsappUrl, '_blank');
+                }
             } else {
                 console.error('Failed to get WhatsApp URL:', data.error);
                 // Fallback to default WhatsApp link if API fails
-                window.open('https://wa.me/qr/FRJC7NDURYO7P1', '_blank');
+                const fallbackMessage = encodeURIComponent("Hi! I'm interested in your digital solutions services. Could you please provide more information about how CraftCode can help my business?");
+                if (mobile) {
+                    window.location.href = `whatsapp://send?phone=923238675043&text=${fallbackMessage}`;
+                } else {
+                    window.open(`https://wa.me/923238675043?text=${fallbackMessage}`, '_blank');
+                }
             }
         } catch (error) {
             console.error('Error calling WhatsApp API:', error);
             // Fallback to default WhatsApp link if API fails
-            window.open('https://wa.me/qr/FRJC7NDURYO7P1', '_blank');
+            const mobile = isMobile();
+            const fallbackMessage = encodeURIComponent("Hi! I'm interested in your digital solutions services. Could you please provide more information about how CraftCode can help my business?");
+            if (mobile) {
+                window.location.href = `whatsapp://send?phone=923238675043&text=${fallbackMessage}`;
+            } else {
+                window.open(`https://wa.me/923238675043?text=${fallbackMessage}`, '_blank');
+            }
         }
     };
 
