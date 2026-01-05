@@ -1,11 +1,6 @@
-"use client";
-import { Metadata } from 'next';
-import React, { useState } from "react";
-import Sidebar from "./dashboard/_components/partials/Sidebar";
-import Header from "./dashboard/_components/partials/Header";
-
-// import ModeToggle from "@/components/ModeToggle"; // Remove this import
-
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import AdminLayoutClient from "./AdminLayoutClient";
 
 export const metadata: Metadata = {
   title: "CraftCodeSloutions || Startup & SME Investment Studio",
@@ -42,25 +37,8 @@ export const metadata: Metadata = {
   },
 };
 
-const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-
-  return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-      {/* Content area */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden z-10">
-        {/* Site header */}
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        <main className="flex-1">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-};
+const AdminLayout = ({ children }: { children: ReactNode }) => (
+  <AdminLayoutClient>{children}</AdminLayoutClient>
+);
 
 export default AdminLayout;
