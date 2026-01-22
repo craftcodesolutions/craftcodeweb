@@ -38,7 +38,7 @@ function Footer() {
               <div className="relative">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] rounded-xl flex items-center justify-center shadow-lg shadow-[#2FD1C5]/30 dark:shadow-[#0FD9C3]/30">
                   <Image
-                    src="/logo.PNG"
+                    src="/logo.png"
                     alt="CraftCode Logo"
                     width={48}
                     height={48}
