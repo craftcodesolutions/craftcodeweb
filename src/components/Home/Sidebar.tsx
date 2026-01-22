@@ -130,7 +130,8 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
         role="button"
         tabIndex={0}
         className={`relative group inline-flex items-center justify-center gap-2 px-2 py-2 sm:px-6 sm:py-6 mr-2 aspect-square rounded-lg
-          bg-amber-500 border border-amber-400 dark:border-amber-600 text-white shadow-md hover:bg-amber-600 dark:hover:bg-amber-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-400/50
+          bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66]
+          border border-[#2FD1C5]/60 dark:border-[#0FD9C3]/50 text-white shadow-md hover:shadow-[0_10px_30px_rgba(47,209,197,0.35)] dark:hover:shadow-[0_12px_32px_rgba(15,217,195,0.3)] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/40 dark:focus:ring-[#0FD9C3]/40
           text-base font-semibold transition-all duration-200
           ${isMobileScreen ? 'block' : 'hidden'}`}
         onClick={toggleSidebar}
@@ -158,7 +159,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
 
       {/* Sidebar Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] transition-opacity duration-300 ease-in-out
+        className={`fixed inset-0 bg-[#050B14]/55 backdrop-blur-sm z-[60] transition-opacity duration-300 ease-in-out
           ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden="true"
         onClick={toggleSidebar}
@@ -168,8 +169,8 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
       <div
         id="sidebar"
         ref={sidebar}
-        className={`flex flex-col fixed z-[61] right-0 top-0 h-[100dvh] bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e]
-          p-3 transition-all duration-300 ease-in-out overflow-hidden border-l border-white/10 shadow-2xl
+        className={`flex flex-col fixed z-[61] right-0 top-0 h-[100dvh] bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#FFFFFF] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#102A3A]
+          p-3 transition-all duration-300 ease-in-out overflow-hidden border-l border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60 shadow-2xl
           ${sidebarOpen ? 'translate-x-0 opacity-100 w-72 sm:w-80' : 'translate-x-full opacity-0 w-0'}`}
       >
         <div className="flex justify-between mb-3 pl-2">
@@ -183,7 +184,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
             />
           </Link>
           <button
-            className="text-white bg-amber-500 border border-amber-400 dark:border-amber-600 rounded-lg px-2 py-1 hover:bg-amber-600 dark:hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-colors duration-200"
+            className="text-[#1E5AA8] dark:text-[#E6F1F5] bg-[#EEF7F6] dark:bg-[#0B1C2D] border border-[#DCEEEE]/70 dark:border-[#1E3A4A]/70 rounded-lg px-2 py-1 hover:bg-[#DCEEEE]/70 dark:hover:bg-[#102A3A] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/40 dark:focus:ring-[#0FD9C3]/40 transition-colors duration-200"
             onClick={toggleSidebar}
             aria-controls="sidebar"
             aria-expanded={sidebarOpen}
@@ -195,7 +196,7 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-amber-500 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#2FD1C5] dark:scrollbar-thumb-[#0FD9C3] scrollbar-track-transparent">
           <nav className="mt-2">
             <ul className="space-y-1">
               {navLinks.map((item) => (
@@ -204,13 +205,13 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
                     href={item.path}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group
                       ${isActive(item.path)
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg border border-blue-400/50'
-                        : 'text-gray-300 hover:bg-amber-600/20 hover:text-amber-400'}
+                        ? 'bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white shadow-lg border border-[#2FD1C5]/50'
+                        : 'text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D]/70 hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]'}
                     `}
                     aria-label={`Navigate to ${item.label}`}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-white' : 'text-amber-400'}`} />
+                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-white' : 'text-[#1E5AA8] dark:text-[#6EE7D8]'}`} />
                     <span className="text-sm font-medium">{item.label}</span>
                   </Link>
                 </li>

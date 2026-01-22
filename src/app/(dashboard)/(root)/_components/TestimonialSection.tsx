@@ -159,7 +159,7 @@ const TestimonialSection: React.FC = () => {
             className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] leading-[1] font-extrabold opacity-20 dark:opacity-80"
             style={{
               background:
-                "linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)",
+                "linear-gradient(180deg, rgba(47, 209, 197, 0.4) 0%, rgba(47, 209, 197, 0) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -176,10 +176,10 @@ const TestimonialSection: React.FC = () => {
           >
             LEADERSHIP
           </span>
-          <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100">
+          <h2 className="font-heading text-[#0F172A] mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-[#E6F1F5]">
             The brilliant minds powering innovation
           </h2>
-          <p className="text-dark-text text-base leading-relaxed">
+          <p className="text-[#475569] dark:text-[#9FB3C8] text-base leading-relaxed">
             Meet the visionaries who turned late-night coffee runs into
             groundbreaking code. This is where revolutionary ideas meet
             relentless execution.
@@ -187,16 +187,16 @@ const TestimonialSection: React.FC = () => {
         </div>
 
         <div className="w-full px-4 sm:px-6">
-          <div className="drop-shadow-light relative z-10 overflow-hidden rounded-sm bg-white px-6 py-8 sm:px-8 sm:py-10 md:px-10 md:py-12 lg:px-12 lg:py-14 dark:drop-shadow-none dark:bg-gray-800">
+          <div className="drop-shadow-light relative z-10 overflow-hidden rounded-sm bg-white/70 px-6 py-8 sm:px-8 sm:py-10 md:px-10 md:py-12 lg:px-12 lg:py-14 dark:drop-shadow-none dark:bg-[#0B1C2D]">
             {isFetching ? (
               <div className="flex flex-col items-center gap-y-6 sm:gap-y-8 lg:flex-row lg:gap-x-8 lg:gap-y-0 min-h-[500px] sm:min-h-[550px] lg:min-h-[400px]">
                 <div className="w-full lg:w-1/2 lg:text-left flex flex-col justify-center">
-                  <div className="h-20 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
-                  <div className="h-6 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                  <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-20 w-3/4 bg-[#EEF7F6] dark:bg-[#102A3A] rounded mb-4"></div>
+                  <div className="h-6 w-1/2 bg-[#EEF7F6] dark:bg-[#102A3A] rounded mb-2"></div>
+                  <div className="h-4 w-1/4 bg-[#EEF7F6] dark:bg-[#102A3A] rounded"></div>
                 </div>
                 <div className="w-full max-w-[300px] sm:max-w-[360px] lg:w-1/2 lg:max-w-none flex items-center justify-center">
-                  <div className="relative w-[280px] h-[280px] sm:w-[330px] sm:h-[330px] lg:w-[360px] lg:h-[360px] bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
+                  <div className="relative w-[280px] h-[280px] sm:w-[330px] sm:h-[330px] lg:w-[360px] lg:h-[360px] bg-[#EEF7F6] dark:bg-[#102A3A] rounded-sm"></div>
                 </div>
               </div>
             ) : teamMembers.length > 0 ? (
@@ -221,15 +221,15 @@ const TestimonialSection: React.FC = () => {
                       <div className="flex flex-col items-center gap-y-6 sm:gap-y-8 lg:flex-row lg:gap-x-8 lg:gap-y-0 min-h-[500px] sm:min-h-[550px] lg:min-h-[400px]">
                         <div className="w-full lg:w-1/2 lg:text-left flex flex-col justify-center">
                           <p
-                            className="font-heading text-dark-text mb-4 sm:mb-6 text-sm sm:text-base lg:text-lg xl:text-xl font-light italic line-clamp-6 sm:line-clamp-8 lg:line-clamp-6"
+                            className="font-heading text-[#475569] dark:text-[#9FB3C8] mb-4 sm:mb-6 text-sm sm:text-base lg:text-lg xl:text-xl font-light italic line-clamp-6 sm:line-clamp-8 lg:line-clamp-6"
                             title={member.description}
                           >
                             “{member.description}”
                           </p>
-                          <h3 className="font-heading text-dark text-lg sm:text-xl lg:text-2xl font-semibold dark:text-white">
+                          <h3 className="font-heading text-[#0F172A] dark:text-[#E6F1F5] text-lg sm:text-xl lg:text-2xl font-semibold">
                             {member.name}
                           </h3>
-                          <p className="text-dark-text text-xs sm:text-sm lg:text-base">
+                          <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-xs sm:text-sm lg:text-base">
                             {member.role}
                           </p>
                         </div>
@@ -245,7 +245,7 @@ const TestimonialSection: React.FC = () => {
                                 priority={index === 0}
                                 onError={handleImageError}
                               />
-                              <div className="border-primary/10 bg-primary/5 dark:border-opacity-10 absolute -top-4 -right-4 -z-10 h-full w-full border backdrop-blur-[6px] dark:border-white/10 dark:bg-white/10"></div>
+                              <div className="border-[#2FD1C5]/20 bg-[#2FD1C5]/10 absolute -top-4 -right-4 -z-10 h-full w-full border backdrop-blur-[6px] dark:border-[#6EE7D8]/15 dark:bg-[#6EE7D8]/10"></div>
                             </div>
                           </div>
                         </div>
@@ -260,10 +260,10 @@ const TestimonialSection: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-16">
-                <h3 className="text-xl font-medium text-gray-600 dark:text-gray-300 mb-2">
+                <h3 className="text-xl font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                   No Testimonials Available
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="text-[#7B8A9A] dark:text-[#6B8299]">
                   Check back soon to hear from our team!
                 </p>
               </div>
@@ -289,7 +289,7 @@ const TestimonialSection: React.FC = () => {
           display: inline-block;
           width: 12px;
           height: 12px;
-          background: rgba(74, 108, 247, 0.3);
+          background: rgba(47, 209, 197, 0.3);
           border-radius: 50%;
           margin: 0 4px;
           cursor: pointer;
@@ -297,7 +297,7 @@ const TestimonialSection: React.FC = () => {
         }
 
         .testimonial-bullet-active {
-          background: #4a6cf7;
+          background: #2FD1C5;
           transform: scale(1.2);
         }
 

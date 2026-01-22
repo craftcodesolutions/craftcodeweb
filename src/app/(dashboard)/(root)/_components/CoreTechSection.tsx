@@ -14,7 +14,7 @@ export default function CoreTechSection() {
       category: 'Frontend',
       icon: (
         <svg
-          className="w-10 h-10 text-blue-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -35,7 +35,7 @@ export default function CoreTechSection() {
       category: 'Frontend',
       icon: (
         <svg
-          className="w-10 h-10 text-teal-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -56,7 +56,7 @@ export default function CoreTechSection() {
       category: 'UI',
       icon: (
         <svg
-          className="w-10 h-10 text-blue-600"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -77,7 +77,7 @@ export default function CoreTechSection() {
       category: 'Frontend',
       icon: (
         <svg
-          className="w-10 h-10 text-yellow-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -98,7 +98,7 @@ export default function CoreTechSection() {
       category: 'Frontend',
       icon: (
         <svg
-          className="w-10 h-10 text-red-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -119,7 +119,7 @@ export default function CoreTechSection() {
       category: 'Backend',
       icon: (
         <svg
-          className="w-10 h-10 text-orange-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -140,7 +140,7 @@ export default function CoreTechSection() {
       category: 'Frontend',
       icon: (
         <svg
-          className="w-10 h-10 text-pink-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -161,7 +161,7 @@ export default function CoreTechSection() {
       category: 'Backend',
       icon: (
         <svg
-          className="w-10 h-10 text-purple-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -182,7 +182,7 @@ export default function CoreTechSection() {
       category: 'Backend',
       icon: (
         <svg
-          className="w-10 h-10 text-green-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -203,7 +203,7 @@ export default function CoreTechSection() {
       category: 'Backend',
       icon: (
         <svg
-          className="w-10 h-10 text-gray-500"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -224,7 +224,7 @@ export default function CoreTechSection() {
       category: 'UX',
       icon: (
         <svg
-          className="w-10 h-10 text-pink-600"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -245,7 +245,7 @@ export default function CoreTechSection() {
       category: 'Frontend',
       icon: (
         <svg
-          className="w-10 h-10 text-black"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -266,7 +266,7 @@ export default function CoreTechSection() {
       category: 'UI',
       icon: (
         <svg
-          className="w-10 h-10 text-teal-600"
+          className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -313,21 +313,21 @@ export default function CoreTechSection() {
         <span
           className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
           style={{
-            background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
+            background: 'linear-gradient(180deg, rgba(47, 209, 197, 0.35) 0%, rgba(47, 209, 197, 0) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             color: 'transparent',
-            ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
+            ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#E6F1F5', color: '#E6F1F5', background: 'none' } : {})
           }}
         >
           CORE_TECH
         </span>
 
-        <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100">
+        <h2 className="font-heading text-[#0F172A] mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-[#E6F1F5]">
           The Technology That Powers Us
         </h2>
-        <p className="text-dark-text text-base">
+        <p className="text-[#475569] dark:text-[#9FB3C8] text-base">
           Built on a foundation of modern tools and scalable architecture, our core technologies ensure
           speed, security, and seamless user experiences. From backend to frontend, we craft with precision
           to deliver reliable and future-ready solutions.
@@ -350,14 +350,14 @@ export default function CoreTechSection() {
             }}
             aria-selected={filter === category}
             aria-label={`Show ${category} technologies (${categoryCounts[category]})`}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-500 ease-out outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${filter === category
-              ? "bg-blue-600 text-white shadow-lg transform scale-105"
-              : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105 hover:shadow-md"
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-500 ease-out outline-none focus:ring-2 focus:ring-[#2FD1C5]/50 ${filter === category
+              ? "bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] text-white shadow-lg transform scale-105"
+              : "bg-[#EEF7F6] dark:bg-[#102A3A] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#DCEEEE] dark:hover:bg-[#1E3A4A] hover:scale-105 hover:shadow-md"
               }`}
             role="tab"
             tabIndex={0}
           >
-            {category} <span className="ml-1 text-xs bg-gray-900 px-2 py-0.5 rounded-full">{categoryCounts[category]}</span>
+            {category} <span className="ml-1 text-xs bg-[#0B1C2D] text-[#E6F1F5] px-2 py-0.5 rounded-full">{categoryCounts[category]}</span>
           </button>
         ))}
       </div>
@@ -367,7 +367,7 @@ export default function CoreTechSection() {
         {filteredTechnologies.map((tech, index) => (
           <div
             key={index}
-            className={`relative bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col items-center text-center shadow-lg transition-all duration-700 ease-out transform hover:scale-105 hover:shadow-2xl hover:border-gray-600 group ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} animate-fade-in`}
+            className={`relative bg-gradient-to-br from-[#FFFFFF] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#0B1C2D] dark:via-[#102A3A] dark:to-[#0B1C2D] border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/80 rounded-xl p-6 flex flex-col items-center text-center shadow-lg transition-all duration-700 ease-out transform hover:scale-105 hover:shadow-2xl hover:border-[#2FD1C5]/50 dark:hover:border-[#0FD9C3]/50 group ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} animate-fade-in`}
             style={{
               transitionDelay: `${index * 100}ms`,
               transitionProperty: 'all',
@@ -377,9 +377,9 @@ export default function CoreTechSection() {
             aria-label={tech.title}
           >
             <div className="mb-4 transition-transform duration-500 ease-out group-hover:scale-110 group-hover:rotate-3">{tech.icon}</div>
-            <h3 className="text-lg font-semibold text-white transition-colors duration-300 ease-out group-hover:text-blue-300">{tech.title}</h3>
+            <h3 className="text-lg font-semibold text-[#0F172A] dark:text-[#E6F1F5] transition-colors duration-300 ease-out group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8]">{tech.title}</h3>
             <p
-              className="text-sm text-gray-400 mt-2 truncate max-w-[180px] group-hover:whitespace-normal group-hover:max-w-none relative transition-all duration-500 ease-out group-hover:text-gray-300 overflow-hidden"
+              className="text-sm text-[#475569] dark:text-[#9FB3C8] mt-2 truncate max-w-[180px] group-hover:whitespace-normal group-hover:max-w-none relative transition-all duration-500 ease-out group-hover:text-[#1E5AA8] dark:group-hover:text-[#9FB3C8] overflow-hidden"
               style={{
                 cursor: tech.description.length > 60 ? 'pointer' : 'default',
                 maxHeight: '1.5rem',

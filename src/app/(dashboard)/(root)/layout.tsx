@@ -45,9 +45,14 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-white text-black dark:bg-black dark:text-white transition-colors duration-500">
+    <div className="relative flex flex-col min-h-screen text-[#0F172A] dark:text-[#E6F1F5] transition-colors duration-500 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
       <Header />
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-20">
+      <main className="relative flex-1 w-full px-4 sm:px-6 lg:px-8 pt-20">
         {children}
         <FloatingChatButton />
       </main>

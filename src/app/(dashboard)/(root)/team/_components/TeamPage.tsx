@@ -327,22 +327,22 @@ export default function TeamPage() {
 
   const getDesignationColor = (designation: string) => {
     const colors = {
-      developer: 'from-blue-500 to-blue-700',
-      designer: 'from-purple-500 to-purple-700',
-      manager: 'from-emerald-500 to-emerald-700',
-      tester: 'from-orange-500 to-orange-700',
-      analyst: 'from-indigo-500 to-indigo-700',
-      support: 'from-pink-500 to-pink-700',
-      lead: 'from-rose-500 to-rose-700',
-      architect: 'from-teal-500 to-teal-700',
-      engineer: 'from-cyan-500 to-cyan-700',
-      consultant: 'from-amber-500 to-amber-700',
-      specialist: 'from-lime-500 to-lime-700',
-      director: 'from-violet-500 to-violet-700',
+      developer: 'from-[#2FD1C5] to-[#0B1C2D]',
+      designer: 'from-[#2FD1C5] to-[#0B1C2D]',
+      manager: 'from-[#2FD1C5] to-[#0B1C2D]',
+      tester: 'from-[#2FD1C5] to-[#0B1C2D]',
+      analyst: 'from-[#2FD1C5] to-[#0B1C2D]',
+      support: 'from-[#2FD1C5] to-[#0B1C2D]',
+      lead: 'from-[#2FD1C5] to-[#0B1C2D]',
+      architect: 'from-[#2FD1C5] to-[#0B1C2D]',
+      engineer: 'from-[#2FD1C5] to-[#0B1C2D]',
+      consultant: 'from-[#2FD1C5] to-[#0B1C2D]',
+      specialist: 'from-[#2FD1C5] to-[#0B1C2D]',
+      director: 'from-[#2FD1C5] to-[#0B1C2D]',
     };
 
     const key = designation.toLowerCase();
-    return colors[key as keyof typeof colors] || 'from-gray-500 to-gray-700';
+    return colors[key as keyof typeof colors] || 'from-[#2FD1C5] to-[#0B1C2D]';
   };
 
   const truncateBio = (bio: string, wordLimit: number = 25) => {
@@ -352,7 +352,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-50 via-white to-slate-100 dark:from-blue-900/20 dark:via-slate-800 dark:to-transparent">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#F7FBFC] via-white to-[#E6F7F6] dark:from-[#050B14]/20 dark:via-[#102A3A] dark:to-transparent">
       {/* Inject custom scrollbar styles */}
       <style dangerouslySetInnerHTML={{ __html: customScrollbarStyles }} />
       
@@ -360,7 +360,7 @@ export default function TeamPage() {
       
       {/* Modern Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-200/40 via-transparent to-transparent dark:from-violet-900/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#DCEEEE]/40 via-transparent to-transparent dark:from-[#050B14]/20" />
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -373,15 +373,15 @@ export default function TeamPage() {
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl rounded-3xl border border-white/30 dark:border-slate-700/40 shadow-2xl p-8 md:p-12 text-center mb-12 overflow-hidden"
+            className="relative bg-white/80 dark:bg-[#102A3A]/80 backdrop-blur-2xl rounded-3xl border border-white/30 dark:border-[#0B1C2D]/40 shadow-2xl p-8 md:p-12 text-center mb-12 overflow-hidden"
           >
             {/* Animated Background Pattern */}
             <div className="absolute inset-0 opacity-5 dark:opacity-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#2FD1C5] via-[#2FD1C5] to-[#2FD1C5]" />
               {Array.from({ length: 20 }).map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-1 h-1 bg-violet-400 rounded-full"
+                  className="absolute w-1 h-1 bg-[#6EE7D8] rounded-full"
                   style={{
                     left: `${Math.random() * 100}%`,
                     top: `${Math.random() * 100}%`,
@@ -404,7 +404,7 @@ export default function TeamPage() {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="relative p-6 bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-600 rounded-3xl shadow-2xl"
+                className="relative p-6 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] rounded-3xl shadow-2xl"
               >
                 <Sparkles className="w-10 h-10 text-white relative z-10" />
                 
@@ -412,14 +412,14 @@ export default function TeamPage() {
                 <motion.div
                   animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute inset-0 bg-gradient-to-r from-violet-400 to-purple-500 rounded-3xl"
+                  className="absolute inset-0 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] rounded-3xl"
                 />
                 
                 {/* Orbiting Elements */}
                 {[0, 120, 240].map((rotation, i) => (
                   <motion.div
                     key={i}
-                    className="absolute w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                    className="absolute w-3 h-3 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] rounded-full"
                     style={{
                       top: '50%',
                       left: '50%',
@@ -444,7 +444,7 @@ export default function TeamPage() {
               <motion.div
                 animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-4 -right-4 p-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-xl shadow-lg"
+                className="absolute -top-4 -right-4 p-2 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] rounded-xl shadow-lg"
               >
                 <Rocket className="w-4 h-4 text-white" />
               </motion.div>
@@ -452,7 +452,7 @@ export default function TeamPage() {
               <motion.div
                 animate={{ y: [10, -10, 10], rotate: [0, -5, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-4 -left-4 p-2 bg-gradient-to-r from-pink-400 to-rose-500 rounded-xl shadow-lg"
+                className="absolute -bottom-4 -left-4 p-2 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] rounded-xl shadow-lg"
               >
                 <Heart className="w-4 h-4 text-white" />
               </motion.div>
@@ -460,23 +460,23 @@ export default function TeamPage() {
               <motion.div
                 animate={{ y: [-5, 15, -5], rotate: [0, 10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                className="absolute top-0 left-12 p-2 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl shadow-lg"
+                className="absolute top-0 left-12 p-2 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] rounded-xl shadow-lg"
               >
                 <Target className="w-4 h-4 text-white" />
               </motion.div>
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6">
-              <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] bg-clip-text text-transparent">
                 Meet Our
               </span>
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] bg-clip-text text-transparent">
                 Dream Team
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto mb-8 leading-relaxed">
+            <p className="text-xl md:text-2xl text-[#1E5AA8] dark:text-[#9FB3C8] max-w-4xl mx-auto mb-8 leading-relaxed">
               Talented professionals crafting extraordinary digital experiences with creativity and innovation
             </p>
             
@@ -493,7 +493,7 @@ export default function TeamPage() {
                     });
                   }
                 }}
-                className="group px-8 py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
+                className="group px-8 py-4 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] text-white font-bold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
               >
                 <div className="flex items-center gap-3 relative z-10">
                   <motion.div
@@ -526,28 +526,28 @@ export default function TeamPage() {
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl p-8">
+          <div className="bg-white/60 dark:bg-[#102A3A]/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-[#0B1C2D]/30 shadow-xl p-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               {/* Header Content */}
               <div className="flex-1">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] bg-clip-text text-transparent mb-2">
                   Team Directory
                 </h2>
-                <p className="text-slate-600 dark:text-slate-300">
+                <p className="text-[#1E5AA8] dark:text-[#9FB3C8]">
                   Discover our talented team members and their expertise
                 </p>
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-700/50 p-2 rounded-xl">
+              <div className="flex items-center gap-3 bg-[#E6F7F6] dark:bg-[#0B1C2D]/50 p-2 rounded-xl">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setViewMode('grid')}
                   className={`px-4 py-2 cursor-pointer rounded-lg flex items-center gap-2 transition-all duration-200 ${
                     viewMode === 'grid'
-                      ? 'bg-white dark:bg-slate-600 shadow-md text-violet-600 dark:text-violet-400'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600/50'
+                      ? 'bg-white dark:bg-[#1E5AA8] shadow-md text-[#1E5AA8] dark:text-[#6EE7D8]'
+                      : 'text-[#1E5AA8] dark:text-[#9FB3C8] hover:bg-white/50 dark:hover:bg-[#1E5AA8]/50'
                   }`}
                 >
                   <Grid3X3 className="w-4 h-4" />
@@ -559,8 +559,8 @@ export default function TeamPage() {
                   onClick={() => setViewMode('list')}
                   className={`px-4 py-2 cursor-pointer rounded-lg flex items-center gap-2 transition-all duration-200 ${
                     viewMode === 'list'
-                      ? 'bg-white dark:bg-slate-600 shadow-md text-violet-600 dark:text-violet-400'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600/50'
+                      ? 'bg-white dark:bg-[#1E5AA8] shadow-md text-[#1E5AA8] dark:text-[#6EE7D8]'
+                      : 'text-[#1E5AA8] dark:text-[#9FB3C8] hover:bg-white/50 dark:hover:bg-[#1E5AA8]/50'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -580,18 +580,18 @@ export default function TeamPage() {
                       window.navigator.vibrate(50);
                     }
                   }}
-                  className="p-3 bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 rounded-xl transition-all duration-200 group relative"
+                  className="p-3 bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 rounded-xl transition-all duration-200 group relative"
                   title="Refresh team members"
                 >
                   {/* Loading indicator */}
                   {isFetching && (
                     <motion.div
-                      className="absolute inset-0 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center"
+                      className="absolute inset-0 bg-[#E6F7F6] dark:bg-[#050B14]/30 rounded-xl flex items-center justify-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
-                      <svg className="animate-spin h-5 w-5 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-5 w-5 text-[#1E5AA8]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -601,7 +601,7 @@ export default function TeamPage() {
                     animate={{ rotate: isFetching ? 360 : 0 }}
                     transition={{ duration: 1, repeat: isFetching ? Infinity : 0, ease: "linear" }}
                   >
-                    <Star className="w-5 h-5 text-violet-600 dark:text-violet-400 transform transition-transform duration-500 group-hover:scale-110" />
+                    <Star className="w-5 h-5 text-[#1E5AA8] dark:text-[#6EE7D8] transform transition-transform duration-500 group-hover:scale-110" />
                   </motion.div>
                 </motion.button>
               </div>
@@ -618,21 +618,21 @@ export default function TeamPage() {
               exit={{ opacity: 0, y: -20 }}
               className="mb-6"
             >
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 flex items-center gap-3">
-                <div className="p-2 bg-red-100 dark:bg-red-800/30 rounded-lg">
-                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-[#F7FBFC] dark:bg-[#050B14]/20 border border-[#DCEEEE] dark:border-[#102A3A] rounded-2xl p-4 flex items-center gap-3">
+                <div className="p-2 bg-[#E6F7F6] dark:bg-[#102A3A]/30 rounded-lg">
+                  <svg className="w-5 h-5 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
-                  <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+                  <h3 className="text-sm font-medium text-[#102A3A] dark:text-[#DCEEEE]">Error</h3>
+                  <p className="text-sm text-[#1E5AA8] dark:text-[#9FB3C8]">{error}</p>
                 </div>
                 <button
                   onClick={() => setError(null)}
-                  className="p-2 hover:bg-red-100 dark:hover:bg-red-800/30 rounded-lg transition-colors"
+                  className="p-2 hover:bg-[#E6F7F6] dark:hover:bg-[#102A3A]/30 rounded-lg transition-colors"
                 >
-                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -658,7 +658,7 @@ export default function TeamPage() {
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={index}
-                    className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl p-6"
+                    className="bg-white/60 dark:bg-[#102A3A]/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-[#0B1C2D]/30 shadow-xl p-6"
                   >
                     <div className="flex items-center gap-4 mb-4">
                       <Skeleton className="h-16 w-16 rounded-full" />
@@ -683,10 +683,10 @@ export default function TeamPage() {
                 {/* Results Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-2xl font-bold text-[#0F172A] dark:text-white">
                       Team Members
                     </h3>
-                    <span className="px-4 py-2 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 text-violet-800 dark:text-violet-200 rounded-full text-sm font-semibold">
+                    <span className="px-4 py-2 bg-gradient-to-r from-[#E6F7F6] to-[#E6F7F6] dark:from-[#050B14]/30 dark:to-[#050B14]/30 text-[#102A3A] dark:text-[#DCEEEE] rounded-full text-sm font-semibold">
                       {teamMembers.length} members
                     </span>
                   </div>
@@ -709,7 +709,7 @@ export default function TeamPage() {
                     >
                       <Link href={`/team/${member.slug}`}>
                         <div className={`
-                          bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden
+                          bg-white/60 dark:bg-[#102A3A]/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-[#0B1C2D]/30 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden
                           ${viewMode === 'list' ? 'flex items-center p-6' : 'p-6'}
                         `}>
                           {viewMode === 'grid' ? (
@@ -717,7 +717,7 @@ export default function TeamPage() {
                               {/* Grid Layout */}
                               <div className="text-center mb-6 relative">
                                 <div className="relative inline-block group/avatar">
-                                  <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden border-4 border-white/50 dark:border-slate-700/50 shadow-lg group-hover:border-violet-400 transition-all duration-300 relative">
+                                  <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden border-4 border-white/50 dark:border-[#0B1C2D]/50 shadow-lg group-hover:border-[#6EE7D8] transition-all duration-300 relative">
                                     <Image
                                       src={member.image}
                                       alt={member.name}
@@ -734,7 +734,7 @@ export default function TeamPage() {
                                     <motion.div
                                       initial={{ opacity: 0 }}
                                       whileHover={{ opacity: 1 }}
-                                      className="absolute inset-0 bg-gradient-to-t from-violet-600/80 via-purple-600/40 to-transparent flex items-end justify-center pb-2"
+                                      className="absolute inset-0 bg-gradient-to-t from-[#1E5AA8]/80 via-[#1E5AA8]/40 to-transparent flex items-end justify-center pb-2"
                                     >
                                       <motion.div
                                         initial={{ y: 10, opacity: 0 }}
@@ -765,7 +765,7 @@ export default function TeamPage() {
                                     <motion.div
                                       animate={{ scale: [1, 1.1, 1] }}
                                       transition={{ duration: 2, repeat: Infinity }}
-                                      className="w-6 h-6 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg"
+                                      className="w-6 h-6 bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] rounded-full flex items-center justify-center shadow-lg"
                                     >
                                       <Star className="w-3 h-3 text-white" />
                                     </motion.div>
@@ -774,7 +774,7 @@ export default function TeamPage() {
                                     <motion.div
                                       animate={{ opacity: [0.5, 1, 0.5] }}
                                       transition={{ duration: 3, repeat: Infinity }}
-                                      className="w-4 h-4 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full border-2 border-white shadow-sm"
+                                      className="w-4 h-4 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] rounded-full border-2 border-white shadow-sm"
                                     />
                                   </div>
                                   
@@ -787,7 +787,7 @@ export default function TeamPage() {
                                     {['React', 'TypeScript', 'Design'].slice(0, 2).map((skill, skillIndex) => (
                                       <span
                                         key={skill}
-                                        className="px-2 py-1 text-xs font-medium bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-violet-600 dark:text-violet-400 rounded-full shadow-sm border border-violet-200 dark:border-violet-700"
+                                        className="px-2 py-1 text-xs font-medium bg-white/90 dark:bg-[#102A3A]/90 backdrop-blur-sm text-[#1E5AA8] dark:text-[#6EE7D8] rounded-full shadow-sm border border-[#DCEEEE] dark:border-[#0B1C2D]"
                                       >
                                         {skill}
                                       </span>
@@ -797,25 +797,25 @@ export default function TeamPage() {
                               </div>
                               
                               <div className="text-center space-y-3">
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors">
+                                <h3 className="text-xl font-bold text-[#0F172A] dark:text-white group-hover:text-[#1E5AA8] transition-colors">
                                   {member.name}
                                 </h3>
                                 <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r ${getDesignationColor(member.designation)} text-white shadow-lg`}>
                                   {member.role}
                                 </span>
-                                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3">
+                                <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-sm leading-relaxed line-clamp-3">
                                   {truncateBio(member.description, 15)}
                                 </p>
                               </div>
                               
-                              <div className="mt-6 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                              <div className="mt-6 pt-4 border-t border-[#DCEEEE]/50 dark:border-[#0B1C2D]/50">
                                 {/* Social Media Links */}
                                 <div className="flex items-center justify-center gap-3 mb-4">
                                   {[
-                                    { icon: Mail, color: "from-blue-500 to-blue-600", label: "Email" },
-                                    { icon: Linkedin, color: "from-blue-600 to-blue-700", label: "LinkedIn" },
-                                    { icon: Github, color: "from-gray-700 to-gray-800", label: "GitHub" },
-                                    { icon: Twitter, color: "from-sky-400 to-sky-500", label: "Twitter" }
+                                    { icon: Mail, color: "from-[#2FD1C5] to-[#1E5AA8]", label: "Email" },
+                                    { icon: Linkedin, color: "from-[#1E5AA8] to-[#0B1C2D]", label: "LinkedIn" },
+                                    { icon: Github, color: "from-[#0B1C2D] to-[#102A3A]", label: "GitHub" },
+                                    { icon: Twitter, color: "from-[#6EE7D8] to-[#2FD1C5]", label: "Twitter" }
                                   ].map((social, socialIndex) => (
                                     <motion.button
                                       key={social.label}
@@ -834,7 +834,7 @@ export default function TeamPage() {
                                   <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 text-violet-700 dark:text-violet-300 rounded-xl text-xs font-medium hover:shadow-sm transition-all duration-200"
+                                    className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#E6F7F6] to-[#E6F7F6] dark:from-[#050B14]/30 dark:to-[#050B14]/30 text-[#0B1C2D] dark:text-[#9FB3C8] rounded-xl text-xs font-medium hover:shadow-sm transition-all duration-200"
                                   >
                                     <Eye className="w-3 h-3" />
                                     View Profile
@@ -844,16 +844,16 @@ export default function TeamPage() {
                                     <motion.button
                                       whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
-                                      className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                      className="p-2 rounded-lg bg-[#E6F7F6] dark:bg-[#0B1C2D] hover:bg-[#DCEEEE] dark:hover:bg-[#1E5AA8] transition-colors"
                                     >
-                                      <Heart className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+                                      <Heart className="w-3 h-3 text-[#1E5AA8] dark:text-[#6EE7D8]" />
                                     </motion.button>
                                     <motion.button
                                       whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
-                                      className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                      className="p-2 rounded-lg bg-[#E6F7F6] dark:bg-[#0B1C2D] hover:bg-[#DCEEEE] dark:hover:bg-[#1E5AA8] transition-colors"
                                     >
-                                      <Share2 className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+                                      <Share2 className="w-3 h-3 text-[#1E5AA8] dark:text-[#6EE7D8]" />
                                     </motion.button>
                                   </div>
                                 </div>
@@ -864,7 +864,7 @@ export default function TeamPage() {
                               {/* Modern List Layout */}
                               <div className="flex items-center gap-6 flex-1">
                                 <div className="relative">
-                                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-4 border-white/50 dark:border-slate-700/50 shadow-lg group-hover:border-violet-400 transition-all duration-300">
+                                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-4 border-white/50 dark:border-[#0B1C2D]/50 shadow-lg group-hover:border-[#6EE7D8] transition-all duration-300">
                                     <Image
                                       src={member.image}
                                       alt={member.name}
@@ -880,7 +880,7 @@ export default function TeamPage() {
                                     <motion.div
                                       initial={{ opacity: 0 }}
                                       whileHover={{ opacity: 1 }}
-                                      className="absolute inset-0 bg-gradient-to-r from-violet-600/80 to-purple-600/80 flex items-center justify-center"
+                                      className="absolute inset-0 bg-gradient-to-r from-[#1E5AA8]/80 to-[#1E5AA8]/80 flex items-center justify-center"
                                     >
                                       <Eye className="w-5 h-5 text-white" />
                                     </motion.div>
@@ -888,7 +888,7 @@ export default function TeamPage() {
                                   <motion.div
                                     animate={{ scale: [1, 1.1, 1] }}
                                     transition={{ duration: 2, repeat: Infinity }}
-                                    className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg"
+                                    className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] rounded-full flex items-center justify-center shadow-lg"
                                   >
                                     <Star className="w-3 h-3 text-white" />
                                   </motion.div>
@@ -896,7 +896,7 @@ export default function TeamPage() {
                                 
                                 <div className="flex-1 space-y-3">
                                   <div className="flex items-center gap-3">
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors">
+                                    <h3 className="text-lg font-bold text-[#0F172A] dark:text-white group-hover:text-[#1E5AA8] transition-colors">
                                       {member.name}
                                     </h3>
                                     <motion.span 
@@ -907,7 +907,7 @@ export default function TeamPage() {
                                     </motion.span>
                                   </div>
                                   
-                                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                                  <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-sm leading-relaxed">
                                     {truncateBio(member.description, 25)}
                                   </p>
                                   
@@ -919,7 +919,7 @@ export default function TeamPage() {
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: idx * 0.1 }}
-                                        className="px-2 py-1 text-xs font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300 rounded-lg border border-violet-100 dark:border-violet-800"
+                                        className="px-2 py-1 text-xs font-medium bg-[#F7FBFC] dark:bg-[#050B14]/20 text-[#1E5AA8] dark:text-[#9FB3C8] rounded-lg border border-[#E6F7F6] dark:border-[#102A3A]"
                                       >
                                         {skill}
                                       </motion.span>
@@ -931,23 +931,23 @@ export default function TeamPage() {
                                   <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
-                                    className="p-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 transition-colors group/btn"
+                                    className="p-2 rounded-xl bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 transition-colors group/btn"
                                   >
-                                    <Mail className="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover/btn:scale-110 transition-transform" />
+                                    <Mail className="w-4 h-4 text-[#1E5AA8] dark:text-[#6EE7D8] group-hover/btn:scale-110 transition-transform" />
                                   </motion.button>
                                   <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
-                                    className="p-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 transition-colors group/btn"
+                                    className="p-2 rounded-xl bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 transition-colors group/btn"
                                   >
-                                    <MessageCircle className="w-4 h-4 text-violet-600 dark:text-violet-400 group-hover/btn:scale-110 transition-transform" />
+                                    <MessageCircle className="w-4 h-4 text-[#1E5AA8] dark:text-[#6EE7D8] group-hover/btn:scale-110 transition-transform" />
                                   </motion.button>
                                   <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
-                                    className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors group/btn"
+                                    className="p-2 rounded-xl bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 transition-colors group/btn"
                                   >
-                                    <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover/btn:scale-110 transition-transform" />
+                                    <Zap className="w-4 h-4 text-[#1E5AA8] dark:text-[#6EE7D8] group-hover/btn:scale-110 transition-transform" />
                                   </motion.button>
                                 </div>
                               </div>
@@ -967,14 +967,14 @@ export default function TeamPage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="text-center py-20"
               >
-                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/30 shadow-xl p-12 max-w-md mx-auto">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center">
-                    <Users className="w-10 h-10 text-violet-600 dark:text-violet-400" />
+                <div className="bg-white/60 dark:bg-[#102A3A]/60 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-[#0B1C2D]/30 shadow-xl p-12 max-w-md mx-auto">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-[#E6F7F6] to-[#E6F7F6] dark:from-[#050B14]/30 dark:to-[#050B14]/30 rounded-2xl flex items-center justify-center">
+                    <Users className="w-10 h-10 text-[#1E5AA8] dark:text-[#6EE7D8]" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                  <h3 className="text-2xl font-bold text-[#0F172A] dark:text-white mb-4">
                     No Team Members Found
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-300 mb-6">
+                  <p className="text-[#1E5AA8] dark:text-[#9FB3C8] mb-6">
                     Our team is growing! Check back soon.
                   </p>
                 </div>
@@ -996,17 +996,17 @@ export default function TeamPage() {
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="p-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg mr-4"
+              className="p-4 bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] rounded-2xl shadow-lg mr-4"
             >
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </motion.div>
             <div className="flex-1">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-                Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Developers</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] dark:text-white">
+                Our <span className="bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] bg-clip-text text-transparent">Developers</span>
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 mt-2">
+              <p className="text-[#1E5AA8] dark:text-[#6EE7D8] mt-2">
                 Meet the coding wizards behind our digital solutions
               </p>
             </div>
@@ -1016,10 +1016,10 @@ export default function TeamPage() {
               whileHover={{ scale: 1.05, rotate: 180 }}
               whileTap={{ scale: 0.95 }}
               onClick={fetchProgrammers}
-              className="ml-4 p-3 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 rounded-xl transition-all duration-200"
+              className="ml-4 p-3 bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 rounded-xl transition-all duration-200"
               title="Refresh Developers"
             >
-              <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </motion.button>
@@ -1029,7 +1029,7 @@ export default function TeamPage() {
         {isFetchingProgrammers ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl p-6 border border-white/20 dark:border-slate-700/30">
+              <div key={i} className="bg-white/60 dark:bg-[#102A3A]/60 backdrop-blur-xl rounded-3xl p-6 border border-white/20 dark:border-[#0B1C2D]/30">
                 <Skeleton className="w-20 h-20 rounded-2xl mx-auto mb-4" />
                 <Skeleton className="h-4 w-3/4 mx-auto mb-2" />
                 <Skeleton className="h-3 w-1/2 mx-auto mb-4" />
@@ -1044,13 +1044,13 @@ export default function TeamPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-16"
           >
-            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-3xl flex items-center justify-center">
-              <svg className="w-12 h-12 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-[#E6F7F6] to-[#E6F7F6] dark:from-[#050B14]/30 dark:to-[#050B14]/30 rounded-3xl flex items-center justify-center">
+              <svg className="w-12 h-12 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Developers Found</h3>
-            <p className="text-slate-600 dark:text-slate-400">
+            <h3 className="text-xl font-semibold text-[#0F172A] dark:text-white mb-2">No Developers Found</h3>
+            <p className="text-[#1E5AA8] dark:text-[#6EE7D8]">
               We couldn't find any developers in the system at the moment.
             </p>
           </motion.div>
@@ -1063,11 +1063,11 @@ export default function TeamPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{ y: -5, scale: 1.02 }}
-                className="group bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl p-6 border border-white/20 dark:border-slate-700/30 shadow-xl hover:shadow-2xl transition-all duration-500"
+                className="group bg-white/60 dark:bg-[#102A3A]/60 backdrop-blur-xl rounded-3xl p-6 border border-white/20 dark:border-[#0B1C2D]/30 shadow-xl hover:shadow-2xl transition-all duration-500"
               >
                 <div className="text-center mb-6">
                   <div className="relative inline-block">
-                    <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden border-4 border-white/50 dark:border-slate-700/50 shadow-lg group-hover:border-emerald-400 transition-all duration-300">
+                    <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden border-4 border-white/50 dark:border-[#0B1C2D]/50 shadow-lg group-hover:border-[#6EE7D8] transition-all duration-300">
                       <Image
                         src={programmer.image}
                         alt={programmer.name}
@@ -1080,7 +1080,7 @@ export default function TeamPage() {
                         }}
                       />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] rounded-full flex items-center justify-center shadow-lg">
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                       </svg>
@@ -1089,13 +1089,13 @@ export default function TeamPage() {
                 </div>
 
                 <div className="text-center space-y-3">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+                  <h3 className="text-lg font-bold text-[#0F172A] dark:text-white group-hover:text-[#1E5AA8] transition-colors">
                     {programmer.name}
                   </h3>
-                  <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg">
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white shadow-lg">
                     {programmer.designation}
                   </span>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3">
+                  <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-sm leading-relaxed line-clamp-3">
                     {programmer.bio}
                   </p>
                   
@@ -1104,13 +1104,13 @@ export default function TeamPage() {
                       {programmer.skills.slice(0, 3).map((skill, skillIndex) => (
                         <span
                           key={skillIndex}
-                          className="px-2 py-1 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full"
+                          className="px-2 py-1 text-xs font-medium bg-[#E6F7F6] dark:bg-[#050B14]/30 text-[#0B1C2D] dark:text-[#9FB3C8] rounded-full"
                         >
                           {skill}
                         </span>
                       ))}
                       {programmer.skills.length > 3 && (
-                        <span className="px-2 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full">
+                        <span className="px-2 py-1 text-xs font-medium bg-[#E6F7F6] dark:bg-[#0B1C2D] text-[#1E5AA8] dark:text-[#6EE7D8] rounded-full">
                           +{programmer.skills.length - 3}
                         </span>
                       )}
@@ -1118,7 +1118,7 @@ export default function TeamPage() {
                   )}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                <div className="mt-6 pt-4 border-t border-[#DCEEEE]/50 dark:border-[#0B1C2D]/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {programmer.github && (
@@ -1128,9 +1128,9 @@ export default function TeamPage() {
                           rel="noopener noreferrer"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                          className="p-2 rounded-lg bg-[#E6F7F6] dark:bg-[#0B1C2D] hover:bg-[#DCEEEE] dark:hover:bg-[#1E5AA8] transition-colors"
                         >
-                          <Github className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                          <Github className="w-4 h-4 text-[#1E5AA8] dark:text-[#6EE7D8]" />
                         </motion.a>
                       )}
                       {programmer.linkedin && (
@@ -1140,23 +1140,23 @@ export default function TeamPage() {
                           rel="noopener noreferrer"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors"
+                          className="p-2 rounded-lg bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 transition-colors"
                         >
-                          <Linkedin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <Linkedin className="w-4 h-4 text-[#1E5AA8] dark:text-[#6EE7D8]" />
                         </motion.a>
                       )}
                       <motion.a
                         href={`mailto:${programmer.email}`}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"
+                        className="p-2 rounded-lg bg-[#E6F7F6] dark:bg-[#050B14]/30 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A]/50 transition-colors"
                       >
-                        <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <Mail className="w-4 h-4 text-[#1E5AA8] dark:text-[#6EE7D8]" />
                       </motion.a>
                     </div>
                     
                     {programmer.experience && (
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      <div className="text-xs text-[#2FD1C5] dark:text-[#6EE7D8] font-medium">
                         {programmer.experience}
                       </div>
                     )}
@@ -1182,7 +1182,7 @@ const ModernFloatingElements = () => (
         opacity: [0.1, 0.3, 0.1],
       }}
       transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-[15%] left-[10%] w-32 h-32 bg-gradient-to-br from-violet-400/20 to-purple-400/20 dark:from-violet-600/10 dark:to-purple-600/10 rounded-3xl blur-xl"
+      className="absolute top-[15%] left-[10%] w-32 h-32 bg-gradient-to-br from-[#6EE7D8]/20 to-[#6EE7D8]/20 dark:from-[#1E5AA8]/10 dark:to-[#1E5AA8]/10 rounded-3xl blur-xl"
     />
     
     <motion.div
@@ -1193,7 +1193,7 @@ const ModernFloatingElements = () => (
         opacity: [0.2, 0.4, 0.2],
       }}
       transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-[30%] right-[15%] w-24 h-24 bg-gradient-to-br from-indigo-400/25 to-blue-400/25 dark:from-indigo-600/15 dark:to-blue-600/15 rounded-full blur-lg"
+      className="absolute top-[30%] right-[15%] w-24 h-24 bg-gradient-to-br from-[#6EE7D8]/25 to-[#6EE7D8]/25 dark:from-[#1E5AA8]/15 dark:to-[#1E5AA8]/15 rounded-full blur-lg"
     />
     
     <motion.div
@@ -1203,7 +1203,7 @@ const ModernFloatingElements = () => (
         opacity: [0.15, 0.35, 0.15],
       }}
       transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute bottom-[20%] left-[20%] w-40 h-40 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 dark:from-emerald-600/10 dark:to-teal-600/10 rounded-2xl blur-2xl"
+      className="absolute bottom-[20%] left-[20%] w-40 h-40 bg-gradient-to-br from-[#6EE7D8]/20 to-[#6EE7D8]/20 dark:from-[#1E5AA8]/10 dark:to-[#1E5AA8]/10 rounded-2xl blur-2xl"
     />
     
     <motion.div
@@ -1214,7 +1214,7 @@ const ModernFloatingElements = () => (
         opacity: [0.2, 0.4, 0.2],
       }}
       transition={{ duration: 28, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute bottom-[35%] right-[25%] w-28 h-28 bg-gradient-to-br from-pink-400/25 to-rose-400/25 dark:from-pink-600/15 dark:to-rose-600/15 rounded-full blur-xl"
+      className="absolute bottom-[35%] right-[25%] w-28 h-28 bg-gradient-to-br from-[#6EE7D8]/25 to-[#6EE7D8]/25 dark:from-[#1E5AA8]/15 dark:to-[#1E5AA8]/15 rounded-full blur-xl"
     />
     
     {/* Floating Particles */}
@@ -1233,7 +1233,7 @@ const ModernFloatingElements = () => (
           ease: "easeInOut",
           delay: i * 0.3,
         }}
-        className={`absolute w-2 h-2 bg-gradient-to-r from-violet-400 to-purple-400 dark:from-violet-500 dark:to-purple-500 rounded-full blur-sm`}
+        className={`absolute w-2 h-2 bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] dark:from-[#2FD1C5] dark:to-[#1E5AA8] rounded-full blur-sm`}
         style={{
           top: `${20 + (i * 8)}%`,
           left: `${15 + (i * 10)}%`,
@@ -1248,7 +1248,7 @@ const ModernFloatingElements = () => (
         opacity: [0.1, 0.25, 0.1],
       }}
       transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-[5%] right-[5%] w-96 h-96 bg-gradient-radial from-violet-300/10 via-purple-300/5 to-transparent dark:from-violet-600/5 dark:via-purple-600/2 rounded-full blur-3xl"
+      className="absolute top-[5%] right-[5%] w-96 h-96 bg-gradient-radial from-[#9FB3C8]/10 via-[#9FB3C8]/5 to-transparent dark:from-[#1E5AA8]/5 dark:via-[#1E5AA8]/2 rounded-full blur-3xl"
     />
     
     <motion.div
@@ -1257,7 +1257,7 @@ const ModernFloatingElements = () => (
         opacity: [0.15, 0.3, 0.15],
       }}
       transition={{ duration: 22, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-      className="absolute bottom-[10%] left-[5%] w-80 h-80 bg-gradient-radial from-indigo-300/10 via-blue-300/5 to-transparent dark:from-indigo-600/5 dark:via-blue-600/2 rounded-full blur-3xl"
+      className="absolute bottom-[10%] left-[5%] w-80 h-80 bg-gradient-radial from-[#9FB3C8]/10 via-[#9FB3C8]/5 to-transparent dark:from-[#1E5AA8]/5 dark:via-[#1E5AA8]/2 rounded-full blur-3xl"
     />
   </div>
 );

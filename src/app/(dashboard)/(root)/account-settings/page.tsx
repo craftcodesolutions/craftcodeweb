@@ -10,19 +10,19 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 // Modern design system
-const modernGradient = 'bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-blue-950/20';
-const glassCard = 'backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20 dark:border-slate-700/50';
-const modernShadow = 'shadow-2xl shadow-blue-500/5 dark:shadow-blue-500/10';
+const modernGradient = 'bg-gradient-to-br from-[#F7FBFC] via-white to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#102A3A]';
+const glassCard = 'backdrop-blur-xl bg-white/80 dark:bg-[#0B1C2D]/80 border border-[#DCEEEE]/50 dark:border-[#1E3A4A]/60';
+const modernShadow = 'shadow-2xl shadow-[#2FD1C5]/10 dark:shadow-[#0FD9C3]/15';
 const modernRadius = 'rounded-2xl';
 const modernPadding = 'p-8';
 const hoverTransform = 'hover:scale-[1.02] transition-all duration-500 ease-out';
-const gradientText = 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent';
+const gradientText = 'bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] bg-clip-text text-transparent';
 
 const ModernPattern = () => (
   <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" />
-    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-400/10 to-blue-600/10 rounded-full blur-3xl animate-pulse delay-500" />
+    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-[#6EE7D8]/25 to-[#1E5AA8]/20 rounded-full blur-3xl animate-pulse" />
+    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-[#2FD1C5]/20 to-[#0B8ED8]/20 rounded-full blur-3xl animate-pulse delay-1000" />
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-[#0FD9C3]/10 to-[#1E5AA8]/10 rounded-full blur-3xl animate-pulse delay-500" />
   </div>
 );
 
@@ -39,7 +39,7 @@ const FloatingElements = () => (
         repeat: Infinity, 
         ease: "easeInOut" 
       }}
-      className="absolute top-8 right-8 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-60"
+      className="absolute top-8 right-8 w-6 h-6 bg-gradient-to-r from-[#6EE7D8] to-[#1E5AA8] rounded-full opacity-60"
     />
     <motion.div 
       animate={{ 
@@ -53,22 +53,22 @@ const FloatingElements = () => (
         ease: "easeInOut",
         delay: 2
       }}
-      className="absolute bottom-8 left-8 w-4 h-4 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full opacity-40"
+      className="absolute bottom-8 left-8 w-4 h-4 bg-gradient-to-r from-[#2FD1C5] to-[#0B8ED8] rounded-full opacity-40"
     />
   </div>
 );
 
 const ProfileSkeleton = () => (
   <div className={`w-full lg:w-2/5 flex flex-col items-center ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} relative overflow-hidden`}>
-    <div className="relative w-40 h-40 mb-6 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse"></div>
-    <div className="h-8 w-3/4 mb-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
-    <div className="h-6 w-2/3 mb-6 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
-    <div className="h-4 w-1/2 mb-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
-    <div className="w-full h-24 mb-6 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"></div>
-    <div className="w-full pt-6 border-t border-gray-200 dark:border-gray-800">
+    <div className="relative w-40 h-40 mb-6 rounded-full bg-[#EEF7F6] dark:bg-[#102A3A] animate-pulse"></div>
+    <div className="h-8 w-3/4 mb-4 bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
+    <div className="h-6 w-2/3 mb-6 bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
+    <div className="h-4 w-1/2 mb-4 bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
+    <div className="w-full h-24 mb-6 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-xl animate-pulse"></div>
+    <div className="w-full pt-6 border-t border-[#DCEEEE] dark:border-[#1E3A4A]">
       <div className="flex justify-between">
-        <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
-        <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
+        <div className="h-4 w-1/3 bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
+        <div className="h-4 w-1/3 bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
       </div>
     </div>
   </div>
@@ -76,13 +76,13 @@ const ProfileSkeleton = () => (
 
 const ActionsSkeleton = () => (
   <div className={`w-full lg:w-3/5 flex flex-col ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} relative overflow-hidden`}>
-    <div className="h-10 w-1/2 mb-8 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
-    <div className="mb-8 p-6 rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse h-24"></div>
+    <div className="h-10 w-1/2 mb-8 bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
+    <div className="mb-8 p-6 rounded-xl bg-[#EEF7F6] dark:bg-[#102A3A] animate-pulse h-24"></div>
     <div className="space-y-4">
-      <div className="w-full h-14 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"></div>
-      <div className="w-full h-14 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"></div>
-      <div className="w-full h-14 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"></div>
-      <div className="w-full h-14 mt-8 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+      <div className="w-full h-14 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-xl animate-pulse"></div>
+      <div className="w-full h-14 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-xl animate-pulse"></div>
+      <div className="w-full h-14 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-xl animate-pulse"></div>
+      <div className="w-full h-14 mt-8 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-xl animate-pulse"></div>
     </div>
   </div>
 );
@@ -136,8 +136,8 @@ const AccountSettingsPage = () => {
       <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 ${modernGradient} relative overflow-hidden`}>
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-12">
-            <div className="h-12 w-1/3 mx-auto bg-gray-200 dark:bg-gray-800 rounded animate-pulse mb-4"></div>
-            <div className="h-6 w-1/2 mx-auto bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
+            <div className="h-12 w-1/3 mx-auto bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse mb-4"></div>
+            <div className="h-6 w-1/2 mx-auto bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
           </div>
           <div className="flex flex-col lg:flex-row gap-8">
             <ProfileSkeleton />
@@ -165,19 +165,19 @@ const AccountSettingsPage = () => {
             transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
             className="w-16 h-16 mb-6"
           >
-            <svg className="w-full h-full text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-full h-full text-[#2FD1C5] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </motion.div>
-          <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 tracking-tight">
+          <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] tracking-tight">
             Account Settings
           </h2>
-          <p className="text-base text-gray-600 dark:text-gray-300 text-center mb-6">
+          <p className="text-base text-[#475569] dark:text-[#9FB3C8] text-center mb-6">
             You must be logged in to view account settings.
           </p>
           <button
             onClick={() => router.push('/login')}
-            className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+            className="px-8 py-3 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:via-[#1FA2FF] hover:to-[#1E5AA8] text-white font-medium rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
           >
             Sign In
           </button>
@@ -209,7 +209,7 @@ const AccountSettingsPage = () => {
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 via-indigo-600 to-blue-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-[length:200%_100%] blur-xl opacity-30 rounded-2xl"
+              className="absolute inset-0 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] bg-[length:200%_100%] blur-xl opacity-30 rounded-2xl"
             />
             <h1 className={`relative text-5xl md:text-6xl font-black mb-6 ${gradientText} tracking-tight`}>
               Account Settings
@@ -219,7 +219,7 @@ const AccountSettingsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl text-[#475569] dark:text-[#9FB3C8] max-w-3xl mx-auto leading-relaxed"
           >
             Customize your experience with advanced settings, security controls, and personalization options
           </motion.p>
@@ -242,22 +242,22 @@ const AccountSettingsPage = () => {
                   alt="Profile" 
                   width={160} 
                   height={160} 
-                  className="object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-2xl group-hover:scale-105 transition-transform duration-300 z-10 relative"
+                  className="object-cover rounded-full border-4 border-white dark:border-[#1E3A4A] shadow-2xl group-hover:scale-105 transition-transform duration-300 z-10 relative"
                 />
               ) : (
-                <div className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-6xl font-extrabold text-white shadow-2xl group-hover:scale-105 transition-transform duration-300 z-10 relative">
+                <div className="w-40 h-40 rounded-full bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] flex items-center justify-center text-6xl font-extrabold text-white shadow-2xl group-hover:scale-105 transition-transform duration-300 z-10 relative">
                   {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                 </div>
               )}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 blur-md opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#6EE7D8]/40 to-[#1E5AA8]/40 blur-md opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
             </div>
             
             <div className="text-center mb-6 z-10 relative">
-              <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight flex items-center justify-center gap-3">
+              <div className="text-3xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-2 tracking-tight flex items-center justify-center gap-3">
                 <motion.div
                   whileHover={{ rotate: 360, scale: 1.1 }}
                   transition={{ duration: 0.5 }}
-                  className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                  className="p-2 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] rounded-full"
                 >
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -266,9 +266,9 @@ const AccountSettingsPage = () => {
                 <span className={gradientText}>{user.firstName} {user.lastName}</span>
               </div>
               
-              <div className="text-lg text-slate-500 dark:text-slate-400 mb-6 flex items-center justify-center gap-3">
-                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-lg text-[#475569] dark:text-[#9FB3C8] mb-6 flex items-center justify-center gap-3">
+                <div className="p-1.5 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-lg">
+                  <svg className="w-5 h-5 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
@@ -276,7 +276,7 @@ const AccountSettingsPage = () => {
               </div>
               
               <div className="flex justify-center gap-3 mb-6">
-                <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold shadow-lg ${user.isAdmin ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'} animate-fadeIn transition-all duration-300`}>
+                <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold shadow-lg ${user.isAdmin ? 'bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] text-white' : 'bg-[#EEF7F6] text-[#0F172A] dark:bg-[#102A3A] dark:text-[#9FB3C8]'} animate-fadeIn transition-all duration-300`}>
                   {user.isAdmin ? 'Admin' : 'Member'}
                 </span>
                 <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold shadow-lg bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
@@ -287,15 +287,15 @@ const AccountSettingsPage = () => {
             
             {user.bio && (
               <div className="w-full mb-6 flex flex-col items-start z-10 relative">
-                <span className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="font-semibold text-[#475569] dark:text-[#9FB3C8] mb-3 flex items-center gap-2">
+                  <svg className="w-6 h-6 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253" />
                   </svg>
                   About Me
                 </span>
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="text-gray-900 dark:text-white px-5 py-3 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 w-full"
+                  className="text-[#0F172A] dark:text-[#E6F1F5] px-5 py-3 rounded-xl shadow-lg border border-[#DCEEEE] dark:border-[#1E3A4A] transition-all duration-300 bg-white/90 dark:bg-[#0B1C2D]/90 w-full"
                   style={{
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
@@ -307,8 +307,8 @@ const AccountSettingsPage = () => {
               </div>
             )}
             
-            <div className="w-full mt-auto pt-6 border-t border-gray-200 dark:border-gray-800 z-10 relative">
-              <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="w-full mt-auto pt-6 border-t border-[#DCEEEE] dark:border-[#1E3A4A] z-10 relative">
+              <div className="flex justify-between items-center text-sm text-[#7B8A9A] dark:text-[#6B8299]">
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -331,26 +331,26 @@ const AccountSettingsPage = () => {
             transition={{ duration: 0.8, type: 'spring', stiffness: 120, delay: 0.2 }}
             className={`w-full lg:w-3/5 flex flex-col ${modernShadow} ${glassCard} ${modernRadius} ${modernPadding} ${hoverTransform} relative overflow-hidden`}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full filter blur-3xl opacity-10 dark:opacity-20"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-10 dark:opacity-20"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#2FD1C5] rounded-full filter blur-3xl opacity-10 dark:opacity-20"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#1E5AA8] rounded-full filter blur-3xl opacity-10 dark:opacity-20"></div>
             
             <div className="relative z-10">
-              <h2 className="text-3xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 tracking-tight flex items-center gap-3">
-                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h2 className="text-3xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] tracking-tight flex items-center gap-3">
+                <svg className="w-8 h-8 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.96.602 2.298.115 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Account Management
               </h2>
               
-              <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border border-blue-100 dark:border-gray-800 shadow-inner">
+              <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-[#F7FBFC] to-[#EEF7F6] dark:from-[#0B1C2D] dark:to-[#102A3A] border border-[#DCEEEE] dark:border-[#1E3A4A] shadow-inner">
                 <div className="flex items-start gap-4">
-                  <svg className="w-6 h-6 text-blue-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-[#1E5AA8] dark:text-[#6EE7D8] mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                   <div>
-                    <h4 className="font-bold text-gray-900 dark:text-white mb-1">Security Assurance</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    <h4 className="font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-1">Security Assurance</h4>
+                    <p className="text-[#475569] dark:text-[#9FB3C8] text-sm">
                       Your personal information is encrypted and protected with industry-standard security measures.
                     </p>
                   </div>
@@ -362,7 +362,7 @@ const AccountSettingsPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push('/profile')}
-                  className="w-full py-5 cursor-pointer bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
+                  className="w-full py-5 cursor-pointer bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:via-[#1FA2FF] hover:to-[#1E5AA8] text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
                 >
                   <svg className="w-6 h-6 text-white group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -374,7 +374,7 @@ const AccountSettingsPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push('/account-settings/security')}
-                  className="w-full py-5 bg-gradient-to-r cursor-pointer from-purple-500 via-purple-600 to-pink-600 hover:from-purple-600 hover:via-purple-700 hover:to-pink-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
+                  className="w-full py-5 bg-gradient-to-r cursor-pointer from-[#0FD9C3] via-[#0B8ED8] to-[#0A2A66] hover:from-[#0B8ED8] hover:via-[#1E5AA8] hover:to-[#0A2A66] text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
                 >
                   <svg className="w-6 h-6 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -386,7 +386,7 @@ const AccountSettingsPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => router.push('/privacy')}
-                  className="w-full py-5 bg-gradient-to-r cursor-pointer from-slate-600 via-slate-700 to-slate-800 hover:from-slate-700 hover:via-slate-800 hover:to-slate-900 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
+                  className="w-full py-5 bg-gradient-to-r cursor-pointer from-[#0B1C2D] via-[#102A3A] to-[#0B1C2D] hover:from-[#102A3A] hover:via-[#0B1C2D] hover:to-[#050B14] text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 text-lg flex items-center justify-center gap-4 group relative overflow-hidden"
                 >
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -426,7 +426,7 @@ const AccountSettingsPage = () => {
               </svg>
             </div>
             <h3 className="text-2xl font-extrabold mb-4 text-red-600 dark:text-red-400">Disable Your Account?</h3>
-            <p className="mb-6 text-gray-700 dark:text-gray-300 text-lg">
+            <p className="mb-6 text-[#475569] dark:text-[#9FB3C8] text-lg">
               This will temporarily deactivate your account. Your data will be preserved but you won't be able to access our services.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -448,7 +448,7 @@ const AccountSettingsPage = () => {
                 )}
               </button>
               <button
-                className="px-8 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold rounded-xl shadow transition-all duration-300 text-lg"
+                className="px-8 py-3 bg-[#EEF7F6] dark:bg-[#102A3A] hover:bg-[#DCEEEE] dark:hover:bg-[#1E3A4A] text-[#0F172A] dark:text-[#E6F1F5] font-bold rounded-xl shadow transition-all duration-300 text-lg"
                 onClick={() => setShowDisableModal(false)}
               >
                 Cancel
@@ -469,19 +469,19 @@ const AccountSettingsPage = () => {
             <motion.div 
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-              className="w-24 h-24 mx-auto mb-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center"
+              className="w-24 h-24 mx-auto mb-6 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-full flex items-center justify-center"
             >
-              <svg className="w-16 h-16 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-16 h-16 text-[#2FD1C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </motion.div>
-            <h3 className="text-2xl font-extrabold mb-4 text-blue-600 dark:text-blue-400">Thank You for Being With Us!</h3>
-            <p className="mb-6 text-gray-700 dark:text-gray-300 text-lg">
+            <h3 className="text-2xl font-extrabold mb-4 text-[#1E5AA8] dark:text-[#6EE7D8]">Thank You for Being With Us!</h3>
+            <p className="mb-6 text-[#475569] dark:text-[#9FB3C8] text-lg">
               We're sad to see you go but happy to have served you. Your account has been disabled. 
               If you change your mind, you can reactivate within 30 days by logging in again.
             </p>
             <button
-              className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg"
+              className="px-8 py-3 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:via-[#1FA2FF] hover:to-[#1E5AA8] text-white font-bold rounded-xl shadow-lg transition-all duration-300 text-lg"
               onClick={() => { setShowThankYouModal(false); router.push('/'); }}
             >
               Return to Homepage

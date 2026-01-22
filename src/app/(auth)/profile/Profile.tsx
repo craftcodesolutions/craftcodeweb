@@ -243,10 +243,10 @@ export default function ProfileDynamic(): JSX.Element {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900 font-sans antialiased">
+      <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14] font-sans antialiased">
         <div className="flex min-h-screen">
           <div className="flex w-full lg:w-1/2 items-center justify-center p-4 sm:p-6">
-            <div className="w-full max-w-lg rounded-2xl shadow-xl p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md sm:p-8 space-y-5">
+            <div className="w-full max-w-lg rounded-2xl shadow-xl p-6 bg-[#FFFFFF]/80 dark:bg-[#0B1C2D]/80 backdrop-blur-md sm:p-8 space-y-5 border border-[#DCEEEE]/70 dark:border-[#1E3A4A]/70">
               <div className="mb-6 space-y-3">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-8 w-3/4" />
@@ -284,7 +284,7 @@ export default function ProfileDynamic(): JSX.Element {
               </div>
             </div>
           </div>
-          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-500 to-blue-700 relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0B1C2D] via-[#1E5AA8] to-[#0A2A66] relative overflow-hidden">
             <div className="flex items-center justify-center w-full relative z-10">
               <div className="max-w-md text-center px-6 py-8 space-y-6">
                 <div className="space-y-4">
@@ -316,9 +316,9 @@ export default function ProfileDynamic(): JSX.Element {
 
   if (authError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-100 via-white to-red-200 dark:from-red-900 dark:via-gray-900 dark:to-gray-800 font-sans antialiased relative">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-100 via-white to-red-200 dark:from-red-900 dark:via-[#050B14] dark:to-[#0B1C2D] font-sans antialiased relative">
         <div className="absolute inset-0 pointer-events-none z-0" style={{background: "radial-gradient(circle at 60% 40%, rgba(255,255,255,0.4) 0%, rgba(255,0,0,0.08) 100%)"}}></div>
-        <div className="flex flex-col items-center justify-center w-full max-w-md p-8 rounded-3xl shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-red-200 dark:border-red-700 z-10 relative" style={{boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"}}>
+        <div className="flex flex-col items-center justify-center w-full max-w-md p-8 rounded-3xl shadow-2xl bg-[#FFFFFF]/80 dark:bg-[#0B1C2D]/80 backdrop-blur-xl border border-red-200 dark:border-red-700 z-10 relative" style={{boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)"}}>
           <div className="flex flex-col items-center mb-4">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-red-200 via-red-400 to-red-600 dark:from-red-900 dark:via-red-700 dark:to-red-500 flex items-center justify-center shadow-xl mb-4 animate-bounce">
               <svg className="w-10 h-10 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -327,11 +327,11 @@ export default function ProfileDynamic(): JSX.Element {
               </svg>
             </div>
             <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-400 to-pink-400 dark:from-red-400 dark:via-red-300 dark:to-pink-300 mb-2 tracking-tight drop-shadow-lg">Authentication Error</h2>
-            <p className="text-base text-gray-700 dark:text-gray-200 mb-3 px-2 text-center font-medium" style={{textShadow: "0 1px 2px rgba(255,0,0,0.08)"}}>{authError}</p>
+            <p className="text-base text-[#475569] dark:text-[#E6F1F5] mb-3 px-2 text-center font-medium" style={{textShadow: "0 1px 2px rgba(255,0,0,0.08)"}}>{authError}</p>
           </div>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center px-6 py-2.5 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:to-blue-800 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 text-white shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="inline-flex items-center justify-center px-6 py-2.5 text-base font-semibold rounded-xl bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] text-white shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 dark:focus:ring-offset-[#050B14]"
             aria-label="Go to login page"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,14 +345,14 @@ export default function ProfileDynamic(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900 font-sans antialiased">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14] font-sans antialiased">
       <div className="flex min-h-screen">
         <div className="flex w-full lg:w-1/2 items-center justify-center p-4 sm:p-6">
-          <div className="w-full max-w-lg rounded-2xl shadow-xl p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md sm:p-8">
+          <div className="w-full max-w-lg rounded-2xl shadow-xl p-6 bg-[#FFFFFF]/80 dark:bg-[#0B1C2D]/80 backdrop-blur-md sm:p-8 border border-[#DCEEEE]/70 dark:border-[#1E3A4A]/70">
             <div className="mb-6">
               <Link
                 href="/"
-                className="inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200"
+                className="inline-flex items-center text-sm font-medium text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8] transition-colors duration-200"
                 aria-label="Back to Home"
               >
                 <svg className="w-4 h-4 mr-2 transform hover:-translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,8 +360,8 @@ export default function ProfileDynamic(): JSX.Element {
                 </svg>
                 Back to Home
               </Link>
-              <h2 className="mt-3 text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Your Profile</h2>
-              <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm">Update your personal information</p>
+              <h2 className="mt-3 text-3xl font-bold text-[#0F172A] dark:text-[#E6F1F5] tracking-tight">Your Profile</h2>
+              <p className="mt-1 text-[#7B8A9A] dark:text-[#9FB3C8] text-sm">Update your personal information</p>
             </div>
 
             {isSuccess && (
@@ -385,11 +385,11 @@ export default function ProfileDynamic(): JSX.Element {
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5" htmlFor="profileImage">
+                <label className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-1.5" htmlFor="profileImage">
                   Profile Image
                 </label>
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-md group cursor-pointer hover:shadow-lg transition-shadow duration-200">
+                  <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[#DCEEEE] dark:border-[#1E3A4A] shadow-md group cursor-pointer hover:shadow-lg transition-shadow duration-200">
                     <img
                       src={tempImage || userProfile.profileImage}
                       alt="Profile"
@@ -429,7 +429,7 @@ export default function ProfileDynamic(): JSX.Element {
                       aria-label="Upload profile image"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Click to upload or preview</p>
+                  <p className="text-xs text-[#7B8A9A] dark:text-[#9FB3C8]">Click to upload or preview</p>
                 </div>
                 {errors.image && !errors.image.includes('Failed to update') && (
                   <p className="mt-2 text-xs text-red-500 dark:text-red-400 text-center" role="alert">{errors.image}</p>
@@ -438,7 +438,7 @@ export default function ProfileDynamic(): JSX.Element {
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-1">
                     First Name
                   </label>
                   <input
@@ -447,7 +447,7 @@ export default function ProfileDynamic(): JSX.Element {
                     name="firstName"
                     value={userProfile.firstName}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.firstName ? 'border-red-400 dark:border-red-500' : ''}`}
+                    className={`w-full px-3 py-2 border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/80 rounded-lg bg-[#FFFFFF]/70 dark:bg-[#0B1C2D]/70 text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-all duration-200 ${errors.firstName ? 'border-red-400 dark:border-red-500' : ''}`}
                     placeholder="Enter your first name"
                     aria-invalid={errors.firstName ? 'true' : 'false'}
                     aria-describedby={errors.firstName ? 'firstName-error' : undefined}
@@ -457,7 +457,7 @@ export default function ProfileDynamic(): JSX.Element {
                   )}
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-1">
                     Last Name
                   </label>
                   <input
@@ -466,7 +466,7 @@ export default function ProfileDynamic(): JSX.Element {
                     name="lastName"
                     value={userProfile.lastName}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.lastName ? 'border-red-400 dark:border-red-500' : ''}`}
+                    className={`w-full px-3 py-2 border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/80 rounded-lg bg-[#FFFFFF]/70 dark:bg-[#0B1C2D]/70 text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-all duration-200 ${errors.lastName ? 'border-red-400 dark:border-red-500' : ''}`}
                     placeholder="Enter your last name"
                     aria-invalid={errors.lastName ? 'true' : 'false'}
                     aria-describedby={errors.lastName ? 'lastName-error' : undefined}
@@ -477,7 +477,7 @@ export default function ProfileDynamic(): JSX.Element {
                 </div>
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-1">
                   Email Address
                 </label>
                 <input
@@ -486,7 +486,7 @@ export default function ProfileDynamic(): JSX.Element {
                   name="email"
                   value={userProfile.email}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-400 dark:border-red-500' : ''}`}
+                  className={`w-full px-3 py-2 border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/80 rounded-lg bg-[#FFFFFF]/70 dark:bg-[#0B1C2D]/70 text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-400 dark:border-red-500' : ''}`}
                   placeholder="Enter your email"
                   aria-invalid={errors.email ? 'true' : 'false'}
                   aria-describedby={errors.email ? 'email-error' : undefined}
@@ -494,7 +494,7 @@ export default function ProfileDynamic(): JSX.Element {
                 {errors.email && <p className="mt-1 text-xs text-red-500 dark:text-red-400" id="email-error" role="alert">{errors.email}</p>}
               </div>
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                <label htmlFor="bio" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-1">
                   Bio
                 </label>
                 <textarea
@@ -503,20 +503,20 @@ export default function ProfileDynamic(): JSX.Element {
                   rows={4}
                   value={userProfile.bio}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${errors.bio ? 'border-red-400 dark:border-red-500' : ''}`}
+                  className={`w-full px-3 py-2 border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/80 rounded-lg bg-[#FFFFFF]/70 dark:bg-[#0B1C2D]/70 text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-all duration-200 ${errors.bio ? 'border-red-400 dark:border-red-500' : ''}`}
                   placeholder="Tell us about yourself..."
                   aria-invalid={errors.bio ? 'true' : 'false'}
                   aria-describedby={errors.bio ? 'bio-error' : undefined}
                 />
                 {errors.bio && <p className="mt-1 text-xs text-red-500 dark:text-red-400" id="bio-error" role="alert">{errors.bio}</p>}
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{userProfile.bio.length}/500 characters</p>
+                <p className="mt-1 text-xs text-[#7B8A9A] dark:text-[#9FB3C8]">{userProfile.bio.length}/500 characters</p>
               </div>
 
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-6">
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="relative cursor-pointer flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                  className="relative cursor-pointer flex-1 px-4 py-2 text-sm font-medium text-[#475569] dark:text-[#9FB3C8] border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                   aria-label="Reset form to default values"
                 >
                   Reset
@@ -524,7 +524,7 @@ export default function ProfileDynamic(): JSX.Element {
                 <button
                   type="submit"
                   disabled={isLoading || authLoading}
-                  className="relative cursor-pointer flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-500 dark:bg-blue-600 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                  className="relative cursor-pointer flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                   aria-label="Save profile changes"
                 >
                   {isLoading ? (
@@ -554,7 +554,7 @@ export default function ProfileDynamic(): JSX.Element {
               <div className="mt-6 text-center">
                 <button
                   onClick={handleLogout}
-                  className="relative w-full cursor-pointer max-w-xs px-4 py-2 text-sm font-medium text-white bg-red-500 dark:bg-red-600 rounded-lg hover:bg-red-600 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                  className="relative w-full cursor-pointer max-w-xs px-4 py-2 text-sm font-medium text-white bg-red-500 dark:bg-red-600 rounded-lg hover:bg-red-600 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-[#050B14] transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                   aria-label="Sign out"
                 >
                   Sign Out
@@ -564,7 +564,7 @@ export default function ProfileDynamic(): JSX.Element {
           </div>
         </div>
 
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-500 to-blue-700 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0B1C2D] via-[#1E5AA8] to-[#0A2A66] relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div
               className="absolute inset-0"
@@ -587,32 +587,32 @@ export default function ProfileDynamic(): JSX.Element {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-bold mb-2 tracking-tight">Craft Your Identity</h2>
-                <p className="text-blue-100 text-sm">Personalize your profile with a modern, elegant touch.</p>
+                <p className="text-[#9FB3C8] text-sm">Personalize your profile with a modern, elegant touch.</p>
               </div>
               <div className="space-y-3 text-left">
                 <div className="flex items-center group">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-2 backdrop-blur-sm shadow-sm group-hover:bg-white/20 transition-colors duration-200">
-                    <svg className="w-4 h-4 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="w-4 h-4 text-[#9FB3C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-blue-100 text-sm group-hover:text-white transition-colors duration-200">Upload a custom profile image</span>
+                  <span className="text-[#E6F1F5] text-sm group-hover:text-white transition-colors duration-200">Upload a custom profile image</span>
                 </div>
                 <div className="flex items-center group">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-2 backdrop-blur-sm shadow-sm group-hover:bg-white/20 transition-colors duration-200">
-                    <svg className="w-4 h-4 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="w-4 h-4 text-[#9FB3C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-blue-100 text-sm group-hover:text-white transition-colors duration-200">Refine your personal details</span>
+                  <span className="text-[#E6F1F5] text-sm group-hover:text-white transition-colors duration-200">Refine your personal details</span>
                 </div>
                 <div className="flex items-center group">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-2 backdrop-blur-sm shadow-sm group-hover:bg-white/20 transition-colors duration-200">
-                    <svg className="w-4 h-4 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="w-4 h-4 text-[#9FB3C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-blue-100 text-sm group-hover:text-white transition-colors duration-200">Write a unique bio</span>
+                  <span className="text-[#E6F1F5] text-sm group-hover:text-white transition-colors duration-200">Write a unique bio</span>
                 </div>
               </div>
             </div>
@@ -622,8 +622,8 @@ export default function ProfileDynamic(): JSX.Element {
 
       {showImageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md transition-all duration-300">
-          <div className="bg-white/90 dark:bg-gray-800/90 rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all duration-300 scale-100 backdrop-blur-md sm:p-8" role="dialog" aria-labelledby="image-preview-title">
-            <h3 id="image-preview-title" className="text-lg font-medium text-gray-900 dark:text-white mb-3">Image Preview</h3>
+          <div className="bg-[#FFFFFF]/80 dark:bg-[#0B1C2D]/80 rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all duration-300 scale-100 backdrop-blur-md sm:p-8 border border-[#DCEEEE]/70 dark:border-[#1E3A4A]/70" role="dialog" aria-labelledby="image-preview-title">
+            <h3 id="image-preview-title" className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-3">Image Preview</h3>
             <img
               src={tempImage || userProfile.profileImage}
               alt="Profile preview"
@@ -636,7 +636,7 @@ export default function ProfileDynamic(): JSX.Element {
                   const input = document.querySelector('input[type="file"]') as HTMLInputElement | null;
                   input?.click();
                 }}
-                className="relative w-full px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                className="relative w-full px-4 py-2 cursor-pointer text-sm font-medium text-[#475569] dark:text-[#9FB3C8] border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                 aria-label="Change profile image"
               >
                 Change
@@ -644,7 +644,7 @@ export default function ProfileDynamic(): JSX.Element {
               <button
                 type="button"
                 onClick={() => setShowImageModal(false)}
-                className="relative w-full px-4 cursor-pointer py-2 text-sm font-medium text-white bg-blue-500 dark:bg-blue-600 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                className="relative w-full px-4 cursor-pointer py-2 text-sm font-medium text-white bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                 aria-label="Close image preview"
               >
                 Close
@@ -656,14 +656,14 @@ export default function ProfileDynamic(): JSX.Element {
 
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md transition-all duration-300">
-          <div className="bg-white/90 dark:bg-gray-800/90 rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all duration-300 scale-100 backdrop-blur-md sm:p-8" role="dialog" aria-labelledby="logout-confirm-title">
-            <h3 id="logout-confirm-title" className="text-lg font-medium text-gray-900 dark:text-white mb-2">Confirm Sign Out</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Are you sure you want to sign out? Your profile changes are saved.</p>
+          <div className="bg-[#FFFFFF]/80 dark:bg-[#0B1C2D]/80 rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all duration-300 scale-100 backdrop-blur-md sm:p-8 border border-[#DCEEEE]/70 dark:border-[#1E3A4A]/70" role="dialog" aria-labelledby="logout-confirm-title">
+            <h3 id="logout-confirm-title" className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">Confirm Sign Out</h3>
+            <p className="text-sm text-[#7B8A9A] dark:text-[#9FB3C8] mb-4">Are you sure you want to sign out? Your profile changes are saved.</p>
             <div className="flex flex-col space-y-3">
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="relative w-full px-4 cursor-pointer py-2 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                className="relative w-full px-4 cursor-pointer py-2 text-sm font-medium text-[#475569] dark:text-[#9FB3C8] border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                 aria-label="Cancel logout"
               >
                 Cancel
@@ -671,7 +671,7 @@ export default function ProfileDynamic(): JSX.Element {
               <button
                 type="button"
                 onClick={confirmLogout}
-                className="relative w-full cursor-pointer px-4 py-2 text-sm font-medium text-white bg-red-500 dark:bg-red-600 rounded-lg hover:bg-red-600 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                className="relative w-full cursor-pointer px-4 py-2 text-sm font-medium text-white bg-red-500 dark:bg-red-600 rounded-lg hover:bg-red-600 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 dark:focus:ring-offset-[#050B14] transition-all duration-200 transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
                 aria-label="Confirm logout"
               >
                 Sign Out

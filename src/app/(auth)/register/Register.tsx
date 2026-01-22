@@ -201,7 +201,7 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
       <div className="flex min-h-screen">
         {/* Left Side - Form */}
         <div className="flex w-full lg:w-1/2">
@@ -210,7 +210,7 @@ function Register() {
             <div className="mb-8">
               <Link
                 href="/"
-                className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors mb-6"
+                className="inline-flex items-center text-sm text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8] transition-colors mb-6"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -219,8 +219,8 @@ function Register() {
               </Link>
 
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create your account</h2>
-                <p className="text-gray-600 dark:text-gray-400">Join us and start your journey today</p>
+                <h2 className="text-3xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-2">Create your account</h2>
+                <p className="text-[#475569] dark:text-[#9FB3C8]">Join us and start your journey today</p>
               </div>
             </div>
 
@@ -258,7 +258,7 @@ function Register() {
             {/* Social Login Buttons */}
             <div className="space-y-3 mb-8">
               <button
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="w-full cursor-pointer flex items-center justify-center px-4 py-3 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] transition-colors"
                 disabled={isLoading || isRedirecting}
                 onClick={handleGoogleLogin}
               >
@@ -284,7 +284,7 @@ function Register() {
               </button>
 
               <button
-                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="w-full  flex items-center justify-center px-4 py-3 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] transition-colors cursor-pointer"
                 onClick={handleLogin} // <- Replace with your GitHub login handler
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
@@ -297,10 +297,10 @@ function Register() {
             {/* Divider */}
             <div className="relative mb-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                <div className="w-full border-t border-[#DCEEEE] dark:border-[#1E3A4A]"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with email</span>
+                <span className="px-2 bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8]">Or continue with email</span>
               </div>
             </div>
 
@@ -308,7 +308,7 @@ function Register() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                     First name
                   </label>
                   <input
@@ -317,7 +317,7 @@ function Register() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                     placeholder="Enter your first name"
                     required
                     disabled={isLoading || isRedirecting}
@@ -325,7 +325,7 @@ function Register() {
                 </div>
 
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                     Last name
                   </label>
                   <input
@@ -334,7 +334,7 @@ function Register() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                     placeholder="Enter your last name"
                     required
                     disabled={isLoading || isRedirecting}
@@ -343,7 +343,7 @@ function Register() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                   Email address
                 </label>
                 <input
@@ -352,7 +352,7 @@ function Register() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                   placeholder="Enter your email"
                   required
                   disabled={isLoading || isRedirecting}
@@ -360,7 +360,7 @@ function Register() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -370,7 +370,7 @@ function Register() {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 pr-12 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                     placeholder="Enter your password"
                     required
                     minLength={6}
@@ -379,7 +379,7 @@ function Register() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
                     disabled={isLoading || isRedirecting}
                   >
                     {showPassword ? (
@@ -412,16 +412,16 @@ function Register() {
                     type="checkbox"
                     checked={checkboxToggle}
                     onChange={() => setCheckboxToggle(!checkboxToggle)}
-                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1"
+                    className="h-4 w-4 text-[#2FD1C5] focus:ring-[#2FD1C5] border-[#DCEEEE] dark:border-[#1E3A4A] rounded mt-1"
                     disabled={isLoading || isRedirecting}
                   />
-                  <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-3 text-sm text-[#475569] dark:text-[#9FB3C8]">
                     I agree to the{' '}
-                    <a href="#" className="text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300">
+                    <a href="#" className="text-[#1E5AA8] dark:text-[#6EE7D8] hover:text-[#2FD1C5] dark:hover:text-[#0FD9C3]">
                       Terms of Service
                     </a>{' '}
                     and{' '}
-                    <a href="#" className="text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300">
+                    <a href="#" className="text-[#1E5AA8] dark:text-[#6EE7D8] hover:text-[#2FD1C5] dark:hover:text-[#0FD9C3]">
                       Privacy Policy
                     </a>
                   </span>
@@ -431,7 +431,7 @@ function Register() {
               <button
                 type="submit"
                 disabled={isLoading || isRedirecting}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full cursor-pointer flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2FD1C5] focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isRedirecting ? (
                   <>
@@ -474,11 +474,11 @@ function Register() {
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-[#475569] dark:text-[#9FB3C8]">
                 Already have an account?{' '}
                 <Link
                   href="/login"
-                  className="font-medium text-green-600 dark:text-green-400 hover:text-green-500 dark:hover:text-green-300"
+                  className="font-medium text-[#1E5AA8] dark:text-[#6EE7D8] hover:text-[#2FD1C5] dark:hover:text-[#0FD9C3]"
                 >
                   Sign in
                 </Link>
@@ -488,7 +488,7 @@ function Register() {
         </div>
 
         {/* Right Side - Hero */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0B1C2D] via-[#1E5AA8] to-[#0A2A66] relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div
               className="absolute inset-0"
@@ -507,7 +507,7 @@ function Register() {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-bold mb-4">Join our community!</h2>
-                <p className="text-green-100 text-lg">Create your account and unlock access to amazing features and services.</p>
+                <p className="text-[#9FB3C8] text-lg">Create your account and unlock access to amazing features and services.</p>
               </div>
 
               <div className="space-y-4 text-left">
@@ -517,7 +517,7 @@ function Register() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-green-100">Free to get started</span>
+                  <span className="text-[#E6F1F5]">Free to get started</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4 backdrop-blur-sm">
@@ -525,7 +525,7 @@ function Register() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-green-100">Secure email verification</span>
+                  <span className="text-[#E6F1F5]">Secure email verification</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4 backdrop-blur-sm">
@@ -533,7 +533,7 @@ function Register() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-green-100">Instant access to features</span>
+                  <span className="text-[#E6F1F5]">Instant access to features</span>
                 </div>
               </div>
             </div>
@@ -544,10 +544,10 @@ function Register() {
       {/* Verification Modal */}
       {showVerificationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-[#FFFFFF] dark:bg-[#0B1C2D] rounded-lg p-6 w-full max-w-md mx-4 border border-[#DCEEEE]/70 dark:border-[#1E3A4A]/70">
             <div className="text-center mb-6">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 mb-4">
-                <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-[#E6F8F6] dark:bg-[#102A3A] mb-4">
+                <svg className="h-6 w-6 text-[#1E5AA8] dark:text-[#6EE7D8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -556,21 +556,21 @@ function Register() {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Verify your email</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <h3 className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">Verify your email</h3>
+              <p className="text-sm text-[#475569] dark:text-[#9FB3C8]">
                 We&apos;ve sent a 6-digit verification code to <strong>{userEmail}</strong>
               </p>
             </div>
 
             <form onSubmit={handleVerificationSubmit}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verification code</label>
+                <label className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">Verification code</label>
                 <input
                   type="text"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="Enter 6-digit code"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-md shadow-sm focus:outline-none focus:ring-[#2FD1C5] focus:border-[#2FD1C5] bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8]"
                   maxLength={6}
                   required
                   disabled={isVerifying || isRedirecting}
@@ -581,7 +581,7 @@ function Register() {
                 <button
                   type="submit"
                   disabled={isVerifying || isRedirecting || verificationCode.length !== 6}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2FD1C5] focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isRedirecting ? (
                     <>
@@ -626,7 +626,7 @@ function Register() {
                   type="button"
                   onClick={handleResendCode}
                   disabled={isVerifying || isRedirecting}
-                  className="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2 px-4 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-md shadow-sm text-sm font-medium text-[#475569] dark:text-[#9FB3C8] bg-[#FFFFFF] dark:bg-[#0B1C2D] hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2FD1C5] focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Resend code
                 </button>
@@ -637,7 +637,7 @@ function Register() {
               <button
                 type="button"
                 onClick={() => setShowVerificationModal(false)}
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="text-sm text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
                 disabled={isVerifying || isRedirecting}
               >
                 Cancel

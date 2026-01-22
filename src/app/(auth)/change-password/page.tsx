@@ -119,7 +119,7 @@ export default function ChangePassword() {
 
   if (isLoading && !isSubmitting) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
         <div className="max-w-md w-full p-8">
           <Skeleton className="h-8 w-1/2 mb-4" />
           <Skeleton className="h-4 w-full mb-4" />
@@ -136,7 +136,7 @@ export default function ChangePassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
       <div
         ref={contentRef}
         suppressHydrationWarning
@@ -147,7 +147,7 @@ export default function ChangePassword() {
             <div className="mb-8">
               <Link
                 href="/account-settings/security"
-                className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors mb-6"
+                className="inline-flex items-center text-sm text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8] transition-colors mb-6"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -155,8 +155,8 @@ export default function ChangePassword() {
                 Back to Security
               </Link>
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Change Password</h2>
-                <p className="text-gray-600 dark:text-gray-400">Create a new strong password for your account</p>
+                <h2 className="text-3xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-2">Change Password</h2>
+                <p className="text-[#475569] dark:text-[#9FB3C8]">Create a new strong password for your account</p>
               </div>
             </div>
 
@@ -192,18 +192,18 @@ export default function ChangePassword() {
 
             <form onSubmit={handleSubmit} className="space-y-6 relative">
               {isSubmitting && (
-                <div className="absolute inset-0 bg-gray-100/50 dark:bg-gray-800/50 flex items-center justify-center z-10 rounded-lg">
+                <div className="absolute inset-0 bg-[#F7FBFC]/70 dark:bg-[#0B1C2D]/70 flex items-center justify-center z-10 rounded-lg">
                   <div className="flex flex-col items-center">
                     <div className="relative">
-                      <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                      <div className="absolute inset-0 w-12 h-12 border-4 border-green-300 border-t-transparent rounded-full animate-[spin_1.5s_ease-in-out_infinite]"></div>
+                      <div className="w-12 h-12 border-4 border-[#2FD1C5] border-t-transparent rounded-full animate-spin"></div>
+                      <div className="absolute inset-0 w-12 h-12 border-4 border-[#6EE7D8] border-t-transparent rounded-full animate-[spin_1.5s_ease-in-out_infinite]"></div>
                     </div>
-                    <p className="mt-4 text-sm font-medium text-gray-700 dark:text-gray-300">Updating Password...</p>
+                    <p className="mt-4 text-sm font-medium text-[#475569] dark:text-[#9FB3C8]">Updating Password...</p>
                   </div>
                 </div>
               )}
               <div>
-                <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="currentPassword" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                   Current Password
                 </label>
                 <div className="relative">
@@ -213,7 +213,7 @@ export default function ChangePassword() {
                     name="currentPassword"
                     value={formData.currentPassword}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 pr-12 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                     placeholder="Enter your current password"
                     required
                     disabled={isSubmitting}
@@ -221,7 +221,7 @@ export default function ChangePassword() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => ({ ...prev, current: !prev.current }))}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
                     disabled={isSubmitting}
                   >
                     {showPassword.current ? (
@@ -249,7 +249,7 @@ export default function ChangePassword() {
               </div>
 
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                   New Password
                 </label>
                 <div className="relative">
@@ -259,7 +259,7 @@ export default function ChangePassword() {
                     name="newPassword"
                     value={formData.newPassword}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 pr-12 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                     placeholder="Enter your new password"
                     required
                     minLength={6}
@@ -268,7 +268,7 @@ export default function ChangePassword() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => ({ ...prev, new: !prev.new }))}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
                     disabled={isSubmitting}
                   >
                     {showPassword.new ? (
@@ -293,14 +293,14 @@ export default function ChangePassword() {
                     )}
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-[#7B8A9A] dark:text-[#9FB3C8]">
                   Must be at least 6 characters
                 </p>
               </div>
 
               
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
                   Confirm New Password
                 </label>
                 <div className="relative">
@@ -310,7 +310,7 @@ export default function ChangePassword() {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-4 py-3 pr-12 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
                     placeholder="Confirm your new password"
                     required
                     minLength={6}
@@ -319,7 +319,7 @@ export default function ChangePassword() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => ({ ...prev, confirm: !prev.confirm }))}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
                     disabled={isLoading}
                   >
                     {showPassword.confirm ? (
@@ -350,7 +350,7 @@ export default function ChangePassword() {
                 <button
                   type="button"
                   onClick={() => router.push('/account-settings/security')}
-                  className="px-4 py-2 cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 cursor-pointer bg-[#EEF7F6] hover:bg-[#DCEEEE] dark:bg-[#0B1C2D] dark:hover:bg-[#102A3A] text-[#475569] dark:text-[#9FB3C8] font-medium rounded-lg transition-colors"
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -358,7 +358,7 @@ export default function ChangePassword() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 cursor-pointer bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 cursor-pointer bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Update Password
                 </button>
@@ -367,7 +367,7 @@ export default function ChangePassword() {
           </div>
         </div>
 
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0B1C2D] via-[#1E5AA8] to-[#0A2A66] relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div
               className="absolute inset-0"
@@ -385,7 +385,7 @@ export default function ChangePassword() {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-bold mb-4">Secure Your Account</h2>
-                <p className="text-green-100 text-lg">Regularly updating your password helps protect your account.</p>
+                <p className="text-[#9FB3C8] text-lg">Regularly updating your password helps protect your account.</p>
               </div>
               <div className="space-y-4 text-left">
                 <div className="flex items-center">
@@ -394,7 +394,7 @@ export default function ChangePassword() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-green-100">Use a strong, unique password</span>
+                  <span className="text-[#E6F1F5]">Use a strong, unique password</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4 backdrop-blur-sm">
@@ -402,7 +402,7 @@ export default function ChangePassword() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-green-100">Avoid reusing passwords across sites</span>
+                  <span className="text-[#E6F1F5]">Avoid reusing passwords across sites</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-4 backdrop-blur-sm">
@@ -410,7 +410,7 @@ export default function ChangePassword() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-green-100">Consider using a password manager</span>
+                  <span className="text-[#E6F1F5]">Consider using a password manager</span>
                 </div>
               </div>
             </div>

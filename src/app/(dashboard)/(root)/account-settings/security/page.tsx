@@ -23,20 +23,20 @@ type SecuritySettings = {
 
 const SecuritySettingsSkeleton = () => (
   <div className="max-w-4xl mx-auto p-6">
-    <div className="h-10 w-1/3 bg-gray-200 dark:bg-gray-800 rounded mb-8 animate-pulse"></div>
+    <div className="h-10 w-1/3 bg-[#EEF7F6] dark:bg-[#102A3A] rounded mb-8 animate-pulse"></div>
     <div className="space-y-8">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="border-b border-gray-200 dark:border-gray-800 pb-6">
+        <div key={i} className="border-b border-[#DCEEEE] dark:border-[#1E3A4A] pb-6">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-800 rounded mb-2 animate-pulse"></div>
-              <div className="h-4 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
+              <div className="h-6 w-3/4 bg-[#EEF7F6] dark:bg-[#102A3A] rounded mb-2 animate-pulse"></div>
+              <div className="h-4 w-full bg-[#EEF7F6] dark:bg-[#102A3A] rounded animate-pulse"></div>
             </div>
-            <div className="h-8 w-16 bg-gray-200 dark:bg-gray-800 rounded-full animate-pulse"></div>
+            <div className="h-8 w-16 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-full animate-pulse"></div>
           </div>
         </div>
       ))}
-      <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+      <div className="h-32 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-xl animate-pulse"></div>
     </div>
   </div>
 );
@@ -98,7 +98,7 @@ const SecuritySettingsPage = () => {
 
   if (!isClient || authLoading) {
     return (
-      <div className="min-h-screen py-12 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
+      <div className="min-h-screen py-12 bg-gradient-to-br from-[#F7FBFC] via-white to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#102A3A]">
         <SecuritySettingsSkeleton />
       </div>
     );
@@ -106,13 +106,13 @@ const SecuritySettingsPage = () => {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
-        <div className="max-w-md p-8 text-center bg-white dark:bg-gray-950 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-800">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Access Denied</h2>
-          <p className="mb-6 text-gray-600 dark:text-gray-300">You must be logged in to view security settings.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#F7FBFC] via-white to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#102A3A]">
+        <div className="max-w-md p-8 text-center bg-white/80 dark:bg-[#0B1C2D] rounded-3xl shadow-xl border border-[#DCEEEE] dark:border-[#1E3A4A]">
+          <h2 className="text-2xl font-bold mb-4 text-[#0F172A] dark:text-[#E6F1F5]">Access Denied</h2>
+          <p className="mb-6 text-[#475569] dark:text-[#9FB3C8]">You must be logged in to view security settings.</p>
           <button
             onClick={() => router.push('/login')}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-2 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:via-[#1FA2FF] hover:to-[#1E5AA8] text-white font-medium rounded-lg transition-colors"
           >
             Sign In
           </button>
@@ -122,29 +122,29 @@ const SecuritySettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen py-12 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
+    <div className="min-h-screen py-12 bg-gradient-to-br from-[#F7FBFC] via-white to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#102A3A]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-950 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-800"
+        className="max-w-4xl mx-auto p-6 bg-white/80 dark:bg-[#0B1C2D] rounded-3xl shadow-xl border border-[#DCEEEE] dark:border-[#1E3A4A]"
       >
         <div className="mb-10 text-center">
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66]">
             Security Settings
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-[#475569] dark:text-[#9FB3C8] max-w-2xl mx-auto">
             Manage your account security and active sessions
           </p>
         </div>
 
         <div className="space-y-8">
           {/* Two-Factor Authentication */}
-          <div className="border-b border-gray-200 dark:border-gray-800 pb-6">
+          <div className="border-b border-[#DCEEEE] dark:border-[#1E3A4A] pb-6">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Two-Factor Authentication</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <h3 className="text-lg font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-1">Two-Factor Authentication</h3>
+                <p className="text-sm text-[#7B8A9A] dark:text-[#6B8299]">
                   Add an extra layer of security to your account
                 </p>
               </div>
@@ -152,16 +152,16 @@ const SecuritySettingsPage = () => {
                 onClick={() => handleSettingChange('twoFactorAuth', !securitySettings.twoFactorAuth)}
                 className={`px-4 py-2 rounded-lg font-medium ${
                   securitySettings.twoFactorAuth
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                    ? 'bg-[#6EE7D8]/20 text-[#0F172A] dark:bg-[#0B1C2D] dark:text-[#6EE7D8]'
+                    : 'bg-[#EEF7F6] text-[#0F172A] dark:bg-[#102A3A] dark:text-[#9FB3C8]'
                 }`}
               >
                 {securitySettings.twoFactorAuth ? 'Enabled' : 'Enable'}
               </button>
             </div>
             {securitySettings.twoFactorAuth && (
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="mt-4 p-4 bg-[#F7FBFC] dark:bg-[#0B1C2D] rounded-lg border border-[#DCEEEE] dark:border-[#1E3A4A]">
+                <p className="text-sm text-[#1E5AA8] dark:text-[#6EE7D8]">
                   Two-factor authentication is currently enabled. You'll need both your password and a verification code to sign in.
                 </p>
               </div>
@@ -169,17 +169,17 @@ const SecuritySettingsPage = () => {
           </div>
 
           {/* Password */}
-          <div className="border-b border-gray-200 dark:border-gray-800 pb-6">
+          <div className="border-b border-[#DCEEEE] dark:border-[#1E3A4A] pb-6">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Password</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <h3 className="text-lg font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-1">Password</h3>
+                <p className="text-sm text-[#7B8A9A] dark:text-[#6B8299]">
                   Last changed 3 months ago
                 </p>
               </div>
               <button
                 onClick={() => router.push('/change-password')}
-                className="px-4 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                className="px-4 py-2 cursor-pointer bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:via-[#1FA2FF] hover:to-[#1E5AA8] text-white font-medium rounded-lg transition-colors"
               >
                 Change
               </button>
@@ -194,17 +194,17 @@ const SecuritySettingsPage = () => {
           </div>
 
           {/* Recovery Email */}
-          <div className="border-b border-gray-200 dark:border-gray-800 pb-6">
+          <div className="border-b border-[#DCEEEE] dark:border-[#1E3A4A] pb-6">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Recovery Email</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <h3 className="text-lg font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-1">Recovery Email</h3>
+                <p className="text-sm text-[#7B8A9A] dark:text-[#6B8299]">
                   {securitySettings.recoveryEmail || 'No recovery email set'}
                 </p>
               </div>
               <button
                 onClick={() => router.push('/update-email')}
-                className="px-4 py-2 bg-gray-100 cursor-pointer hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors"
+                className="px-4 py-2 bg-[#EEF7F6] cursor-pointer hover:bg-[#DCEEEE] dark:bg-[#102A3A] dark:hover:bg-[#1E3A4A] text-[#0F172A] dark:text-[#E6F1F5] font-medium rounded-lg transition-colors"
               >
                 Update
               </button>
@@ -213,14 +213,14 @@ const SecuritySettingsPage = () => {
 
           {/* Active Sessions */}
           <div className="pb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Active Sessions</h3>
+            <h3 className="text-lg font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-4">Active Sessions</h3>
             <div className="space-y-4">
               {securitySettings.activeSessions.map((session) => (
-                <div key={session.id} className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg">
+                <div key={session.id} className="p-4 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{session.device}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="font-medium text-[#0F172A] dark:text-[#E6F1F5]">{session.device}</p>
+                      <p className="text-sm text-[#7B8A9A] dark:text-[#6B8299] mt-1">
                         {session.location} · {session.lastActive} {session.current && '(Current)'}
                       </p>
                     </div>
@@ -239,15 +239,15 @@ const SecuritySettingsPage = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl">
+        <div className="mt-12 pt-6 border-t border-[#DCEEEE] dark:border-[#1E3A4A]">
+          <div className="bg-[#F7FBFC] dark:bg-[#0B1C2D] p-6 rounded-xl border border-[#DCEEEE] dark:border-[#1E3A4A]">
             <div className="flex items-start gap-4">
-              <svg className="w-6 h-6 text-blue-500 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[#1E5AA8] dark:text-[#6EE7D8] mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <div>
-                <h4 className="font-bold text-gray-900 dark:text-white mb-2">Security Tips</h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-300 list-disc pl-5 space-y-1">
+                <h4 className="font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-2">Security Tips</h4>
+                <ul className="text-sm text-[#475569] dark:text-[#9FB3C8] list-disc pl-5 space-y-1">
                   <li>Use a strong, unique password</li>
                   <li>Enable two-factor authentication</li>
                   <li>Regularly review active sessions</li>
@@ -274,7 +274,7 @@ const SecuritySettingsPage = () => {
               </svg>
             </div>
             <h3 className="text-2xl font-extrabold mb-4 text-red-600 dark:text-red-400">Revoke Session?</h3>
-            <p className="mb-6 text-gray-700 dark:text-gray-300 text-lg">
+            <p className="mb-6 text-[#475569] dark:text-[#9FB3C8] text-lg">
               This will immediately log out the selected device. Are you sure you want to continue?
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -285,7 +285,7 @@ const SecuritySettingsPage = () => {
                 Revoke Session
               </button>
               <button
-                className="px-8 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold rounded-xl shadow transition-all duration-300 text-lg"
+                className="px-8 py-3 bg-[#EEF7F6] dark:bg-[#102A3A] hover:bg-[#DCEEEE] dark:hover:bg-[#1E3A4A] text-[#0F172A] dark:text-[#E6F1F5] font-bold rounded-xl shadow transition-all duration-300 text-lg"
                 onClick={() => setShowSessionModal(false)}
               >
                 Cancel

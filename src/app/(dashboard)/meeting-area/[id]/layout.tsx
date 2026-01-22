@@ -40,7 +40,9 @@ export const metadata: Metadata = {
 const MeetingLayout = ({ children }: Readonly<{ children: ReactNode }>) => {
   return (
     <StreamVideoProvider>
-      {children}
+      <div className="min-h-screen bg-[#050B14] text-[#E6F1F5]">
+        {children}
+      </div>
     </StreamVideoProvider>
   );
 };

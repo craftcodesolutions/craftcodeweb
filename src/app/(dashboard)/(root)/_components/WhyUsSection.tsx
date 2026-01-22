@@ -49,8 +49,8 @@ function Counter({ end, label }: { end: number; label: string }) {
 
     return (
         <div ref={ref} className="text-center min-w-[100px]" aria-label={label}>
-            <h3 className="text-4xl font-bold text-indigo-600">{count}+</h3>
-            <p className="text-gray-600 dark:text-gray-300">{label}</p>
+            <h3 className="text-4xl font-bold text-[#1E5AA8] dark:text-[#6EE7D8]">{count}+</h3>
+            <p className="text-[#475569] dark:text-[#9FB3C8]">{label}</p>
         </div>
     );
 }
@@ -68,7 +68,7 @@ export default function WhyUsSection() {
                         <span
                             className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
                             style={{
-                                background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
+                                background: 'linear-gradient(180deg, rgba(47, 209, 197, 0.4) 0%, rgba(47, 209, 197, 0) 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
@@ -79,10 +79,10 @@ export default function WhyUsSection() {
                             WHY_US
                         </span>
 
-                        <h2 className="font-heading text-dark mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-gray-100">
+                        <h2 className="font-heading text-[#0F172A] mb-5 text-3xl font-semibold sm:text-4xl md:text-[50px] md:leading-[60px] dark:text-[#E6F1F5]">
                             Why Choose Us?
                         </h2>
-                        <p className="text-dark-text text-base">
+                        <p className="text-[#475569] dark:text-[#9FB3C8] text-base">
                             We don’t just build software—we build solutions that make a difference. Our focus on innovation,
                             reliability, and customer satisfaction sets us apart. Backed by a passionate team and cutting-edge
                             technology, we deliver real results that matter.
@@ -123,28 +123,28 @@ export default function WhyUsSection() {
                         <div className="w-full lg:w-1/3 flex flex-col gap-6">
                             {[
                                 {
-                                    iconColor: 'text-blue-500',
+                                    iconColor: 'text-[#1E5AA8] dark:text-[#6EE7D8]',
                                     title: 'Color & Font Options',
                                     desc: 'Easily customize colors and fonts, or choose from provided options.',
                                     path: 'M12 6v6m0 0v6m0-6h6m-6 0H6',
                                     badge: 'Popular',
                                 },
                                 {
-                                    iconColor: 'text-purple-500',
+                                    iconColor: 'text-[#2FD1C5] dark:text-[#0FD9C3]',
                                     title: 'Cool Features & Elements',
                                     desc: 'Equipped with stunning features and elements for designing appealing pages.',
                                     path: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
                                     badge: 'New',
                                 },
                                 {
-                                    iconColor: 'text-pink-500',
+                                    iconColor: 'text-[#6EE7D8] dark:text-[#2FD1C5]',
                                     title: 'Modern Portfolio Layouts',
                                     desc: 'Effortlessly create and maintain a visually stunning and impactful portfolio.',
                                     path: 'M12 4v16m8-8H4',
                                     badge: '',
                                 },
                                 {
-                                    iconColor: 'text-green-500',
+                                    iconColor: 'text-[#0B8ED8] dark:text-[#6EE7D8]',
                                     title: 'Real-time Collaboration',
                                     desc: 'Work with your team in real-time for seamless productivity and communication.',
                                     path: 'M17 20h5v-2a4 4 0 00-5-4M9 20H4v-2a4 4 0 015-4m4-6a4 4 0 110 8 4 4 0 010-8z',
@@ -153,7 +153,7 @@ export default function WhyUsSection() {
                             ].map(({ iconColor, title, desc, path, badge }, idx) => (
                                 <motion.div
                                     key={idx}
-                                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-transform transform hover:scale-105 hover:shadow-2xl focus-within:ring-2 focus-within:ring-indigo-500 outline-none"
+                                    className="bg-white/70 dark:bg-[#0B1C2D] rounded-2xl shadow-lg p-6 transition-transform transform hover:scale-105 hover:shadow-2xl border border-[#DCEEEE] dark:border-[#1E3A4A] focus-within:ring-2 focus-within:ring-[#2FD1C5]/50 outline-none"
                                     initial={{ opacity: 0, y: 32, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 32, scale: 0.95 }}
@@ -177,16 +177,16 @@ export default function WhyUsSection() {
                                                 d={path}
                                             />
                                         </svg>
-                                        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+                                        <h3 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5]">
                                             {title}
                                         </h3>
                                         {badge && (
-                                            <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-700 rounded-full">
+                                            <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-[#2FD1C5]/15 text-[#1E5AA8] dark:bg-[#6EE7D8]/15 dark:text-[#6EE7D8] rounded-full">
                                                 {badge}
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-gray-600 dark:text-gray-300 mt-2">{desc}</p>
+                                    <p className="text-[#475569] dark:text-[#9FB3C8] mt-2">{desc}</p>
                                 </motion.div>
                             ))}
                         </div>

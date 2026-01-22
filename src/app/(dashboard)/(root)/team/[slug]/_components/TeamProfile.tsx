@@ -153,7 +153,7 @@ const extractString = (value: any, fallback: string): string => {
 
 // Reusable components
 const ProfileImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
-    <div className="relative w-36 h-36 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-2xl ring-4 ring-blue-100/30 dark:ring-blue-900/20">
+    <div className="relative w-36 h-36 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white dark:border-[#102A3A] shadow-2xl ring-4 ring-[#E6F7F6]/30 dark:ring-[#050B14]/20">
         <Image
             src={src}
             alt={alt}
@@ -167,8 +167,8 @@ const ProfileImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
 );
 
 const SectionHeader: React.FC<{ icon: React.ReactNode; title: string }> = ({ icon, title }) => (
-    <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 text-gray-900 dark:text-white">
-        <span className="p-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md">
+    <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 text-[#0F172A] dark:text-white">
+        <span className="p-2.5 rounded-xl bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white shadow-md">
             {icon}
         </span>
         {title}
@@ -182,10 +182,10 @@ const TimelineItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode;
         role="listitem"
         aria-label={`Timeline item ${index + 1}`}
     >
-        <div className="absolute left-0 top-2 w-9 h-9 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-lg border-2 border-blue-200 dark:border-blue-700 group-hover:scale-110 transition-transform duration-300 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30">
+        <div className="absolute left-0 top-2 w-9 h-9 rounded-full bg-white dark:bg-[#102A3A] flex items-center justify-center shadow-lg border-2 border-[#DCEEEE] dark:border-[#0B1C2D] group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#F7FBFC] dark:group-hover:bg-[#050B14]/30">
             {icon}
         </div>
-        <div className="p-5 bg-white/70 dark:bg-gray-800/70 rounded-xl shadow-sm border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm group-hover:shadow-md group-hover:border-blue-100/50 dark:group-hover:border-blue-900/30 transition-all duration-300">
+        <div className="p-5 bg-white/70 dark:bg-[#102A3A]/70 rounded-xl shadow-sm border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm group-hover:shadow-md group-hover:border-[#E6F7F6]/50 dark:group-hover:border-[#050B14]/30 transition-all duration-300">
             {children}
         </div>
     </motion.div>
@@ -194,7 +194,7 @@ const TimelineItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode;
 const SkillBadge: React.FC<{ skill: string }> = ({ skill }) => (
     <motion.li
         whileHover={{ scale: 1.05 }}
-        className="px-3 py-1.5 bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-800/30 text-blue-700 dark:text-blue-200 rounded-full text-sm font-medium shadow-sm hover:shadow transition-all duration-300 border border-blue-200/50 dark:border-blue-700/30"
+        className="px-3 py-1.5 bg-gradient-to-r from-[#E6F7F6] to-[#F7FBFC] dark:from-[#050B14]/40 dark:to-[#102A3A]/30 text-[#0B1C2D] dark:text-[#DCEEEE] rounded-full text-sm font-medium shadow-sm hover:shadow transition-all duration-300 border border-[#DCEEEE]/50 dark:border-[#0B1C2D]/30"
         role="listitem"
     >
         {skill}
@@ -215,7 +215,7 @@ const HobbyBadge: React.FC<{ hobby: string }> = ({ hobby }) => {
     return (
         <motion.li
             whileHover={{ scale: 1.05 }}
-            className="px-3 py-1.5 bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/40 dark:to-purple-800/30 text-purple-700 dark:text-purple-200 rounded-full text-sm font-medium shadow-sm hover:shadow transition-all duration-300 flex items-center gap-1.5 border border-purple-200/50 dark:border-purple-700/30"
+            className="px-3 py-1.5 bg-gradient-to-r from-[#E6F7F6] to-[#F7FBFC] dark:from-[#050B14]/40 dark:to-[#102A3A]/30 text-[#0B1C2D] dark:text-[#DCEEEE] rounded-full text-sm font-medium shadow-sm hover:shadow transition-all duration-300 flex items-center gap-1.5 border border-[#DCEEEE]/50 dark:border-[#0B1C2D]/30"
             role="listitem"
         >
             {getHobbyIcon(hobby)}
@@ -519,19 +519,19 @@ const TeamProfile: React.FC = () => {
 
     if (authLoading || isLoadingData) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-10">
-                <div className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 sm:p-8 md:p-10 overflow-hidden border border-gray-100/40 dark:border-gray-700/30">
-                    <Skeleton className="h-48 md:h-64 w-full rounded-t-2xl bg-gradient-to-r from-blue-100/50 to-purple-100/50 dark:from-blue-900/30 dark:to-purple-900/30" />
+            <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#F7FBFC]/30 to-[#F7FBFC]/30 dark:from-[#050B14] dark:via-[#050B14]/10 dark:to-[#050B14]/10 p-6 sm:p-8 md:p-10">
+                <div className="max-w-4xl mx-auto bg-white/90 dark:bg-[#102A3A]/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 sm:p-8 md:p-10 overflow-hidden border border-[#E6F7F6]/40 dark:border-[#0B1C2D]/30">
+                    <Skeleton className="h-48 md:h-64 w-full rounded-t-2xl bg-gradient-to-r from-[#E6F7F6]/50 to-[#E6F7F6]/50 dark:from-[#050B14]/30 dark:to-[#050B14]/30" />
                     <div className="p-6 sm:p-8 space-y-6">
                         <div className="flex flex-col sm:flex-row items-center gap-6">
-                            <Skeleton className="w-36 h-36 md:w-48 md:h-48 rounded-full shadow-lg bg-white/70 dark:bg-gray-700/70 border-4 border-white dark:border-gray-800" />
+                            <Skeleton className="w-36 h-36 md:w-48 md:h-48 rounded-full shadow-lg bg-white/70 dark:bg-[#0B1C2D]/70 border-4 border-white dark:border-[#102A3A]" />
                             <div className="space-y-4 w-full">
-                                <Skeleton className="h-8 w-3/4 bg-white/50 dark:bg-gray-700/50" />
-                                <Skeleton className="h-4 w-1/2 bg-white/50 dark:bg-gray-700/50" />
-                                <Skeleton className="h-24 w-full bg-white/50 dark:bg-gray-700/50" />
+                                <Skeleton className="h-8 w-3/4 bg-white/50 dark:bg-[#0B1C2D]/50" />
+                                <Skeleton className="h-4 w-1/2 bg-white/50 dark:bg-[#0B1C2D]/50" />
+                                <Skeleton className="h-24 w-full bg-white/50 dark:bg-[#0B1C2D]/50" />
                             </div>
                         </div>
-                        <Skeleton className="h-40 w-full bg-white/50 dark:bg-gray-700/50" />
+                        <Skeleton className="h-40 w-full bg-white/50 dark:bg-[#0B1C2D]/50" />
                     </div>
                 </div>
             </div>
@@ -540,28 +540,28 @@ const TeamProfile: React.FC = () => {
 
     if (!memoizedTeamMember) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 p-6">
-                <div className="max-w-xl w-full bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 md:p-10 border border-gray-200 dark:border-gray-700">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#F7FBFC] via-[#F7FBFC] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14] p-6">
+                <div className="max-w-xl w-full bg-white dark:bg-[#050B14] rounded-2xl shadow-lg p-8 md:p-10 border border-[#DCEEEE] dark:border-[#0B1C2D]">
                     <div className="animate-pulse space-y-6">
-                        <div className="h-20 w-20 mx-auto rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mx-auto"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto"></div>
+                        <div className="h-20 w-20 mx-auto rounded-full bg-[#DCEEEE] dark:bg-[#0B1C2D]"></div>
+                        <div className="h-6 bg-[#DCEEEE] dark:bg-[#0B1C2D] rounded w-2/3 mx-auto"></div>
+                        <div className="h-4 bg-[#DCEEEE] dark:bg-[#0B1C2D] rounded w-1/2 mx-auto"></div>
                         <div className="space-y-3 pt-4">
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                            <div className="h-4 bg-[#DCEEEE] dark:bg-[#0B1C2D] rounded w-full"></div>
+                            <div className="h-4 bg-[#DCEEEE] dark:bg-[#0B1C2D] rounded w-5/6"></div>
+                            <div className="h-4 bg-[#DCEEEE] dark:bg-[#0B1C2D] rounded w-4/6"></div>
                         </div>
                     </div>
                     <div className="hidden animate-fadeIn text-center" id="notFoundMessage">
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+                        <h1 className="text-2xl font-semibold text-[#0F172A] dark:text-white mb-3">
                             Profile Not Found
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        <p className="text-[#1E5AA8] dark:text-[#6EE7D8] mb-6">
                             The requested team member profile could not be found. Please check the URL or try again later.
                         </p>
                         <button
                             onClick={() => window.location.href = "/team"}
-                            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition"
+                            className="px-5 py-2 rounded-xl bg-[#1E5AA8] hover:bg-[#0B1C2D] text-white font-medium transition"
                         >
                             Go Back
                         </button>
@@ -572,13 +572,13 @@ const TeamProfile: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10 p-6 sm:p-8 md:p-12 font-sans relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#F7FBFC]/30 to-[#F7FBFC]/30 dark:from-[#050B14] dark:via-[#050B14]/10 dark:to-[#050B14]/10 p-6 sm:p-8 md:p-12 font-sans relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-repeat opacity-[0.02] dark:opacity-[0.04]" />
             <motion.div
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-100/40 dark:border-gray-700/30"
+                className="max-w-4xl mx-auto bg-white/90 dark:bg-[#102A3A]/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-[#E6F7F6]/40 dark:border-[#0B1C2D]/30"
             >
                 <div className="relative h-48 md:h-64">
                     <Image
@@ -596,11 +596,11 @@ const TeamProfile: React.FC = () => {
                 <div className="p-6 sm:p-8 md:p-10 space-y-8">
                     <motion.section
                         variants={sectionVariants}
-                        className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gradient-to-r from-blue-100/40 to-purple-100/40 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm"
+                        className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-gradient-to-r from-[#E6F7F6]/40 to-[#E6F7F6]/40 dark:from-[#050B14]/20 dark:to-[#050B14]/20 backdrop-blur-sm"
                     >
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 md:gap-8">
                             <div className="relative flex-shrink-0">
-                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-xl opacity-50 animate-pulse" />
+                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#6EE7D8]/20 to-[#6EE7D8]/20 blur-xl opacity-50 animate-pulse" />
                                 <ProfileImage
                                     src={memoizedTeamMember.profileImage || '/avatar.png'}
                                     alt={`${memoizedTeamMember.firstName || 'User'} ${memoizedTeamMember.lastName || ''}'s Profile Image`}
@@ -610,35 +610,35 @@ const TeamProfile: React.FC = () => {
                                 <div>
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">
+                                            <h1 className="text-3xl md:text-4xl font-bold text-[#0F172A] dark:text-white tracking-tight mb-3">
                                                 {memoizedTeamMember.firstName} {memoizedTeamMember.lastName}
                                             </h1>
-                                            <p className="text-blue-600 dark:text-blue-400 font-medium text-lg mb-3">
+                                            <p className="text-[#1E5AA8] dark:text-[#6EE7D8] font-medium text-lg mb-3">
                                                 {memoizedTeamMember.designation
                                                     ? memoizedTeamMember.designation.charAt(0).toUpperCase() + memoizedTeamMember.designation.slice(1).toLowerCase()
                                                     : 'Team Member'}
                                             </p>
                                             {memoizedTeamMember.location && memoizedTeamMember.location.trim() !== '' && (
-                                                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-600 dark:text-gray-400 text-sm mb-3">
-                                                    <MapPin className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                                                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[#1E5AA8] dark:text-[#6EE7D8] text-sm mb-3">
+                                                    <MapPin className="h-4 w-4 text-[#2FD1C5] flex-shrink-0" aria-hidden="true" />
                                                     <span>{memoizedTeamMember.location}</span>
                                                 </div>
                                             )}
-                                            <div className="flex flex-col gap-2 text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                                            <div className="flex flex-col gap-2 text-[#1E5AA8] dark:text-[#9FB3C8] text-sm md:text-base">
                                                 <div className="flex items-center justify-center sm:justify-start gap-2">
-                                                    <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                                                    <Mail className="h-4 w-4 text-[#2FD1C5] flex-shrink-0" aria-hidden="true" />
                                                     <span className="truncate" title={memoizedTeamMember.email || 'N/A'}>{memoizedTeamMember.email || 'N/A'}</span>
                                                 </div>
                                                 {memoizedTeamMember.supportiveEmail && memoizedTeamMember.supportiveEmail.trim() !== '' && (
                                                     <div className="flex items-center justify-center sm:justify-start gap-2">
-                                                        <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                                                        <Mail className="h-4 w-4 text-[#2FD1C5] flex-shrink-0" aria-hidden="true" />
                                                         <span className="truncate" title={memoizedTeamMember.supportiveEmail}>{memoizedTeamMember.supportiveEmail}</span>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                         {isOwner && (
-                                            <Link href={`/profile`} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                                            <Link href={`/profile`} className="px-4 py-2 bg-[#1E5AA8] text-white rounded-md text-sm font-medium hover:bg-[#0B1C2D] transition-colors">
                                                 Edit Profile
                                             </Link>
                                         )}
@@ -646,18 +646,18 @@ const TeamProfile: React.FC = () => {
                                 </div>
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                            <UserCircle className="h-4 w-4 text-purple-500" aria-hidden="true" />
+                                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-[#0F172A] dark:text-white">
+                                            <UserCircle className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />
                                             About Me
                                         </h3>
-                                        <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                                        <p className="text-base text-[#1E5AA8] dark:text-[#9FB3C8] leading-relaxed">
                                             {memoizedTeamMember.bio || 'No bio available'}
                                         </p>
                                     </div>
                                     {memoizedTeamMember.skills.length > 0 && (
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                                <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-[#0F172A] dark:text-white">
+                                                <Star className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />
                                                 Skills
                                             </h3>
                                             <ul className="flex flex-wrap gap-2" role="list">
@@ -669,8 +669,8 @@ const TeamProfile: React.FC = () => {
                                     )}
                                     {memoizedTeamMember.hobbies.length > 0 && (
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                                <UserCircle className="h-4 w-4 text-purple-500" aria-hidden="true" />
+                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-[#0F172A] dark:text-white">
+                                                <UserCircle className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />
                                                 Hobbies
                                             </h3>
                                             <ul className="flex flex-wrap gap-2" role="list">
@@ -682,20 +682,20 @@ const TeamProfile: React.FC = () => {
                                     )}
                                     {memoizedTeamMember.languages.length > 0 && (
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                                                <Languages className="h-4 w-4 text-green-500" aria-hidden="true" />
+                                            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-[#0F172A] dark:text-white">
+                                                <Languages className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />
                                                 Languages
                                             </h3>
-                                            <ul className="space-y-2 text-gray-600 dark:text-gray-300" role="list">
+                                            <ul className="space-y-2 text-[#1E5AA8] dark:text-[#9FB3C8]" role="list">
                                                 {memoizedTeamMember.languages.map((lang, idx) => (
                                                     <motion.li
                                                         key={idx}
                                                         whileHover={{ x: 4 }}
-                                                        className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50/50 dark:bg-gray-700/30 hover:bg-white/20 dark:hover:bg-gray-700/40 transition-all duration-300"
+                                                        className="flex items-center justify-between p-2.5 rounded-lg bg-[#F7FBFC]/50 dark:bg-[#0B1C2D]/30 hover:bg-white/20 dark:hover:bg-[#0B1C2D]/40 transition-all duration-300"
                                                         role="listitem"
                                                     >
                                                         <span className="font-medium text-sm">{lang.name}</span>
-                                                        <span className="px-2.5 py-1 bg-green-100/50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                                                        <span className="px-2.5 py-1 bg-[#E6F7F6]/50 dark:bg-[#050B14]/30 text-[#0B1C2D] dark:text-[#9FB3C8] rounded-full text-xs font-medium">
                                                             {lang.proficiency}
                                                         </span>
                                                     </motion.li>
@@ -709,15 +709,15 @@ const TeamProfile: React.FC = () => {
                     </motion.section>
 
                     {memoizedTeamMember.previousJobs.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<Briefcase className="h-5 w-5" />} title="Work Experience" />
-                            <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-blue-200/60 to-transparent dark:from-blue-700/60 dark:to-transparent">
+                            <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-[#DCEEEE]/60 to-transparent dark:from-[#0B1C2D]/60 dark:to-transparent">
                                 {memoizedTeamMember.previousJobs.map((job, idx) => (
-                                    <TimelineItem key={idx} icon={<Briefcase className="h-4 w-4 text-blue-500" aria-hidden="true" />} index={idx}>
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{job.title}</h3>
-                                        <p className="text-blue-600 dark:text-blue-400 font-medium text-sm mb-1">{job.company}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{job.startDate} - {job.endDate || 'Present'}</p>
-                                        <p className="text-gray-600 dark:text-gray-300 text-sm">{job.description}</p>
+                                    <TimelineItem key={idx} icon={<Briefcase className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />} index={idx}>
+                                        <h3 className="text-lg font-semibold text-[#0F172A] dark:text-white mb-1">{job.title}</h3>
+                                        <p className="text-[#1E5AA8] dark:text-[#6EE7D8] font-medium text-sm mb-1">{job.company}</p>
+                                        <p className="text-sm text-[#2FD1C5] dark:text-[#6EE7D8] mb-2">{job.startDate} - {job.endDate || 'Present'}</p>
+                                        <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-sm">{job.description}</p>
                                     </TimelineItem>
                                 ))}
                             </div>
@@ -725,15 +725,15 @@ const TeamProfile: React.FC = () => {
                     )}
 
                     {memoizedTeamMember.education.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<GraduationCap className="h-5 w-5" />} title="Education" />
-                            <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-purple-200/60 to-transparent dark:from-purple-700/60 dark:to-transparent">
+                            <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b from-[#DCEEEE]/60 to-transparent dark:from-[#0B1C2D]/60 dark:to-transparent">
                                 {memoizedTeamMember.education.map((edu, idx) => (
-                                    <TimelineItem key={idx} icon={<GraduationCap className="h-4 w-4 text-purple-500" aria-hidden="true" />} index={idx}>
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{edu.degree}</h3>
-                                        <p className="text-purple-600 dark:text-purple-400 font-medium text-sm mb-1">{edu.institution}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{edu.startYear} - {edu.endYear}</p>
-                                        <p className="text-gray-600 dark:text-gray-300 text-sm">{edu.description}</p>
+                                    <TimelineItem key={idx} icon={<GraduationCap className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />} index={idx}>
+                                        <h3 className="text-lg font-semibold text-[#0F172A] dark:text-white mb-1">{edu.degree}</h3>
+                                        <p className="text-[#1E5AA8] dark:text-[#6EE7D8] font-medium text-sm mb-1">{edu.institution}</p>
+                                        <p className="text-sm text-[#2FD1C5] dark:text-[#6EE7D8] mb-2">{edu.startYear} - {edu.endYear}</p>
+                                        <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-sm">{edu.description}</p>
                                     </TimelineItem>
                                 ))}
                             </div>
@@ -741,23 +741,23 @@ const TeamProfile: React.FC = () => {
                     )}
 
                     {memoizedTeamMember.certifications.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Certifications" />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {memoizedTeamMember.certifications.map((cert, idx) => (
                                     <motion.div
                                         key={idx}
                                         variants={cardVariants}
-                                        className="p-4 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 group hover:border-green-200/50 dark:hover:border-green-700/30"
+                                        className="p-4 bg-white/60 dark:bg-[#0B1C2D]/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-[#E6F7F6]/20 dark:border-[#1E5AA8]/30 group hover:border-[#DCEEEE]/50 dark:hover:border-[#0B1C2D]/30"
                                         tabIndex={0}
                                         role="article"
                                         aria-label={`Certification: ${cert.title}`}
                                     >
                                         <div className="flex items-center gap-2 mb-2">
-                                            <BookOpen className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                                            <h4 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">{cert.title}</h4>
+                                            <BookOpen className="h-4 w-4 text-[#2FD1C5] flex-shrink-0" aria-hidden="true" />
+                                            <h4 className="text-base font-semibold text-[#0F172A] dark:text-white group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors">{cert.title}</h4>
                                         </div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{cert.issuer} | {cert.year}</p>
+                                        <p className="text-sm text-[#2FD1C5] dark:text-[#6EE7D8]">{cert.issuer} | {cert.year}</p>
                                     </motion.div>
                                 ))}
                             </div>
@@ -765,25 +765,25 @@ const TeamProfile: React.FC = () => {
                     )}
 
                     {memoizedTeamMember.awards.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<Award className="h-5 w-5" />} title="Awards" />
                             <div className="space-y-4">
                                 {memoizedTeamMember.awards.map((award, idx) => (
                                     <motion.div
                                         key={idx}
                                         variants={cardVariants}
-                                        className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-amber-50/50 to-amber-100/30 dark:from-amber-900/20 dark:to-amber-800/10 hover:shadow-md transition-all duration-300 border border-amber-100/40 dark:border-amber-700/30"
+                                        className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-[#F7FBFC]/50 to-[#E6F7F6]/30 dark:from-[#050B14]/20 dark:to-[#102A3A]/10 hover:shadow-md transition-all duration-300 border border-[#E6F7F6]/40 dark:border-[#0B1C2D]/30"
                                         tabIndex={0}
                                         role="article"
                                         aria-label={`Award: ${award.title}`}
                                     >
-                                        <div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-amber-100/60 dark:bg-amber-900/30">
-                                            <Award className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                                        <div className="flex-shrink-0 mt-1 p-1.5 rounded-full bg-[#E6F7F6]/60 dark:bg-[#050B14]/30">
+                                            <Award className="h-4 w-4 text-[#2FD1C5]" aria-hidden="true" />
                                         </div>
                                         <div className="flex-grow">
-                                            <h4 className="text-base font-semibold text-gray-900 dark:text-white">{award.title}</h4>
-                                            <p className="text-sm text-amber-600 dark:text-amber-400">{award.issuer} | {award.year}</p>
-                                            <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{award.description}</p>
+                                            <h4 className="text-base font-semibold text-[#0F172A] dark:text-white">{award.title}</h4>
+                                            <p className="text-sm text-[#1E5AA8] dark:text-[#6EE7D8]">{award.issuer} | {award.year}</p>
+                                            <p className="text-[#1E5AA8] dark:text-[#9FB3C8] text-sm mt-1">{award.description}</p>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -792,7 +792,7 @@ const TeamProfile: React.FC = () => {
                     )}
 
                     {memoizedTeamMember.projectLinks.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Projects" />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {memoizedTeamMember.projectLinks.map((proj, idx) => (
@@ -802,15 +802,15 @@ const TeamProfile: React.FC = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         variants={cardVariants}
-                                        className="group p-4 bg-white/60 dark:bg-gray-700/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:border-blue-200/50 dark:hover:border-blue-700/30"
+                                        className="group p-4 bg-white/60 dark:bg-[#0B1C2D]/60 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-[#E6F7F6]/20 dark:border-[#1E5AA8]/30 focus:outline-none focus:ring-2 focus:ring-[#2FD1C5] focus:ring-offset-2 hover:border-[#DCEEEE]/50 dark:hover:border-[#0B1C2D]/30"
                                         aria-label={`View project: ${proj.title}`}
                                         tabIndex={0}
                                     >
                                         <div className="flex items-center justify-between mb-2">
-                                            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.title}</h4>
-                                            <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                                            <h4 className="font-semibold text-[#0F172A] dark:text-white group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors">{proj.title}</h4>
+                                            <ExternalLink className="h-4 w-4 text-[#6EE7D8] group-hover:text-[#2FD1C5] transition-colors" />
                                         </div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{proj.description}</p>
+                                        <p className="text-sm text-[#1E5AA8] dark:text-[#9FB3C8] line-clamp-2">{proj.description}</p>
                                     </motion.a>
                                 ))}
                             </div>
@@ -818,28 +818,28 @@ const TeamProfile: React.FC = () => {
                     )}
 
                     {blogs.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<BookOpen className="h-5 w-5" />} title="Blogs" />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {blogs.map((blog, idx) => (
                                     <motion.div
                                         key={blog._id}
                                         variants={cardVariants}
-                                        className="group overflow-hidden rounded-lg bg-white/60 dark:bg-gray-700/60 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 hover:border-purple-200/50 dark:hover:border-purple-700/30"
+                                        className="group overflow-hidden rounded-lg bg-white/60 dark:bg-[#0B1C2D]/60 shadow-sm hover:shadow-md transition-all duration-300 border border-[#E6F7F6]/20 dark:border-[#1E5AA8]/30 hover:border-[#DCEEEE]/50 dark:hover:border-[#0B1C2D]/30"
                                         role="article"
                                         aria-label={`Blog: ${blog.title}`}
                                         tabIndex={0}
                                     >
                                         <div className="p-4">
-                                            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-2">{blog.title}</h3>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-3">
+                                            <h3 className="text-base font-semibold text-[#0F172A] dark:text-white mb-2 group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors line-clamp-2">{blog.title}</h3>
+                                            <p className="text-xs text-[#2FD1C5] dark:text-[#6EE7D8] flex items-center gap-2 mb-3">
                                                 <Calendar className="h-3 w-3" aria-hidden="true" />
                                                 {formatDate(blog.date)}
                                             </p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">{blog.content}</p>
+                                            <p className="text-sm text-[#1E5AA8] dark:text-[#9FB3C8] line-clamp-2 mb-3">{blog.content}</p>
                                             <Link
                                                 href={`/blog/${blog.slug}`}
-                                                className="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 text-sm font-medium hover:underline transition-colors focus:outline-none focus:underline"
+                                                className="inline-flex items-center gap-1 text-[#1E5AA8] dark:text-[#6EE7D8] text-sm font-medium hover:underline transition-colors focus:outline-none focus:underline"
                                                 aria-label={`Read more about ${blog.title}`}
                                             >
                                                 Read More
@@ -853,27 +853,27 @@ const TeamProfile: React.FC = () => {
                     )}
 
                     {additionalProjects.length > 0 && (
-                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-md border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm">
+                        <motion.section variants={sectionVariants} className="p-6 bg-white/80 dark:bg-[#102A3A]/80 rounded-xl shadow-md border border-[#E6F7F6]/30 dark:border-[#0B1C2D]/30 backdrop-blur-sm">
                             <SectionHeader icon={<LinkIcon className="h-5 w-5" />} title="Additional Projects" />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {additionalProjects.map((proj, idx) => (
                                     <motion.div
                                         key={proj._id}
                                         variants={cardVariants}
-                                        className="group overflow-hidden rounded-lg bg-white/60 dark:bg-gray-700/60 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100/20 dark:border-gray-600/30 hover:border-blue-200/50 dark:hover:border-blue-700/30"
+                                        className="group overflow-hidden rounded-lg bg-white/60 dark:bg-[#0B1C2D]/60 shadow-sm hover:shadow-md transition-all duration-300 border border-[#E6F7F6]/20 dark:border-[#1E5AA8]/30 hover:border-[#DCEEEE]/50 dark:hover:border-[#0B1C2D]/30"
                                         role="article"
                                         aria-label={`Project: ${proj.name}`}
                                         tabIndex={0}
                                     >
                                         <div className="p-4">
-                                            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">{proj.name}</h3>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">{proj.description}</p>
+                                            <h3 className="text-base font-semibold text-[#0F172A] dark:text-white mb-2 group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors line-clamp-2">{proj.name}</h3>
+                                            <p className="text-sm text-[#1E5AA8] dark:text-[#9FB3C8] line-clamp-2 mb-3">{proj.description}</p>
                                             {proj.url && (
                                                 <a
                                                     href={proj.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline transition-colors focus:outline-none focus:underline"
+                                                    className="inline-flex items-center gap-1 text-[#1E5AA8] dark:text-[#6EE7D8] text-sm font-medium hover:underline transition-colors focus:outline-none focus:underline"
                                                     aria-label={`View project: ${proj.name}`}
                                                 >
                                                     View Project

@@ -59,33 +59,33 @@ const MeetingPage = () => {
   }
 
   if (!call) return (
-    <div className="flex-center h-screen w-full bg-gradient-to-br from-dark-1 via-dark-2 to-dark-1">
+    <div className="flex-center h-screen w-full bg-gradient-to-br from-[#050B14] via-[#0B1C2D] to-[#050B14]">
       <div className="text-center space-y-6 max-w-md mx-auto p-6">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
-          <div className="relative bg-dark-3/50 backdrop-blur-sm rounded-full p-8 border border-white/10 shadow-xl">
+          <div className="relative bg-[#102A3A]/70 backdrop-blur-sm rounded-full p-8 border border-[#1E3A4A]/70 shadow-xl">
             <svg className="w-20 h-20 text-red-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
         </div>
         <div className="space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#E6F1F5] to-[#9FB3C8] bg-clip-text text-transparent">
             Meeting Not Found
           </h1>
-          <p className="text-gray-400 text-base leading-relaxed">
+          <p className="text-[#9FB3C8] text-base leading-relaxed">
             {callError || "The meeting you're looking for doesn't exist or has been removed. Please check the meeting ID and try again."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
             <button
               onClick={() => router.back()}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+              className="px-6 py-3 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
             >
               Go Back
             </button>
             <button
               onClick={handleDashboardNavigation}
-              className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+              className="px-6 py-3 bg-[#0B1C2D] hover:bg-[#102A3A] text-[#E6F1F5] font-semibold rounded-xl transition-all duration-300 hover:scale-105 border border-[#1E3A4A]"
             >
               {user?.isAdmin ? 'Meeting Dashboard' : 'Home'}
             </button>
@@ -99,33 +99,33 @@ const MeetingPage = () => {
   const notAllowed = call.type === 'invited' && (!user || !call.state.members.find((m) => m.user.id === user.userId));
 
   if (notAllowed) return (
-    <div className="flex-center h-screen w-full bg-gradient-to-br from-dark-1 via-dark-2 to-dark-1">
+    <div className="flex-center h-screen w-full bg-gradient-to-br from-[#050B14] via-[#0B1C2D] to-[#050B14]">
       <div className="text-center space-y-6 max-w-md mx-auto p-6">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
-          <div className="relative bg-dark-3/50 backdrop-blur-sm rounded-full p-8 border border-white/10 shadow-xl">
+          <div className="relative bg-[#102A3A]/70 backdrop-blur-sm rounded-full p-8 border border-[#1E3A4A]/70 shadow-xl">
             <svg className="w-20 h-20 text-red-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
           </div>
         </div>
         <div className="space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#E6F1F5] to-[#9FB3C8] bg-clip-text text-transparent">
             Access Denied
           </h1>
-          <p className="text-gray-400 text-base leading-relaxed">
+          <p className="text-[#9FB3C8] text-base leading-relaxed">
             You are not authorized to join this meeting. Please contact the meeting organizer for access.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
             <button
               onClick={() => router.back()}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+              className="px-6 py-3 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
             >
               Go Back
             </button>
             <button
               onClick={handleDashboardNavigation}
-              className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+              className="px-6 py-3 bg-[#0B1C2D] hover:bg-[#102A3A] text-[#E6F1F5] font-semibold rounded-xl transition-all duration-300 hover:scale-105 border border-[#1E3A4A]"
             >
               {user?.isAdmin ? 'Meeting Dashboard' : 'Home'}
             </button>
@@ -136,7 +136,7 @@ const MeetingPage = () => {
   );
 
   return (
-    <main className="h-screen w-full bg-gradient-to-br from-dark-1 via-dark-2 to-dark-1">
+    <main className="h-screen w-full bg-gradient-to-br from-[#050B14] via-[#0B1C2D] to-[#050B14]">
       <StreamCall call={call}>
         <StreamTheme>
           {!isSetupComplete ? (

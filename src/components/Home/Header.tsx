@@ -125,7 +125,7 @@ function Header() {
 
     if (user && user.profileImage && !imageError.profile) {
       return (
-        <div className={`relative ${sizeClasses[size]} rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 overflow-hidden shadow-md ring-2 ring-amber-200/50 dark:ring-amber-800/50 cursor-pointer`}>
+      <div className={`relative ${sizeClasses[size]} rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] overflow-hidden shadow-md ring-2 ring-[#6EE7D8]/50 dark:ring-[#0FD9C3]/50 cursor-pointer`}>
           <Image
             src={user.profileImage}
             alt="Profile"
@@ -141,33 +141,33 @@ function Header() {
       );
     }
     return (
-      <div className={`${sizeClasses[size]} rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 flex items-center justify-center shadow-md ring-2 ring-amber-200/50 dark:ring-amber-800/50 font-semibold text-white cursor-pointer`}>
+      <div className={`${sizeClasses[size]} rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] flex items-center justify-center shadow-md ring-2 ring-[#6EE7D8]/50 dark:ring-[#0FD9C3]/50 font-semibold text-white cursor-pointer`}>
         {getUserInitials()}
       </div>
     );
   };
 
   const renderUserDropdown = () => (
-    <div className="absolute right-0 mt-3 w-80 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border border-gray-200/50 dark:border-gray-700/50 rounded-sm shadow-xl z-50 origin-top-right animate-dropdown overflow-hidden">
-      <div className="p-6 bg-gradient-to-br from-amber-50/80 to-amber-100/80 dark:from-amber-900/40 dark:to-amber-800/40">
+    <div className="absolute right-0 mt-3 w-80 bg-gradient-to-b from-[#FFFFFF] to-[#EEF7F6] dark:from-[#0B1C2D] dark:to-[#102A3A] border border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60 rounded-sm shadow-xl z-50 origin-top-right animate-dropdown overflow-hidden">
+      <div className="p-6 bg-gradient-to-br from-[#EEF7F6]/80 to-[#F7FBFC]/80 dark:from-[#0B1C2D]/80 dark:to-[#102A3A]/80">
         <div className="flex items-center space-x-4">
           {getUserAvatar('lg')}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+            <h3 className="text-base font-semibold text-[#0F172A] dark:text-[#E6F1F5] truncate">
               {getUserDisplayName()}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 truncate mt-1">
+            <p className="text-sm text-[#475569] dark:text-[#9FB3C8] truncate mt-1">
               {user?.email}
             </p>
             <div className="mt-2">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-amber-200/80 dark:bg-amber-800/60 text-amber-800 dark:text-amber-200">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-[#6EE7D8]/35 dark:bg-[#0FD9C3]/25 text-[#0F172A] dark:text-[#E6F1F5]">
                 {user?.isAdmin ? 'Admin' : 'Member'}
               </span>
             </div>
           </div>
           <button
             type="button"
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-2 rounded-sm hover:bg-gray-200/50 dark:hover:bg-gray-700/50 cursor-pointer"
+            className="text-[#475569] hover:text-[#1E5AA8] dark:text-[#9FB3C8] dark:hover:text-[#6EE7D8] transition-colors p-2 rounded-sm hover:bg-[#DCEEEE]/60 dark:hover:bg-[#1E3A4A]/50 cursor-pointer"
             onClick={() => setDropdownOpen(false)}
             onKeyDown={(e) => handleKeyDown(e, () => setDropdownOpen(false))}
             aria-label="Close dropdown"
@@ -185,11 +185,11 @@ function Header() {
           <button
             onClick={() => handleNavigation('/dashboard')}
             onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/admin'))}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D] rounded-sm transition-all duration-200 cursor-pointer"
             aria-label="Navigate to Admin Dashboard"
             role="button"
           >
-            <div className="p-2 rounded-sm bg-amber-100/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-sm bg-[#6EE7D8]/30 dark:bg-[#0FD9C3]/25 text-[#1E5AA8] dark:text-[#6EE7D8]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -201,11 +201,11 @@ function Header() {
         <button
           onClick={() => handleNavigation('/profile')}
           onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/profile'))}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D] rounded-sm transition-all duration-200 cursor-pointer"
           aria-label="Navigate to My Profile"
           role="button"
         >
-          <div className="p-2 rounded-sm bg-gray-100/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-300">
+          <div className="p-2 rounded-sm bg-[#EEF7F6]/70 dark:bg-[#0B1C2D]/60 text-[#475569] dark:text-[#9FB3C8]">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
@@ -215,11 +215,11 @@ function Header() {
         <button
           onClick={() => handleNavigation('/account-settings')}
           onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/settings'))}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D] rounded-sm transition-all duration-200 cursor-pointer"
           aria-label="Navigate to Account Settings"
           role="button"
         >
-          <div className="p-2 rounded-sm bg-gray-100/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-300">
+          <div className="p-2 rounded-sm bg-[#EEF7F6]/70 dark:bg-[#0B1C2D]/60 text-[#475569] dark:text-[#9FB3C8]">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -229,7 +229,7 @@ function Header() {
         </button>
       </div>
 
-      <div className="px-3 py-3 border-t border-gray-200/50 dark:border-gray-700/50">
+      <div className="px-3 py-3 border-t border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60">
         <button
           onClick={handleLogout}
           onKeyDown={(e) => handleKeyDown(e, handleLogout)}
@@ -251,29 +251,29 @@ function Header() {
   const renderMobileUserPanel = () => (
     <div
       ref={userPanelRef}
-      className={`fixed top-[60px] right-0 w-full sm:w-80 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border border-gray-200/50 dark:border-gray-700/50 rounded-sm shadow-xl z-50 transition-transform duration-300 ease-in-out ${panelAnimation} overflow-hidden`}
+      className={`fixed top-[60px] right-0 w-full sm:w-80 bg-gradient-to-b from-[#FFFFFF] to-[#EEF7F6] dark:from-[#0B1C2D] dark:to-[#102A3A] border border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60 rounded-sm shadow-xl z-50 transition-transform duration-300 ease-in-out ${panelAnimation} overflow-hidden`}
     >
       {user ? (
         <>
-          <div className="p-6 bg-gradient-to-br from-amber-50/80 to-amber-100/80 dark:from-amber-900/40 dark:to-amber-800/40">
+          <div className="p-6 bg-gradient-to-br from-[#EEF7F6]/80 to-[#F7FBFC]/80 dark:from-[#0B1C2D]/80 dark:to-[#102A3A]/80">
             <div className="flex items-center space-x-4">
               {getUserAvatar('lg')}
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                <h3 className="text-base font-semibold text-[#0F172A] dark:text-[#E6F1F5] truncate">
                   {getUserDisplayName()}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 truncate mt-1">
+                <p className="text-sm text-[#475569] dark:text-[#9FB3C8] truncate mt-1">
                   {user.email || 'No email provided'}
                 </p>
                 <div className="mt-2">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-amber-200/80 dark:bg-amber-800/60 text-amber-800 dark:text-amber-200">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-[#6EE7D8]/35 dark:bg-[#0FD9C3]/25 text-[#0F172A] dark:text-[#E6F1F5]">
                     {user.isAdmin ? 'Admin' : 'Member'}
                   </span>
                 </div>
               </div>
               <button
                 type="button"
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-2 rounded-sm hover:bg-gray-200/50 dark:hover:bg-gray-700/50 cursor-pointer"
+                className="text-[#475569] hover:text-[#1E5AA8] dark:text-[#9FB3C8] dark:hover:text-[#6EE7D8] transition-colors p-2 rounded-sm hover:bg-[#DCEEEE]/60 dark:hover:bg-[#1E3A4A]/50 cursor-pointer"
                 onClick={closeUserPanel}
                 onKeyDown={(e) => handleKeyDown(e, closeUserPanel)}
                 aria-label="Close user panel"
@@ -290,11 +290,11 @@ function Header() {
               <button
                 onClick={() => handleNavigation('/dashboard')}
                 onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/dashboard'))}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D] rounded-sm transition-all duration-200 cursor-pointer"
                 aria-label="Navigate to Admin Dashboard"
                 role="button"
               >
-                <div className="p-2 rounded-sm bg-amber-100/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
+                <div className="p-2 rounded-sm bg-[#6EE7D8]/30 dark:bg-[#0FD9C3]/25 text-[#1E5AA8] dark:text-[#6EE7D8]">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -306,11 +306,11 @@ function Header() {
             <button
               onClick={() => handleNavigation('/profile')}
               onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/profile'))}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D] rounded-sm transition-all duration-200 cursor-pointer"
               aria-label="Navigate to My Profile"
               role="button"
             >
-              <div className="p-2 rounded-sm bg-gray-100/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-300">
+              <div className="p-2 rounded-sm bg-[#EEF7F6]/70 dark:bg-[#0B1C2D]/60 text-[#475569] dark:text-[#9FB3C8]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -320,11 +320,11 @@ function Header() {
             <button
               onClick={() => handleNavigation('/account-settings')}
               onKeyDown={(e) => handleKeyDown(e, () => handleNavigation('/account-settings'))}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 rounded-sm transition-all duration-200 cursor-pointer"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] hover:bg-[#EEF7F6] dark:hover:bg-[#0B1C2D] rounded-sm transition-all duration-200 cursor-pointer"
               aria-label="Navigate to Account Settings"
               role="button"
             >
-              <div className="p-2 rounded-sm bg-gray-100/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-300">
+              <div className="p-2 rounded-sm bg-[#EEF7F6]/70 dark:bg-[#0B1C2D]/60 text-[#475569] dark:text-[#9FB3C8]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -333,7 +333,7 @@ function Header() {
               <span>Account Settings</span>
             </button>
           </div>
-          <div className="px-3 py-3 border-t border-gray-200/50 dark:border-gray-700/50">
+          <div className="px-3 py-3 border-t border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60">
             <button
               onClick={handleLogout}
               onKeyDown={(e) => handleKeyDown(e, handleLogout)}
@@ -352,23 +352,23 @@ function Header() {
         </>
       ) : (
         <div className="p-6 flex flex-col items-center space-y-6">
-          <div className="w-16 h-16 rounded-sm bg-gradient-to-br from-amber-400/80 to-amber-600/80 dark:from-amber-600/80 dark:to-amber-800/80 flex items-center justify-center shadow-md ring-2 ring-amber-200/50 dark:ring-amber-800/50">
+          <div className="w-16 h-16 rounded-sm bg-gradient-to-br from-[#6EE7D8]/80 via-[#2FD1C5]/80 to-[#1E5AA8]/80 dark:from-[#0FD9C3]/80 dark:via-[#0B8ED8]/80 dark:to-[#0A2A66]/80 flex items-center justify-center shadow-md ring-2 ring-[#6EE7D8]/50 dark:ring-[#0FD9C3]/50">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
           <div className="text-center">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Welcome Guest</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Please sign in to access your account</p>
+            <h3 className="text-base font-semibold text-[#0F172A] dark:text-[#E6F1F5]">Welcome Guest</h3>
+            <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mt-1">Please sign in to access your account</p>
           </div>
           <div className="w-full space-y-3">
             <Link
               href="/login"
-              className="w-full flex items-center justify-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 bg-amber-100/50 dark:bg-amber-900/30 hover:bg-amber-200/50 dark:hover:bg-amber-800/30 rounded-sm transition-all duration-200 cursor-pointer"
+              className="w-full flex items-center justify-center space-x-3 px-4 py-3 text-sm text-[#475569] dark:text-[#9FB3C8] bg-[#EEF7F6] dark:bg-[#0B1C2D]/70 hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A] rounded-sm transition-all duration-200 cursor-pointer"
               onClick={closeUserPanel}
               aria-label="Sign in"
             >
-              <div className="p-2 rounded-sm bg-amber-100/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
+              <div className="p-2 rounded-sm bg-[#6EE7D8]/30 dark:bg-[#0FD9C3]/25 text-[#1E5AA8] dark:text-[#6EE7D8]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -383,8 +383,13 @@ function Header() {
 
   if (authLoading) {
     return (
-      <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-white/90 dark:bg-gray-950/90 text-gray-900 dark:text-white border-b border-gray-200/30 dark:border-gray-800/30 shadow-sm transition-all duration-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg text-[#0F172A] dark:text-[#E6F1F5] border-b border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60 shadow-sm transition-all duration-500 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Skeleton className="w-10 h-10 rounded-sm" />
             <Skeleton className="h-6 w-24" />
@@ -406,28 +411,33 @@ function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-white/90 dark:bg-gray-950/90 text-gray-900 dark:text-white border-b border-gray-200/30 dark:border-gray-800/30 shadow-sm transition-all duration-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg text-[#0F172A] dark:text-[#E6F1F5] border-b border-[#DCEEEE]/60 dark:border-[#1E3A4A]/60 shadow-sm transition-all duration-500 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 group cursor-pointer" aria-label="Homepage">
-            <div className="relative w-10 h-10 rounded-sm flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <div className="relative w-10 h-10 rounded-sm flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-[#FFFFFF] via-[#F7FBFC] to-[#EEF7F6] dark:from-[#102A3A] dark:via-[#0B1C2D] dark:to-[#122745]">
               {imageError.logo ? (
                 <span className="text-white font-semibold">CC</span>
               ) : (
                 <Image
-                  src="/logo.png"
+                  src="/logo.PNG"
                   alt="CraftCode Logo"
-                  width={24}
-                  height={24}
+                  width={44}
+                  height={44}
                   className="object-contain transition-transform duration-300 group-hover:scale-110"
                   priority
                   onError={() => setImageError((prev) => ({ ...prev, logo: true }))}
                 />
               )}
             </div>
-            <span className="flex flex-col text-base font-bold text-gray-800 dark:text-white font-sans tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors duration-300">
+            <span className="flex flex-col text-base font-bold text-[#0F172A] dark:text-[#E6F1F5] font-sans tracking-tight group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors duration-300">
               <span className="text-base">CraftCode</span>
-              <span className="-mt-1 text-sm font-cursive text-amber-600 dark:text-amber-400" style={{ fontFamily: 'Pacifico, cursive' }}>Solutions</span>
+              <span className="-mt-1 text-sm font-cursive text-[#1E5AA8] dark:text-[#6EE7D8]" style={{ fontFamily: 'Pacifico, cursive' }}>Solutions</span>
             </span>
           </Link>
         </div>
@@ -449,15 +459,15 @@ function Header() {
                 className={`relative px-4 py-2 rounded-sm text-sm font-medium transition-all duration-300 group cursor-pointer
                   ${
                     pathname === href
-                      ? 'text-amber-500 dark:text-amber-400'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-amber-500 dark:hover:text-amber-400'
+                      ? 'text-[#2FD1C5] dark:text-[#6EE7D8]'
+                      : 'text-[#475569] dark:text-[#9FB3C8] hover:text-[#2FD1C5] dark:hover:text-[#6EE7D8]'
                   }`}
                 aria-label={`Navigate to ${label}`}
                 aria-current={pathname === href ? 'page' : undefined}
               >
                 {label}
                 <span
-                  className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-amber-500 dark:bg-amber-400 transition-all duration-300
+                  className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] transition-all duration-300
                     ${pathname === href ? 'w-full' : 'w-0 group-hover:w-full'}`}
                 ></span>
               </Link>
@@ -470,7 +480,7 @@ function Header() {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     type="button"
-                    className="group flex items-center justify-center w-10 h-10 rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 text-white font-medium shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none cursor-pointer"
+                    className="group flex items-center justify-center w-10 h-10 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white font-medium shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none cursor-pointer"
                     onClick={() => setDropdownOpen((open) => !open)}
                     onKeyDown={(e) => handleKeyDown(e, () => setDropdownOpen((open) => !open))}
                     aria-label="Toggle user menu"
@@ -485,7 +495,7 @@ function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center justify-center w-10 h-10 rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  className="flex items-center justify-center w-10 h-10 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                   aria-label="Sign in"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -498,7 +508,7 @@ function Header() {
               {isAuthenticated ? (
                 <button
                   type="button"
-                  className="flex items-center justify-center w-9 h-9 rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  className="flex items-center justify-center w-9 h-9 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                   onClick={() => setIsUserPanelOpen((open) => !open)}
                   onKeyDown={(e) => handleKeyDown(e, () => setIsUserPanelOpen((open) => !open))}
                   aria-label="Toggle user menu"
@@ -509,7 +519,7 @@ function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center justify-center w-9 h-9 rounded-sm bg-gradient-to-br from-amber-400 to-amber-600 dark:from-amber-600 dark:to-amber-800 text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  className="flex items-center justify-center w-9 h-9 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                   aria-label="Sign in"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

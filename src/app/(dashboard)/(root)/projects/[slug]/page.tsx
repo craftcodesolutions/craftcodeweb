@@ -62,17 +62,17 @@ interface Project {
 
 // Enhanced status and priority mapping with more vibrant colors
 const statusMap: Record<string, { label: string; color: string; darkColor: string; icon: React.ElementType }> = {
-  planning: { label: "Planning", color: "bg-gradient-to-r from-gray-500 to-gray-600", darkColor: "bg-gradient-to-r from-gray-600 to-gray-700", icon: MapPin },
-  "in-progress": { label: "In Progress", color: "bg-gradient-to-r from-blue-500 to-cyan-500", darkColor: "bg-gradient-to-r from-blue-600 to-cyan-600", icon: Workflow },
-  completed: { label: "Completed", color: "bg-gradient-to-r from-green-500 to-emerald-500", darkColor: "bg-gradient-to-r from-green-600 to-emerald-600", icon: CheckCircle },
-  onHold: { label: "On Hold", color: "bg-gradient-to-r from-yellow-500 to-amber-500", darkColor: "bg-gradient-to-r from-yellow-600 to-amber-600", icon: Clock },
+  planning: { label: "Planning", color: "bg-gradient-to-r from-[#7B8A9A] to-[#475569]", darkColor: "bg-gradient-to-r from-[#475569] to-[#1E3A4A]", icon: MapPin },
+  "in-progress": { label: "In Progress", color: "bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8]", darkColor: "bg-gradient-to-r from-[#1E5AA8] to-[#0B1C2D]", icon: Workflow },
+  completed: { label: "Completed", color: "bg-gradient-to-r from-[#6EE7D8] to-[#EEF7F6]/0", darkColor: "bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8]", icon: CheckCircle },
+  onHold: { label: "On Hold", color: "bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5]", darkColor: "bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8]", icon: Clock },
   cancelled: { label: "Cancelled", color: "bg-gradient-to-r from-red-500 to-rose-500", darkColor: "bg-gradient-to-r from-red-600 to-rose-600", icon: XCircle },
 };
 
 const priorityMap: Record<string, { label: string; color: string; darkColor: string; icon: React.ElementType }> = {
-  low: { label: "Low", color: "bg-gradient-to-r from-green-500 to-emerald-500", darkColor: "bg-gradient-to-r from-green-600 to-emerald-600", icon: TrendingUp },
-  medium: { label: "Medium", color: "bg-gradient-to-r from-yellow-500 to-amber-500", darkColor: "bg-gradient-to-r from-yellow-600 to-amber-600", icon: BarChart3 },
-  high: { label: "High", color: "bg-gradient-to-r from-orange-500 to-red-500", darkColor: "bg-gradient-to-r from-orange-600 to-red-600", icon: Zap },
+  low: { label: "Low", color: "bg-gradient-to-r from-[#6EE7D8] to-[#EEF7F6]/0", darkColor: "bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8]", icon: TrendingUp },
+  medium: { label: "Medium", color: "bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5]", darkColor: "bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8]", icon: BarChart3 },
+  high: { label: "High", color: "bg-gradient-to-r from-[#2FD1C5] to-red-500", darkColor: "bg-gradient-to-r from-[#1E5AA8] to-red-600", icon: Zap },
   critical: { label: "Critical", color: "bg-gradient-to-r from-red-500 to-rose-500", darkColor: "bg-gradient-to-r from-red-600 to-rose-600", icon: Shield },
 };
 
@@ -246,14 +246,21 @@ export default function DemoProjectPage() {
 
   if (error || !project || !authorDetails || !clientDetails) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/10 to-indigo-50/5 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-900">
-        <div className="text-center p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-2xl max-w-md mx-auto border border-white/20">
-          <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Error Loading Project</h2>
-          <p className="text-slate-600 dark:text-slate-300 mb-6">{error || "Project or user data not found"}</p>
-          <Button asChild className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-full px-6">
-            <Link href="/projects">Back to Projects</Link>
-          </Button>
+      <div className="relative min-h-screen overflow-hidden transition-colors duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+        </div>
+        <div className="relative min-h-screen flex items-center justify-center px-4">
+          <div className="text-center p-8 bg-white/80 dark:bg-[#0B1C2D]/80 backdrop-blur-sm rounded-2xl shadow-2xl max-w-md mx-auto border border-white/20">
+            <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-2">Error Loading Project</h2>
+            <p className="text-[#475569] dark:text-[#9FB3C8] mb-6">{error || "Project or user data not found"}</p>
+            <Button asChild className="bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] hover:from-[#1E5AA8] hover:to-[#0B1C2D] rounded-full px-6">
+              <Link href="/projects">Back to Projects</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -270,50 +277,55 @@ export default function DemoProjectPage() {
   const PriorityIcon = priorityMap[project.priority]?.icon || Zap;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/10 to-indigo-50/5 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="relative min-h-screen overflow-hidden py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
+      <div className="relative max-w-7xl mx-auto space-y-10">
         {/* Enhanced Header with Stats */}
         <div className="w-full space-y-6 animate-fade-in">
           <div className="flex flex-wrap gap-3 mb-4">
-            <Badge className={`${statusMap[project.status]?.color || 'bg-gray-500'} text-white border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg`}>
+            <Badge className={`${statusMap[project.status]?.color || 'bg-[#102A3A]'} text-white border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg`}>
               <StatusIcon className="h-4 w-4" />
               {statusMap[project.status]?.label || project.status}
             </Badge>
-            <Badge className={`${priorityMap[project.priority]?.color || 'bg-gray-500'} text-white border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg`}>
+            <Badge className={`${priorityMap[project.priority]?.color || 'bg-[#102A3A]'} text-white border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg`}>
               <PriorityIcon className="h-4 w-4" />
               {priorityMap[project.priority]?.label || project.priority}
             </Badge>
-            <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+            <Badge className="bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white hover:from-[#1E5AA8] hover:to-[#0B1C2D] border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
               <Code2 className="h-4 w-4" />
               {project.category}
             </Badge>
             {project.featured && (
-              <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+              <Badge className="bg-gradient-to-r from-[#6EE7D8] to-[#1E5AA8] text-white border-0 font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
                 <Star className="h-4 w-4 fill-current" />
                 Featured
               </Badge>
             )}
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-bold  dark:text-white tracking-tight bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent text-center">
+          <h1 className="text-4xl sm:text-6xl font-bold  dark:text-[#E6F1F5] tracking-tight bg-gradient-to-br from-[#050B14] to-[#102A3A] dark:from-white dark:to-[#DCEEEE] bg-clip-text text-transparent text-center">
             {project.title}
           </h1>
 
-          <p className="text-xl text-slate-600 dark:text-slate-300 w-full leading-relaxed font-light text-left">
+          <p className="text-xl text-[#475569] dark:text-[#9FB3C8] w-full leading-relaxed font-light text-left">
             {project.description}
           </p>
 
           {/* Stats Row */}
           <div className="flex flex-wrap gap-6 pt-4">
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-[#7B8A9A] dark:text-[#7B8A9A]">
               <Eye className="h-4 w-4" />
               <span>{viewCount.toLocaleString()} views</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-[#7B8A9A] dark:text-[#7B8A9A]">
               <Calendar className="h-4 w-4" />
               <span>Created {formatDate(project.createdAt)}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-[#7B8A9A] dark:text-[#7B8A9A]">
               <Users className="h-4 w-4" />
               <span>{1 + coAuthorDetails.length} team members</span>
             </div>
@@ -326,18 +338,18 @@ export default function DemoProjectPage() {
           <Button
             onClick={() => setIsLiked(!isLiked)}
             className={`rounded-full px-6 py-3 font-medium transition-all duration-300 ${isLiked
-              ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/25'
-              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+              ? 'bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] hover:from-[#1E5AA8] hover:to-[#0B1C2D] text-white shadow-lg shadow-[#2FD1C5]/25'
+              : 'bg-white dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#F7FBFC] dark:hover:bg-[#102A3A] border border-[#DCEEEE] dark:border-[#102A3A]'
               }`}
           >
             <Heart className={`h-5 w-5 mr-2 ${isLiked ? 'fill-current' : ''}`} />
             {isLiked ? 'Liked' : 'Like'}
           </Button>
-          <Button className="rounded-full px-6 py-3 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-all duration-300">
+          <Button className="rounded-full px-6 py-3 font-medium bg-white dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#F7FBFC] dark:hover:bg-[#102A3A] border border-[#DCEEEE] dark:border-[#102A3A] transition-all duration-300">
             <Share2 className="h-5 w-5 mr-2" />
             Share
           </Button>
-          <Button className="rounded-full px-6 py-3 font-medium bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-300">
+          <Button className="rounded-full px-6 py-3 font-medium bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] hover:from-[#1E5AA8] hover:to-[#0B1C2D] text-white shadow-lg shadow-[#2FD1C5]/25 transition-all duration-300">
             <Download className="h-5 w-5 mr-2" />
             Export PDF
           </Button>
@@ -348,7 +360,7 @@ export default function DemoProjectPage() {
           {/* Left column - Project details */}
           <div className="lg:col-span-2 space-y-8">
             {/* Enhanced Project image with gradient overlay and floating elements */}
-            <div className="relative group overflow-hidden rounded-3xl shadow-2xl dark:shadow-slate-900/30 transition-all duration-700 hover:shadow-3xl dark:hover:shadow-slate-900/50 hover:scale-[1.01]">
+            <div className="relative group overflow-hidden rounded-3xl shadow-2xl dark:shadow-[#050B14]/30 transition-all duration-700 hover:shadow-3xl dark:hover:shadow-[#050B14]/50 hover:scale-[1.01]">
               <div className="aspect-video relative overflow-hidden">
                 <img
                   src={project.imageUrl || "https://source.unsplash.com/1200x600/?technology,design"}
@@ -357,21 +369,21 @@ export default function DemoProjectPage() {
                   onError={(e) => { e.currentTarget.src = "https://source.unsplash.com/1200x600/?technology,design"; }}
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050B14]/90 via-[#050B14]/30 to-transparent" />
 
                 {/* Floating info cards */}
                 <div className="absolute bottom-6 left-6 right-6 flex flex-wrap gap-3">
-                  <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg">
+                  <div className="bg-white/90 dark:bg-[#0B1C2D]/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">{statusMap[project.status]?.label}</span>
+                      <div className="w-3 h-3 rounded-full bg-[#6EE7D8] animate-pulse"></div>
+                      <span className="text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5]">{statusMap[project.status]?.label}</span>
                     </div>
                   </div>
                   {project.budget && (
-                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg">
+                    <div className="bg-white/90 dark:bg-[#0B1C2D]/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg">
                       <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">
+                        <DollarSign className="h-4 w-4 text-[#1E5AA8] dark:text-[#2FD1C5]" />
+                        <span className="text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5]">
                           {project.budget.toLocaleString()} {project.currency}
                         </span>
                       </div>
@@ -387,10 +399,10 @@ export default function DemoProjectPage() {
                         href={project.projectUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-slate-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
+                        className="p-3 bg-white/90 dark:bg-[#0B1C2D]/90 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-[#102A3A] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
                         aria-label="View live demo"
                       >
-                        <Rocket className="h-5 w-5 text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                        <Rocket className="h-5 w-5 text-[#475569] dark:text-[#9FB3C8] group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors" />
                       </a>
                     )}
                     {project.repoUrl && (
@@ -398,10 +410,10 @@ export default function DemoProjectPage() {
                         href={project.repoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-slate-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
+                        className="p-3 bg-white/90 dark:bg-[#0B1C2D]/90 backdrop-blur-sm rounded-xl hover:bg-white dark:hover:bg-[#102A3A] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
                         aria-label="View repository"
                       >
-                        <Github className="h-5 w-5 text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                        <Github className="h-5 w-5 text-[#475569] dark:text-[#9FB3C8] group-hover:text-[#0F172A] dark:group-hover:text-white transition-colors" />
                       </a>
                     )}
                   </div>
@@ -411,46 +423,46 @@ export default function DemoProjectPage() {
 
             {/* Enhanced Project info cards with hover effects */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] group">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#EEF7F6]/50 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] group">
                 <CardContent className="p-7 relative">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#2FD1C5]/10 to-[#1E5AA8]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
+                  <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-5 flex items-center gap-3">
+                    <div className="p-3 bg-gradient-to-br from-[#2FD1C5] to-[#1E5AA8] rounded-2xl shadow-lg">
                       <Calendar className="h-6 w-6 text-white" />
                     </div>
                     Timeline & Progress
                   </h2>
                   <div className="space-y-5 relative z-10">
                     {project.startDate && (
-                      <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-700/50 rounded-xl border border-white/50 dark:border-slate-600/50 backdrop-blur-sm">
-                        <span className="text-slate-600 dark:text-slate-300">Start Date</span>
-                        <span className="font-semibold text-slate-900 dark:text-white">
+                      <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-[#102A3A]/50 rounded-xl border border-white/50 dark:border-[#1E3A4A]/50 backdrop-blur-sm">
+                        <span className="text-[#475569] dark:text-[#9FB3C8]">Start Date</span>
+                        <span className="font-semibold text-[#0F172A] dark:text-[#E6F1F5]">
                           {formatDate(project.startDate)}
                         </span>
                       </div>
                     )}
                     {project.deadline && (
-                      <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-700/50 rounded-xl border border-white/50 dark:border-slate-600/50 backdrop-blur-sm">
-                        <span className="text-slate-600 dark:text-slate-300">Deadline</span>
-                        <span className="font-semibold text-slate-900 dark:text-white">
+                      <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-[#102A3A]/50 rounded-xl border border-white/50 dark:border-[#1E3A4A]/50 backdrop-blur-sm">
+                        <span className="text-[#475569] dark:text-[#9FB3C8]">Deadline</span>
+                        <span className="font-semibold text-[#0F172A] dark:text-[#E6F1F5]">
                           {formatDate(project.deadline)}
                         </span>
                       </div>
                     )}
                     <div className="pt-3">
                       <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Project Progress</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                        <span className="text-sm font-medium text-[#475569] dark:text-[#9FB3C8]">Project Progress</span>
+                        <span className="text-sm font-bold text-[#0F172A] dark:text-[#E6F1F5]">
                           {Math.round(progressPercentage)}%
                         </span>
                       </div>
                       <div className="relative">
                         <Progress
                           value={progressPercentage}
-                          className={`h-3 rounded-full ${isOverdue ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'} shadow-inner`}
+                          className={`h-3 rounded-full ${isOverdue ? 'bg-gradient-to-r from-[#1E5AA8] to-[#0B1C2D]' : 'bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8]'} shadow-inner`}
                         />
                         {isOverdue && (
-                          <p className="text-rose-600 dark:text-rose-400 text-xs mt-2 flex items-center gap-2 font-medium">
+                          <p className="text-[#1E5AA8] dark:text-[#6EE7D8] text-xs mt-2 flex items-center gap-2 font-medium">
                             <Clock className="h-3 w-3" />
                             Project is overdue
                           </p>
@@ -461,36 +473,36 @@ export default function DemoProjectPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] group">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#EEF7F6]/50 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] group">
                 <CardContent className="p-7 relative">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500/10 to-green-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#6EE7D8]/10 to-[#2FD1C5]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
+                  <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-5 flex items-center gap-3">
+                    <div className="p-3 bg-gradient-to-br from-[#6EE7D8] to-[#2FD1C5] rounded-2xl shadow-lg">
                       <DollarSign className="h-6 w-6 text-white" />
                     </div>
                     Budget & Payment
                   </h2>
                   <div className="space-y-5 relative z-10">
                     {project.budget && (
-                      <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-700/50 rounded-xl border border-white/50 dark:border-slate-600/50 backdrop-blur-sm">
-                        <span className="text-slate-600 dark:text-slate-300">Budget</span>
-                        <span className="font-semibold text-slate-900 dark:text-white">
+                      <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-[#102A3A]/50 rounded-xl border border-white/50 dark:border-[#1E3A4A]/50 backdrop-blur-sm">
+                        <span className="text-[#475569] dark:text-[#9FB3C8]">Budget</span>
+                        <span className="font-semibold text-[#0F172A] dark:text-[#E6F1F5]">
                           {project.budget.toLocaleString()} {project.currency}
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-700/50 rounded-xl border border-white/50 dark:border-slate-600/50 backdrop-blur-sm">
-                      <span className="text-slate-600 dark:text-slate-300">Contract Type</span>
-                      <span className="font-semibold text-slate-900 dark:text-white capitalize">{project.contractType}</span>
+                    <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-[#102A3A]/50 rounded-xl border border-white/50 dark:border-[#1E3A4A]/50 backdrop-blur-sm">
+                      <span className="text-[#475569] dark:text-[#9FB3C8]">Contract Type</span>
+                      <span className="font-semibold text-[#0F172A] dark:text-[#E6F1F5] capitalize">{project.contractType}</span>
                     </div>
-                    <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-700/50 rounded-xl border border-white/50 dark:border-slate-600/50 backdrop-blur-sm">
-                      <span className="text-slate-600 dark:text-slate-300">Payment Status</span>
+                    <div className="flex justify-between items-center p-4 bg-white/50 dark:bg-[#102A3A]/50 rounded-xl border border-white/50 dark:border-[#1E3A4A]/50 backdrop-blur-sm">
+                      <span className="text-[#475569] dark:text-[#9FB3C8]">Payment Status</span>
                       <Badge
                         className={`font-semibold border-none capitalize px-3 py-1 rounded-full ${project.paymentStatus === 'paid'
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                          ? 'bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white'
                           : project.paymentStatus === 'partial'
-                            ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-white'
-                            : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white'
+                            ? 'bg-gradient-to-r from-[#6EE7D8] to-[#2FD1C5] text-white'
+                            : 'bg-gradient-to-r from-[#1E5AA8] to-[#0B1C2D] text-white'
                           }`}
                       >
                         {project.paymentStatus}
@@ -503,19 +515,19 @@ export default function DemoProjectPage() {
 
             {/* Enhanced Case Study */}
             {project.caseStudy && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-50 via-blue-50/50 to-purple-50/30 dark:from-indigo-900/20 dark:via-blue-900/10 dark:to-purple-900/10 backdrop-blur-sm rounded-3xl overflow-hidden group transition-all duration-500 hover:shadow-2xl">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6]/50 to-[#EEF7F6]/30 dark:from-[#050B14]/20 dark:via-[#0B1C2D]/10 dark:to-[#050B14]/10 backdrop-blur-sm rounded-3xl overflow-hidden group transition-all duration-500 hover:shadow-2xl">
                 <CardContent className="p-8 relative">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700"></div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-4 relative z-10">
-                    <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#F7FBFC]/10 to-[#EEF7F6]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700"></div>
+                  <h2 className="text-2xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-6 flex items-center gap-4 relative z-10">
+                    <div className="p-3 bg-gradient-to-br from-[#F7FBFC]/0 to-[#EEF7F6]/0 rounded-2xl shadow-lg">
                       <BarChart3 className="h-7 w-7 text-white" />
                     </div>
                     Project Case Study
                   </h2>
-                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg relative z-10 font-light">
+                  <p className="text-[#475569] dark:text-[#9FB3C8] leading-relaxed text-lg relative z-10 font-light">
                     {project.caseStudy}
                   </p>
-                  <Button className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-full px-8 py-3 font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:shadow-xl hover:scale-105 relative z-10">
+                  <Button className="mt-8 bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] hover:from-[#1E5AA8] hover:to-[#0B1C2D] rounded-full px-8 py-3 font-semibold text-white shadow-lg shadow-[#2FD1C5]/25 transition-all duration-300 hover:shadow-xl hover:scale-105 relative z-10">
                     Read Full Case Study
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -525,38 +537,38 @@ export default function DemoProjectPage() {
 
             {/* Enhanced Milestones */}
             {project.milestones && project.milestones.length > 0 && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#F7FBFC]/50 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
                 <CardContent className="p-8 relative">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700"></div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-4 relative z-10">
-                    <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#2FD1C5]/10 to-[#1E5AA8]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700"></div>
+                  <h2 className="text-2xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-6 flex items-center gap-4 relative z-10">
+                    <div className="p-3 bg-gradient-to-br from-[#2FD1C5] to-[#1E5AA8] rounded-2xl shadow-lg">
                       <Target className="h-7 w-7 text-white" />
                     </div>
                     Project Milestones
                   </h2>
                   <div className="space-y-6 relative z-10">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-slate-600 dark:text-slate-300 font-medium">
+                      <span className="text-[#475569] dark:text-[#9FB3C8] font-medium">
                         Completed {completedMilestones} of {totalMilestones} milestones
                       </span>
-                      <span className="text-lg font-bold text-slate-900 dark:text-white">
+                      <span className="text-lg font-bold text-[#0F172A] dark:text-[#E6F1F5]">
                         {totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0}%
                       </span>
                     </div>
                     <Progress
                       value={totalMilestones > 0 ? (completedMilestones / totalMilestones) * 100 : 0}
-                      className="h-3 mb-8 bg-slate-200 dark:bg-slate-700 rounded-full shadow-inner"
+                      className="h-3 mb-8 bg-[#DCEEEE] dark:bg-[#102A3A] rounded-full shadow-inner"
                     />
                     <div className="space-y-5">
                       {project.milestones.map((milestone, index) => (
                         <div
                           key={index}
-                          className="flex items-start gap-5 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-lg bg-white/50 dark:bg-slate-700/30 backdrop-blur-sm group/milestone"
+                          className="flex items-start gap-5 p-5 rounded-2xl border border-[#DCEEEE]/60 dark:border-[#102A3A]/60 hover:border-[#6EE7D8] dark:hover:border-[#2FD1C5] transition-all duration-300 hover:shadow-lg bg-white/50 dark:bg-[#102A3A]/30 backdrop-blur-sm group/milestone"
                         >
                           <div
                             className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover/milestone:scale-110 ${milestone.completed
-                              ? "bg-gradient-to-br from-green-500 to-emerald-500"
-                              : "bg-gradient-to-br from-slate-400 to-slate-500"
+                              ? "bg-gradient-to-br from-[#6EE7D8] to-[#EEF7F6]/0"
+                              : "bg-gradient-to-br from-[#9FB3C8] to-[#F7FBFC]/0"
                               }`}
                           >
                             {milestone.completed ? (
@@ -568,20 +580,20 @@ export default function DemoProjectPage() {
                           <div className="flex-1">
                             <h3
                               className={`font-semibold text-lg ${milestone.completed
-                                ? "text-green-700 dark:text-green-400"
-                                : "text-slate-900 dark:text-white"
+                                ? "text-[#1E5AA8] dark:text-[#2FD1C5]"
+                                : "text-[#0F172A] dark:text-[#E6F1F5]"
                                 }`}
                             >
                               {milestone.name}
                             </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Due: {formatDate(milestone.date)}</p>
+                            <p className="text-sm text-[#7B8A9A] dark:text-[#7B8A9A] mt-1">Due: {formatDate(milestone.date)}</p>
                           </div>
                           {milestone.completed ? (
-                            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 border-none py-2 px-4 rounded-full font-semibold shadow-lg">
+                            <Badge className="bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white hover:from-[#2FD1C5] hover:to-[#1E5AA8] border-none py-2 px-4 rounded-full font-semibold shadow-lg">
                               Completed
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-slate-500 dark:text-slate-400 dark:border-slate-600 py-2 px-4 rounded-full font-medium">
+                            <Badge variant="outline" className="text-[#7B8A9A] dark:text-[#7B8A9A] dark:border-[#1E3A4A] py-2 px-4 rounded-full font-medium">
                               Upcoming
                             </Badge>
                           )}
@@ -597,18 +609,18 @@ export default function DemoProjectPage() {
           {/* Right column - People and tech info */}
           <div className="space-y-8">
             {/* Enhanced Project links */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#F7FBFC]/50 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
               <CardContent className="p-7">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Project Links</h2>
+                <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-6">Project Links</h2>
                 <div className="space-y-4">
                   {project.projectUrl && (
                     <Button
-                      className="w-full justify-between py-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group/link"
+                      className="w-full justify-between py-5 rounded-2xl border border-[#DCEEEE]/60 dark:border-[#102A3A]/60 bg-white/80 dark:bg-[#0B1C2D]/80 hover:bg-white dark:hover:bg-[#102A3A] text-[#0F172A] dark:text-[#E6F1F5] hover:text-[#0F172A] dark:hover:text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group/link"
                       asChild
                     >
                       <a href={project.projectUrl} target="_blank" rel="noopener noreferrer">
                         <div className="flex items-center gap-4">
-                          <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg">
+                          <div className="p-3 bg-gradient-to-br from-[#2FD1C5] to-[#1E5AA8] rounded-xl shadow-lg">
                             <Rocket className="h-5 w-5 text-white" />
                           </div>
                           <span className="font-semibold">Live Demo</span>
@@ -619,12 +631,12 @@ export default function DemoProjectPage() {
                   )}
                   {project.repoUrl && (
                     <Button
-                      className="w-full justify-between py-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group/link"
+                      className="w-full justify-between py-5 rounded-2xl border border-[#DCEEEE]/60 dark:border-[#102A3A]/60 bg-white/80 dark:bg-[#0B1C2D]/80 hover:bg-white dark:hover:bg-[#102A3A] text-[#0F172A] dark:text-[#E6F1F5] hover:text-[#0F172A] dark:hover:text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group/link"
                       asChild
                     >
                       <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
                         <div className="flex items-center gap-4">
-                          <div className="p-3 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl shadow-lg">
+                          <div className="p-3 bg-gradient-to-br from-[#102A3A] to-[#0B1C2D] rounded-xl shadow-lg">
                             <Github className="h-5 w-5 text-white" />
                           </div>
                           <span className="font-semibold">Repository</span>
@@ -638,19 +650,19 @@ export default function DemoProjectPage() {
             </Card>
 
             {/* Enhanced Author info */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 text-white rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-[#050B14] via-[#0B1C2D] to-[#050B14] dark:from-[#0B1C2D] dark:via-[#0B1C2D] dark:to-[#050B14] text-white rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
               <CardContent className="p-7 relative">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#F7FBFC]/20 to-[#EEF7F6]/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700"></div>
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-3 relative z-10">
-                  <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl shadow-lg">
+                  <div className="p-2 bg-gradient-to-br from-[#F7FBFC]/0 to-[#EEF7F6]/0 rounded-xl shadow-lg">
                     <Sparkles className="h-5 w-5 text-white" />
                   </div>
                   Project Lead
                 </h2>
                 <div className="flex items-start gap-5 relative z-10">
                   <div className="relative flex flex-col items-center">
-                    <div className="relative w-14 h-14 rounded-md bg-gradient-to-b from-indigo-500 via-purple-500 to-sky-500 p-0.5 shadow-lg shadow-indigo-900/30">
-                      <div className="w-full h-full rounded-md bg-slate-900/20 dark:bg-white/10 overflow-hidden flex items-stretch justify-center">
+                    <div className="relative w-14 h-14 rounded-md bg-gradient-to-b from-[#F7FBFC]/0 via-[#1E5AA8] to-[#1E5AA8] p-0.5 shadow-lg shadow-[#050B14]/30">
+                      <div className="w-full h-full rounded-md bg-[#050B14]/20 dark:bg-white/10 overflow-hidden flex items-stretch justify-center">
                         <Image
                           src={
                             isValidImageUrl(authorDetails?.avatar || "")
@@ -663,15 +675,15 @@ export default function DemoProjectPage() {
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full border-2 border-slate-900/70 bg-emerald-400 shadow shadow-emerald-700/40" />
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full border-2 border-[#050B14]/70 bg-[#6EE7D8] shadow shadow-[#0B1C2D]/40" />
                     </div>
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-white text-lg">{authorDetails.name}</h3>
-                    <p className="text-indigo-200 text-sm mt-2 line-clamp-3 font-light">{authorDetails.bio}</p>
+                    <p className="text-[#9FB3C8] text-sm mt-2 line-clamp-3 font-light">{authorDetails.bio}</p>
                     <div className="flex flex-col gap-3 mt-4">
                       {authorDetails.email && (
-                        <div className="flex items-center gap-3 text-sm text-slate-300">
+                        <div className="flex items-center gap-3 text-sm text-[#9FB3C8]">
                           <Mail className="h-4 w-4" />
                           {authorDetails.email}
                         </div>
@@ -684,11 +696,11 @@ export default function DemoProjectPage() {
 
             {/* Enhanced Team members */}
             {coAuthorDetails.length > 0 && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#EEF7F6]/30 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
                 <CardContent className="p-7 relative">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-3 relative z-10">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#2FD1C5]/10 to-[#1E5AA8]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
+                  <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-6 flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-gradient-to-br from-[#2FD1C5] to-[#1E5AA8] rounded-xl shadow-lg">
                       <Users className="h-5 w-5 text-white" />
                     </div>
                     Team Members ({coAuthorDetails.length})
@@ -697,7 +709,7 @@ export default function DemoProjectPage() {
                     {coAuthorDetails.map((member, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-4 p-4 rounded-2xl bg-white/60 dark:bg-slate-700/40 backdrop-blur-sm border border-white/50 dark:border-slate-600/50 hover:bg-white dark:hover:bg-slate-700 transition-all duration-300 hover:shadow-lg group/member"
+                        className="flex items-center gap-4 p-4 rounded-2xl bg-white/60 dark:bg-[#102A3A]/40 backdrop-blur-sm border border-white/50 dark:border-[#1E3A4A]/50 hover:bg-white dark:hover:bg-[#102A3A] transition-all duration-300 hover:shadow-lg group/member"
                       >
                         <Image
                           src={
@@ -711,8 +723,8 @@ export default function DemoProjectPage() {
                           className="w-13 h-13 rounded-2xl object-cover shadow-md group-hover/member:scale-110 transition-transform duration-300"
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-slate-900 dark:text-white">{member.name}</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 font-light mt-1">{member.bio}</p>
+                          <h3 className="font-semibold text-[#0F172A] dark:text-[#E6F1F5]">{member.name}</h3>
+                          <p className="text-sm text-[#475569] dark:text-[#9FB3C8] line-clamp-2 font-light mt-1">{member.bio}</p>
                         </div>
                       </div>
                     ))}
@@ -722,11 +734,11 @@ export default function DemoProjectPage() {
             )}
 
             {/* Enhanced Client info */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#EEF7F6]/30 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
               <CardContent className="p-7 relative">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-500/10 to-green-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-3 relative z-10">
-                  <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl shadow-lg">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#6EE7D8]/10 to-[#2FD1C5]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
+                <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-6 flex items-center gap-3 relative z-10">
+                  <div className="p-2 bg-gradient-to-br from-[#6EE7D8] to-[#2FD1C5] rounded-xl shadow-lg">
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
                   Client
@@ -741,14 +753,14 @@ export default function DemoProjectPage() {
                     alt={clientDetails?.name || "Client"}
                     width={64}
                     height={64}
-                    className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-lg"
+                    className="w-16 h-16 rounded-2xl object-cover border border-[#DCEEEE] dark:border-[#102A3A] shadow-lg"
                   />
                   <div className="flex-1">
-                    <h3 className="font-bold text-slate-900 dark:text-white">{clientDetails.name}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 line-clamp-3 font-light">{clientDetails.bio}</p>
+                    <h3 className="font-bold text-[#0F172A] dark:text-[#E6F1F5]">{clientDetails.name}</h3>
+                    <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mt-2 line-clamp-3 font-light">{clientDetails.bio}</p>
                     <div className="flex flex-col gap-3 mt-4">
                       {clientDetails.email && (
-                        <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-3 text-sm text-[#475569] dark:text-[#9FB3C8]">
                           <Mail className="h-4 w-4" />
                           {clientDetails.email}
                         </div>
@@ -761,11 +773,11 @@ export default function DemoProjectPage() {
 
             {/* Enhanced Tech stack */}
             {project.techStack.length > 0 && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-indigo-50/30 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#EEF7F6]/30 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
                 <CardContent className="p-7 relative">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-3 relative z-10">
-                    <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#F7FBFC]/10 to-[#EEF7F6]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
+                  <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-6 flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-gradient-to-br from-[#F7FBFC]/0 to-[#EEF7F6]/0 rounded-xl shadow-lg">
                       <Cpu className="h-5 w-5 text-white" />
                     </div>
                     Tech Stack ({project.techStack.length})
@@ -774,7 +786,7 @@ export default function DemoProjectPage() {
                     {project.techStack.map((tech, index) => (
                       <Badge
                         key={index}
-                        className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 border-none py-2 px-4 font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
+                        className="bg-gradient-to-br from-[#F7FBFC]/0 to-[#EEF7F6]/0 text-white hover:from-[#1E5AA8] hover:to-[#1E5AA8] border-none py-2 px-4 font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
                       >
                         {tech}
                       </Badge>
@@ -786,11 +798,11 @@ export default function DemoProjectPage() {
 
             {/* Enhanced Tools */}
             {project.tools.length > 0 && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rose-50/30 dark:from-slate-800 dark:to-slate-800/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-[#EEF7F6]/30 dark:from-[#0B1C2D] dark:to-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group">
                 <CardContent className="p-7 relative">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-rose-500/10 to-pink-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-3 relative z-10">
-                    <div className="p-2 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl shadow-lg">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#6EE7D8]/10 to-[#2FD1C5]/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
+                  <h2 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-6 flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-gradient-to-br from-[#2FD1C5] to-[#1E5AA8] rounded-xl shadow-lg">
                       <Palette className="h-5 w-5 text-white" />
                     </div>
                     Tools ({project.tools.length})
@@ -799,7 +811,7 @@ export default function DemoProjectPage() {
                     {project.tools.map((tool, index) => (
                       <Badge
                         key={index}
-                        className="bg-gradient-to-br from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600 border-none py-2 px-4 font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
+                        className="bg-gradient-to-br from-[#2FD1C5] to-[#1E5AA8] text-white hover:from-[#1E5AA8] hover:to-[#0B1C2D] border-none py-2 px-4 font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
                       >
                         {tool}
                       </Badge>
@@ -837,8 +849,13 @@ export default function DemoProjectPage() {
 // Enhanced Skeleton component
 function ProjectPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/10 to-indigo-50/5 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="relative min-h-screen overflow-hidden py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
+      <div className="relative max-w-7xl mx-auto space-y-10">
         {/* Enhanced Header Skeleton */}
         <div className="text-center space-y-6">
           <div className="flex flex-wrap justify-center gap-3 mb-4">
@@ -869,7 +886,7 @@ function ProjectPageSkeleton() {
           <div className="lg:col-span-2 space-y-8">
             <Skeleton className="aspect-video rounded-3xl shadow-2xl h-[400px]" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl">
+              <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl">
                 <CardContent className="p-7 space-y-5">
                   <Skeleton className="h-7 w-2/3 rounded-lg" />
                   <Skeleton className="h-5 w-full rounded-xl" />
@@ -877,7 +894,7 @@ function ProjectPageSkeleton() {
                   <Skeleton className="h-3 w-full rounded-full" />
                 </CardContent>
               </Card>
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl">
+              <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 backdrop-blur-sm rounded-3xl">
                 <CardContent className="p-7 space-y-5">
                   <Skeleton className="h-7 w-2/3 rounded-lg" />
                   <Skeleton className="h-5 w-full rounded-xl" />
@@ -886,7 +903,7 @@ function ProjectPageSkeleton() {
                 </CardContent>
               </Card>
             </div>
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-50 to-blue-50/50 dark:from-indigo-900/30 dark:to-blue-900/20 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-[#F7FBFC] to-[#EEF7F6]/50 dark:from-[#050B14]/30 dark:to-[#0B1C2D]/20 rounded-3xl">
               <CardContent className="p-8 space-y-5">
                 <Skeleton className="h-8 w-1/3 rounded-lg" />
                 <Skeleton className="h-5 w-full rounded-lg" />
@@ -895,7 +912,7 @@ function ProjectPageSkeleton() {
                 <Skeleton className="h-12 w-1/4 rounded-full" />
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 rounded-3xl">
               <CardContent className="p-8 space-y-6">
                 <Skeleton className="h-8 w-1/3 rounded-lg" />
                 <Skeleton className="h-3 w-full rounded-full" />
@@ -916,14 +933,14 @@ function ProjectPageSkeleton() {
           </div>
           {/* Enhanced Right column Skeleton */}
           <div className="space-y-8">
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 rounded-3xl">
               <CardContent className="p-7 space-y-4">
                 <Skeleton className="h-7 w-1/3 rounded-lg" />
                 <Skeleton className="h-14 w-full rounded-2xl" />
                 <Skeleton className="h-14 w-full rounded-2xl" />
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-[#050B14] to-[#0B1C2D] dark:from-[#0B1C2D] dark:to-[#050B14] rounded-3xl">
               <CardContent className="p-7 space-y-5">
                 <Skeleton className="h-7 w-1/3 rounded-lg" />
                 <div className="flex items-start gap-5">
@@ -936,7 +953,7 @@ function ProjectPageSkeleton() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 rounded-3xl">
               <CardContent className="p-7 space-y-5">
                 <Skeleton className="h-7 w-1/3 rounded-lg" />
                 {[...Array(2)].map((_, index) => (
@@ -950,7 +967,7 @@ function ProjectPageSkeleton() {
                 ))}
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 rounded-3xl">
               <CardContent className="p-7 space-y-5">
                 <Skeleton className="h-7 w-1/3 rounded-lg" />
                 <div className="flex items-start gap-5">
@@ -963,7 +980,7 @@ function ProjectPageSkeleton() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 rounded-3xl">
               <CardContent className="p-7 space-y-5">
                 <Skeleton className="h-7 w-1/3 rounded-lg" />
                 <div className="flex flex-wrap gap-3">
@@ -973,7 +990,7 @@ function ProjectPageSkeleton() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 rounded-3xl">
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-[#0B1C2D]/80 rounded-3xl">
               <CardContent className="p-7 space-y-5">
                 <Skeleton className="h-7 w-1/3 rounded-lg" />
                 <div className="flex flex-wrap gap-3">

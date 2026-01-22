@@ -266,17 +266,31 @@ const ProjectsPage = () => {
   }, [filter, projects]);
 
   return (
-    <div className="min-h-screen relative">
+    <div className="relative min-h-screen overflow-hidden transition-colors duration-500">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
       <style jsx global>{`
         .skeleton-pulse {
           background: linear-gradient(
             90deg,
-            rgba(229, 231, 235, 0.8) 0%,
-            rgba(209, 213, 219, 0.9) 50%,
-            rgba(229, 231, 235, 0.8) 100%
+            rgba(230, 247, 246, 0.8) 0%,
+            rgba(220, 238, 238, 0.9) 50%,
+            rgba(230, 247, 246, 0.8) 100%
           );
           background-size: 200% 100%;
           animation: pulse 1.5s ease-in-out infinite;
+        }
+        .dark .skeleton-pulse {
+          background: linear-gradient(
+            90deg,
+            rgba(16, 42, 58, 0.7) 0%,
+            rgba(11, 28, 45, 0.85) 50%,
+            rgba(16, 42, 58, 0.7) 100%
+          );
+          background-size: 200% 100%;
         }
         @keyframes pulse {
           0% {
@@ -291,16 +305,16 @@ const ProjectsPage = () => {
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Banner */}
-        <div className="relative bg-white dark:bg-gray-900/50 backdrop-blur-xl border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white py-12 px-6 md:px-10 lg:px-20 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl mb-12 shadow-xl dark:shadow-2xl">
+        <div className="relative bg-white/85 dark:bg-[#0B1C2D]/60 backdrop-blur-xl border border-[#DCEEEE] dark:border-[#102A3A] text-[#0F172A] dark:text-[#E6F1F5] py-12 px-6 md:px-10 lg:px-20 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl mb-12 shadow-xl dark:shadow-2xl">
           <div className="relative z-10">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 dark:from-blue-400 dark:via-purple-400 dark:to-cyan-400">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#1E5AA8] via-[#2FD1C5] to-[#6EE7D8] dark:from-[#6EE7D8] dark:via-[#2FD1C5] dark:to-[#1E5AA8]">
               Looking for a collaboration? <br className="hidden sm:block" /> Get Started Today!
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-4 text-sm sm:text-base max-w-2xl">
+            <p className="text-[#475569] dark:text-[#9FB3C8] mt-4 text-sm sm:text-base max-w-2xl">
               Join us for exciting opportunities and collaborations that can grow your business. Let&apos;s innovate together!
             </p>
           </div>
-          <button className="relative z-10 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 hover:from-blue-700 hover:via-purple-700 hover:to-cyan-700 text-white font-semibold py-4 px-8 rounded-xl self-start md:self-auto mt-6 md:mt-0 transform transition-all duration-300 hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl hover:shadow-blue-500/25 dark:hover:shadow-purple-500/25">
+          <button className="relative z-10 bg-gradient-to-r from-[#2FD1C5] via-[#1E5AA8] to-[#0B1C2D] hover:from-[#1E5AA8] hover:via-[#0B1C2D] hover:to-[#050B14] text-white font-semibold py-4 px-8 rounded-xl self-start md:self-auto mt-6 md:mt-0 transform transition-all duration-300 hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl hover:shadow-[#2FD1C5]/25 dark:hover:shadow-[#1E5AA8]/25">
             <span className="flex items-center gap-2">
               Get Started Now
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,49 +323,58 @@ const ProjectsPage = () => {
             </span>
           </button>
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 dark:from-purple-500/20 to-transparent rounded-full blur-xl" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-500/10 dark:from-blue-500/20 to-transparent rounded-full blur-xl" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#2FD1C5]/15 dark:from-[#6EE7D8]/15 to-transparent rounded-full blur-xl" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#1E5AA8]/15 dark:from-[#2FD1C5]/15 to-transparent rounded-full blur-xl" />
         </div>
 
         {/* Filter Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-12">
-          <button
-            className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${filter === 'all'
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-              }`}
-            onClick={() => setFilter('all')}
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              All Projects ({projects.length})
-            </span>
-          </button>
-          <button
-            className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${filter === 'featured'
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-purple-500/25'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
-              }`}
-            onClick={() => setFilter('featured')}
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-              </svg>
-              Featured Projects ({projects.filter(p => p.featured).length})
-            </span>
-          </button>
+          {isLoading ? (
+            <>
+              <Skeleton className="py-3 px-8 rounded-xl h-12 w-32" />
+              <Skeleton className="py-3 px-8 rounded-xl h-12 w-40" />
+            </>
+          ) : (
+            <>
+              <button
+                className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${filter === 'all'
+                    ? 'bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white shadow-lg shadow-[#2FD1C5]/25 dark:shadow-[#1E5AA8]/25'
+                    : 'bg-[#EEF7F6] dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A] border border-[#DCEEEE] dark:border-[#102A3A]'
+                  }`}
+                onClick={() => setFilter('all')}
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  All Projects ({projects.length})
+                </span>
+              </button>
+              <button
+                className={`py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${filter === 'featured'
+                    ? 'bg-gradient-to-r from-[#2FD1C5] to-[#1E5AA8] text-white shadow-lg shadow-[#2FD1C5]/25 dark:shadow-[#1E5AA8]/25'
+                    : 'bg-[#EEF7F6] dark:bg-[#0B1C2D] text-[#475569] dark:text-[#9FB3C8] hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A] border border-[#DCEEEE] dark:border-[#102A3A]'
+                  }`}
+                onClick={() => setFilter('featured')}
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                  Featured Projects ({projects.filter(p => p.featured).length})
+                </span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Projects Section */}
         <div className="space-y-8">
           <div className="text-center">
-            <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 dark:from-blue-400 dark:via-purple-400 dark:to-cyan-400 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#1E5AA8] via-[#2FD1C5] to-[#6EE7D8] dark:from-[#6EE7D8] dark:via-[#2FD1C5] dark:to-[#1E5AA8] mb-4">
               Our Projects
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+            <p className="text-[#475569] dark:text-[#9FB3C8] text-lg max-w-2xl mx-auto">
               Explore our diverse portfolio of innovative projects that showcase our expertise in modern web development and cutting-edge technologies.
             </p>
           </div>
@@ -362,7 +385,7 @@ const ProjectsPage = () => {
               {Array.from({ length: 6 }).map((_, index) => (
                 <div
                   key={index}
-                  className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-[#313244] rounded-xl overflow-hidden h-96"
+                  className="relative bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#0B1C2D] dark:via-[#102A3A] dark:to-[#0B1C2D] border border-[#DCEEEE] dark:border-[#102A3A] rounded-xl overflow-hidden h-96"
                 >
                   <div className="w-full h-48 skeleton-pulse" />
                   <div className="p-6 space-y-4">
@@ -392,14 +415,14 @@ const ProjectsPage = () => {
               ))}
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-600 dark:text-gray-400 px-4">
-              <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-purple-500/20 dark:to-blue-500/20 rounded-full flex items-center justify-center">
-                <svg className="w-10 sm:w-12 h-10 sm:h-12 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center justify-center h-64 text-[#475569] dark:text-[#9FB3C8] px-4">
+              <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-[#6EE7D8]/20 to-[#1E5AA8]/20 dark:from-[#1E5AA8]/20 dark:to-[#6EE7D8]/20 rounded-full flex items-center justify-center">
+                <svg className="w-10 sm:w-12 h-10 sm:h-12 text-[#7B8A9A] dark:text-[#9FB3C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">Error</h3>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{error}</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-2">Error</h3>
+              <p className="text-sm sm:text-base text-[#475569] dark:text-[#9FB3C8]">{error}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -423,31 +446,31 @@ const ProjectsPage = () => {
           {/* Empty State */}
           {!isLoading && !error && filteredProjects.length === 0 && (
             <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-purple-500/20 dark:to-blue-500/20 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-[#6EE7D8]/20 to-[#1E5AA8]/20 dark:from-[#1E5AA8]/20 dark:to-[#6EE7D8]/20 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-[#7B8A9A] dark:text-[#9FB3C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No projects found</h3>
-              <p className="text-gray-600 dark:text-gray-400">Try adjusting your filters or check back later for new projects.</p>
+              <h3 className="text-2xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-2">No projects found</h3>
+              <p className="text-[#475569] dark:text-[#9FB3C8]">Try adjusting your filters or check back later for new projects.</p>
             </div>
           )}
         </div>
 
         {/* Call to Action */}
         <div className="text-center mt-20">
-          <div className="relative bg-white dark:bg-gray-900/50 backdrop-blur-xl border border-gray-200 dark:border-gray-700 rounded-3xl p-12 overflow-hidden shadow-xl dark:shadow-2xl">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 dark:from-purple-500/20 to-transparent rounded-full blur-xl" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-500/10 dark:from-blue-500/20 to-transparent rounded-full blur-xl" />
+          <div className="relative bg-white/85 dark:bg-[#0B1C2D]/60 backdrop-blur-xl border border-[#DCEEEE] dark:border-[#102A3A] rounded-3xl p-12 overflow-hidden shadow-xl dark:shadow-2xl">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#2FD1C5]/15 dark:from-[#6EE7D8]/15 to-transparent rounded-full blur-xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#1E5AA8]/15 dark:from-[#2FD1C5]/15 to-transparent rounded-full blur-xl" />
             <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-6">
                 Ready to Start Your Project?
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto text-lg">
+              <p className="text-[#475569] dark:text-[#9FB3C8] mb-8 max-w-2xl mx-auto text-lg">
                 Let&apos;s collaborate to bring your ideas to life with cutting-edge technology and modern design. Our team is ready to turn your vision into reality.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-xl hover:from-blue-700 hover:via-purple-700 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl hover:shadow-blue-500/25 dark:hover:shadow-purple-500/25">
+                <button className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-[#2FD1C5] via-[#1E5AA8] to-[#0B1C2D] rounded-xl hover:from-[#1E5AA8] hover:via-[#0B1C2D] hover:to-[#050B14] transition-all duration-300 transform hover:scale-105 hover:shadow-xl dark:hover:shadow-2xl hover:shadow-[#2FD1C5]/25 dark:hover:shadow-[#1E5AA8]/25">
                   <span className="flex items-center gap-3">
                     Start Your Project
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -455,7 +478,7 @@ const ProjectsPage = () => {
                     </svg>
                   </span>
                 </button>
-                <button className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-105">
+                <button className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-[#475569] dark:text-[#9FB3C8] bg-[#EEF7F6] dark:bg-[#0B1C2D] border border-[#DCEEEE] dark:border-[#102A3A] rounded-xl hover:bg-[#DCEEEE] dark:hover:bg-[#102A3A] transition-all duration-300 transform hover:scale-105">
                   <span className="flex items-center gap-3">
                     View Our Process
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -20,31 +20,31 @@ export default function WhyToUsSection() {
                   {
                     title: 'Well-Written Code',
                     description: 'Pixel-perfect and easily editable code with comprehensive comments.',
-                    color: 'text-blue-500',
+                    color: 'text-[#1E5AA8] dark:text-[#6EE7D8]',
                     path: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
                   },
                   {
                     title: 'Gorgeous Shop Layouts',
                     description: 'Present your products to your visitors in an efficient and visually appealing manner.',
-                    color: 'text-purple-500',
+                    color: 'text-[#2FD1C5] dark:text-[#0FD9C3]',
                     path: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
                   },
                   {
                     title: 'Fully Responsive Layouts',
                     description: 'Adjusts to varying screen sizes, ensuring seamless compatibility across all devices.',
-                    color: 'text-pink-500',
+                    color: 'text-[#6EE7D8] dark:text-[#2FD1C5]',
                     path: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m6 9a9 9 0 01-9-9m9 9a9 9 0 009-9',
                   },
                   {
                     title: 'Quality Assurance',
                     description: 'Every product is tested for performance, reliability, and scalability.',
-                    color: 'text-green-500',
+                    color: 'text-[#0B8ED8] dark:text-[#6EE7D8]',
                     path: 'M5 13l4 4L19 7',
                   },
                 ].map(({ title, description, color, path }, idx) => (
                   <div
                     key={idx}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex gap-4 items-start"
+                    className="bg-white/70 dark:bg-[#0B1C2D] rounded-2xl shadow-lg p-6 flex gap-4 items-start border border-[#DCEEEE] dark:border-[#1E3A4A]"
                   >
                     <svg
                       className={`w-8 h-8 shrink-0 ${color}`}
@@ -55,8 +55,8 @@ export default function WhyToUsSection() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={path} />
                     </svg>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1">{description}</p>
+                      <h3 className="text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5]">{title}</h3>
+                      <p className="text-[#475569] dark:text-[#9FB3C8] mt-1">{description}</p>
                     </div>
                   </div>
                 ))}

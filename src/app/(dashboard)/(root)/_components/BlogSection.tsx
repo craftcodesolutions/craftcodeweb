@@ -103,11 +103,11 @@ const Card = ({ blog }: { blog: Blog }) => {
       className="group"
     >
       <Link href={`/blog/${blog.slug}`} className="relative block" aria-label={`Read ${blog.title}`}>
-        <div className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden h-[420px] shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 flex flex-col">
+        <div className="bg-[#FFFFFF] dark:bg-[#0B1C2D] rounded-xl border border-[#DCEEEE] dark:border-[#1E3A4A] overflow-hidden h-[420px] shadow-sm transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 flex flex-col">
           <div className="p-6 flex-1 flex flex-col space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-200 font-bold text-lg shadow-sm">
+                <div className="w-10 h-10 rounded-lg bg-[#EEF7F6] dark:bg-[#102A3A] flex items-center justify-center text-[#1E5AA8] dark:text-[#E6F1F5] font-bold text-lg shadow-sm">
                   {isValidAvatar && !avatarImageError ? (
                     <Image
                       src={blog.author.avatar!}
@@ -122,10 +122,10 @@ const Card = ({ blog }: { blog: Blog }) => {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-gray-900 dark:text-white text-base font-semibold">
+                  <h3 className="text-[#0F172A] dark:text-[#E6F1F5] text-base font-semibold">
                     {authorName || "Unknown Author"}
                   </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs">
+                  <p className="text-[#475569] dark:text-[#9FB3C8] text-xs">
                     {new Date(blog.createdAt).toLocaleDateString("en-US", {
                       month: "long",
                       day: "numeric",
@@ -134,7 +134,7 @@ const Card = ({ blog }: { blog: Blog }) => {
                   </p>
                 </div>
               </div>
-              <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-semibold px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700">
+              <span className="bg-[#EEF7F6] dark:bg-[#102A3A] text-[#1E5AA8] dark:text-[#9FB3C8] text-xs font-semibold px-3 py-1 rounded-lg border border-[#DCEEEE] dark:border-[#1E3A4A]">
                 {tag}
               </span>
             </div>
@@ -152,19 +152,19 @@ const Card = ({ blog }: { blog: Blog }) => {
                 />
               </div>
             ) : (
-              <div className="w-full h-36 bg-gray-100 dark:bg-gray-800 rounded-lg transition-colors duration-300" />
+              <div className="w-full h-36 bg-[#EEF7F6] dark:bg-[#102A3A] rounded-lg transition-colors duration-300" />
             )}
 
             <div className="space-y-1 flex-1">
-              <h2 className="text-gray-900 dark:text-white text-xl font-bold line-clamp-1 transition-colors duration-300">
+              <h2 className="text-[#0F172A] dark:text-[#E6F1F5] text-xl font-bold line-clamp-1 transition-colors duration-300">
                 {blog.title || "Untitled"}
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-base line-clamp-2">
+              <p className="text-[#475569] dark:text-[#9FB3C8] text-base line-clamp-2">
                 {getContentPreview(blog.content)}
               </p>
             </div>
 
-            <button className="mt-4 border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 bg-transparent hover:bg-blue-600 hover:text-white dark:hover:bg-blue-400 dark:hover:text-gray-900 text-sm font-semibold py-2 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm flex items-center gap-2 self-start">
+            <button className="mt-4 border-2 border-[#2FD1C5] dark:border-[#0FD9C3] text-[#1E5AA8] dark:text-[#6EE7D8] bg-transparent hover:bg-gradient-to-r hover:from-[#6EE7D8] hover:via-[#2FD1C5] hover:to-[#1E5AA8] hover:text-white dark:hover:text-[#050B14] text-sm font-semibold py-2 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm flex items-center gap-2 self-start">
               Read More
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -309,12 +309,20 @@ const BlogSection: NextPage = () => {
         .skeleton-pulse {
           background: linear-gradient(
             90deg,
-            rgba(229, 231, 235, 0.8) 0%,
-            rgba(209, 213, 219, 0.9) 50%,
-            rgba(229, 231, 235, 0.8) 100%
+            rgba(238, 247, 246, 0.9) 0%,
+            rgba(220, 238, 238, 0.95) 50%,
+            rgba(238, 247, 246, 0.9) 100%
           );
           background-size: 200% 100%;
           animation: pulse 1.5s ease-in-out infinite;
+        }
+        .dark .skeleton-pulse {
+          background: linear-gradient(
+            90deg,
+            rgba(11, 28, 45, 0.8) 0%,
+            rgba(16, 42, 58, 0.95) 50%,
+            rgba(11, 28, 45, 0.8) 100%
+          );
         }
         @keyframes pulse {
           0% {
@@ -332,15 +340,15 @@ const BlogSection: NextPage = () => {
         >
           <span
             className="absolute top-0 left-1/2 -translate-x-1/2 text-[40px] sm:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-10 select-none pointer-events-none"
-            style={{ color: "#d1d5db" }}
+            style={{ color: "#DCEEEE" }}
           >
             BLOGS
           </span>
 
-          <h2 className="font-heading text-gray-900 dark:text-gray-100 mb-5 text-3xl font-extrabold sm:text-4xl md:text-[44px] md:leading-[54px]">
+          <h2 className="font-heading text-[#0F172A] dark:text-[#E6F1F5] mb-5 text-3xl font-extrabold sm:text-4xl md:text-[44px] md:leading-[54px]">
             Discover Expert Insights <br /> Start Your Journey Today!
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
+          <p className="text-[#475569] dark:text-[#9FB3C8] text-lg">
             Explore our collection of tutorials and insights from industry experts.
           </p>
         </div>
@@ -353,8 +361,8 @@ const BlogSection: NextPage = () => {
               onClick={() => handleCategoryChange(category)}
               className={`px-4 py-2 cursor-pointer text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ${
                 selectedCategory === category
-                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                  : "bg-gray-200/50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 hover:bg-blue-500/50 dark:hover:bg-blue-600/50 hover:text-white"
+                  ? "bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] text-white"
+                  : "bg-[#EEF7F6] dark:bg-[#102A3A] text-[#0F172A] dark:text-[#9FB3C8] hover:bg-[#DCEEEE] dark:hover:bg-[#1E3A4A] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
               }`}
             >
               {category}
@@ -367,7 +375,7 @@ const BlogSection: NextPage = () => {
             {Array.from({ length: itemsPerPage }).map((_, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden h-[420px] shadow-sm"
+                className="bg-[#FFFFFF] dark:bg-[#0B1C2D] rounded-xl border border-[#DCEEEE] dark:border-[#1E3A4A] overflow-hidden h-[420px] shadow-sm"
               >
                 <div className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
@@ -392,10 +400,10 @@ const BlogSection: NextPage = () => {
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-600 dark:text-gray-400">
-            <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-purple-500/20 dark:to-blue-500/20 rounded-full flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center h-64 text-[#475569] dark:text-[#9FB3C8]">
+            <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-[#6EE7D8]/30 to-[#1E5AA8]/30 dark:from-[#0FD9C3]/20 dark:to-[#0B8ED8]/20 rounded-full flex items-center justify-center">
               <svg
-                className="w-10 sm:w-12 h-10 sm:h-12 text-gray-500 dark:text-gray-400"
+                className="w-10 sm:w-12 h-10 sm:h-12 text-[#475569] dark:text-[#9FB3C8]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -408,14 +416,14 @@ const BlogSection: NextPage = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">Error</h3>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{error}</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-2">Error</h3>
+            <p className="text-sm sm:text-base text-[#475569] dark:text-[#9FB3C8]">{error}</p>
           </div>
         ) : filteredBlogs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-600 dark:text-gray-400">
-            <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-purple-500/20 dark:to-blue-500/20 rounded-full flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center h-64 text-[#475569] dark:text-[#9FB3C8]">
+            <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-[#6EE7D8]/30 to-[#1E5AA8]/30 dark:from-[#0FD9C3]/20 dark:to-[#0B8ED8]/20 rounded-full flex items-center justify-center">
               <svg
-                className="w-10 sm:w-12 h-10 sm:h-12 text-gray-500 dark:text-gray-400"
+                className="w-10 sm:w-12 h-10 sm:h-12 text-[#475569] dark:text-[#9FB3C8]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -428,8 +436,8 @@ const BlogSection: NextPage = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">No articles found</h3>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Check back later for new content!</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] mb-2">No articles found</h3>
+            <p className="text-sm sm:text-base text-[#475569] dark:text-[#9FB3C8]">Check back later for new content!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -445,7 +453,7 @@ const BlogSection: NextPage = () => {
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="inline-flex items-center px-3 sm:px-4 lg:px-5 py-2 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+              className="inline-flex items-center px-3 sm:px-4 lg:px-5 py-2 text-xs sm:text-sm font-semibold text-[#0F172A] dark:text-[#E6F1F5] bg-[#EEF7F6] dark:bg-[#102A3A] border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg hover:bg-[#DCEEEE] dark:hover:bg-[#1E3A4A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             >
               <svg
                 className="w-4 sm:w-5 h-4 sm:h-5 mr-1 sm:mr-2"
@@ -457,13 +465,13 @@ const BlogSection: NextPage = () => {
               </svg>
               Previous
             </button>
-            <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm lg:text-base">
+            <span className="text-[#475569] dark:text-[#9FB3C8] text-xs sm:text-sm lg:text-base">
               Page {currentPage} of {totalPages}
             </span>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="inline-flex items-center px-3 sm:px-4 lg:px-5 py-2 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+              className="inline-flex items-center px-3 sm:px-4 lg:px-5 py-2 text-xs sm:text-sm font-semibold text-[#0F172A] dark:text-[#E6F1F5] bg-[#EEF7F6] dark:bg-[#102A3A] border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg hover:bg-[#DCEEEE] dark:hover:bg-[#1E3A4A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             >
               Next
               <svg

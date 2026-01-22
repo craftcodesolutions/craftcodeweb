@@ -420,7 +420,7 @@ const SupportSection: FC = () => {
             </div>
           </div>
           <div className="max-w-full sm:max-w-3xl mx-auto">
-            <div className="rounded-2xl p-3 xs:p-4 sm:p-6 md:p-8 shadow-xl border border-gray-100 dark:border-gray-700">
+            <div className="rounded-2xl p-3 xs:p-4 sm:p-6 md:p-8 shadow-xl border border-[#DCEEEE] dark:border-[#1E3A4A] bg-white/70 dark:bg-[#0B1C2D]/70">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                 {/* Name and Email Skeletons */}
                 <div className="w-full">
@@ -519,7 +519,7 @@ const SupportSection: FC = () => {
             <span
               className="absolute top-0 left-1/2 -translate-x-1/2 text-[32px] sm:text-[40px] md:text-[60px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
               style={{
-                background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
+                background: 'linear-gradient(180deg, rgba(47, 209, 197, 0.4) 0%, rgba(47, 209, 197, 0) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -529,35 +529,35 @@ const SupportSection: FC = () => {
             >
               SUPPORT
             </span>
-            <h2 className="font-heading text-dark mb-3 sm:mb-5 text-2xl sm:text-3xl md:text-4xl font-semibold md:text-[40px] md:leading-[48px] lg:text-[50px] lg:leading-[60px] dark:text-gray-100">
+            <h2 className="font-heading text-[#0F172A] mb-3 sm:mb-5 text-2xl sm:text-3xl md:text-4xl font-semibold md:text-[40px] md:leading-[48px] lg:text-[50px] lg:leading-[60px] dark:text-[#E6F1F5]">
               Let&apos;s Connect
             </h2>
-            <p className="text-dark-text text-sm sm:text-base">
+            <p className="text-[#475569] dark:text-[#9FB3C8] text-sm sm:text-base">
               Have questions or need assistance? Our team is here to help you succeed.
             </p>
           </div>
           {/* Contact Info */}
           <div className="w-full sm:w-auto lg:w-1/3 relative group flex justify-center lg:justify-end">
             <div className="flex items-center justify-center lg:justify-end">
-              <span className="bg-indigo-500 dark:bg-indigo-400 mr-4 h-1 w-8 sm:w-12 rounded-full transition-all duration-300 group-hover:w-16"></span>
+              <span className="bg-[#2FD1C5] dark:bg-[#6EE7D8] mr-4 h-1 w-8 sm:w-12 rounded-full transition-all duration-300 group-hover:w-16"></span>
               <Link
                 href={`mailto:${emailContact}`}
-                className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 break-all"
+                className="text-base sm:text-lg md:text-xl font-semibold text-[#0F172A] dark:text-[#E6F1F5] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8] transition-colors duration-300 break-all"
                 dangerouslySetInnerHTML={{ __html: encodedEmail }}
                 aria-label="Send us an email"
               />
             </div>
-            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs rounded-full py-1 px-3 opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
+            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#1E5AA8] dark:bg-[#2FD1C5] text-white text-xs rounded-full py-1 px-3 opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">
               Secured Email
             </span>
           </div>
         </div>
         <div className="max-w-full sm:max-w-3xl mx-auto">
-          <form onSubmit={handleSubmit} className="rounded-2xl p-3 xs:p-4 sm:p-6 md:p-8 shadow-xl border border-gray-100 dark:border-gray-700">
+          <form onSubmit={handleSubmit} className="rounded-2xl p-3 xs:p-4 sm:p-6 md:p-8 shadow-xl border border-[#DCEEEE] dark:border-[#1E3A4A] bg-white/70 dark:bg-[#0B1C2D]/70">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               {/* Name Field */}
               <div className="w-full">
-                <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Your Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -567,7 +567,7 @@ const SupportSection: FC = () => {
                   placeholder="Full Name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 ${errors.name ? 'border-red-500 ring-red-200' : 'border-gray-300 dark:border-gray-600'} focus:shadow-md text-sm sm:text-base`}
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-[#F7FBFC] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#6B8299] focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-transparent outline-none transition-all duration-300 ${errors.name ? 'border-red-500 ring-red-200' : 'border-[#DCEEEE] dark:border-[#1E3A4A]'} focus:shadow-md text-sm sm:text-base`}
                   required
                   maxLength={100}
                 />
@@ -579,7 +579,7 @@ const SupportSection: FC = () => {
               </div>
               {/* Email Field */}
               <div className="w-full">
-                <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -589,7 +589,7 @@ const SupportSection: FC = () => {
                   placeholder="Email Address"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 ${errors.email ? 'border-red-500 ring-red-200' : 'border-gray-300 dark:border-gray-600'} focus:shadow-md text-sm sm:text-base`}
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-[#F7FBFC] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#6B8299] focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-transparent outline-none transition-all duration-300 ${errors.email ? 'border-red-500 ring-red-200' : 'border-[#DCEEEE] dark:border-[#1E3A4A]'} focus:shadow-md text-sm sm:text-base`}
                   required
                   maxLength={100}
                 />
@@ -601,7 +601,7 @@ const SupportSection: FC = () => {
               </div>
               {/* Phone Field */}
               <div className="w-full">
-                <label htmlFor="phone" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="phone" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Phone (Optional)
                 </label>
                 <input
@@ -611,13 +611,13 @@ const SupportSection: FC = () => {
                   placeholder="Phone Number"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 border-gray-300 dark:border-gray-600 focus:shadow-md text-sm sm:text-base"
+                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-[#F7FBFC] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#6B8299] focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-transparent outline-none transition-all duration-300 border-[#DCEEEE] dark:border-[#1E3A4A] focus:shadow-md text-sm sm:text-base"
                   maxLength={20}
                 />
               </div>
               {/* Subject Field */}
               <div className="w-full">
-                <label htmlFor="subject" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="subject" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Subject <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -627,7 +627,7 @@ const SupportSection: FC = () => {
                   placeholder="Subject"
                   value={formData.subject}
                   onChange={handleInputChange}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 ${errors.subject ? 'border-red-500 ring-red-200' : 'border-gray-300 dark:border-gray-600'} focus:shadow-md text-sm sm:text-base`}
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-[#F7FBFC] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#6B8299] focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-transparent outline-none transition-all duration-300 ${errors.subject ? 'border-red-500 ring-red-200' : 'border-[#DCEEEE] dark:border-[#1E3A4A]'} focus:shadow-md text-sm sm:text-base`}
                   required
                   maxLength={200}
                 />
@@ -639,7 +639,7 @@ const SupportSection: FC = () => {
               </div>
               {/* Rank and Company Position Field (Always Visible) */}
               <div className="sm:col-span-2 w-full">
-                <label htmlFor="rankAndPosition" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="rankAndPosition" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Rank and Company Position {formData.userType === 'Client' && <span className="text-red-500">*</span>}
                 </label>
                 <input
@@ -649,7 +649,7 @@ const SupportSection: FC = () => {
                   placeholder="e.g., Senior Developer at TechCorp"
                   value={formData.rankAndPosition}
                   onChange={handleInputChange}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 ${errors.rankAndPosition ? 'border-red-500 ring-red-200' : 'border-gray-300 dark:border-gray-600'} focus:shadow-md text-sm sm:text-base`}
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-[#F7FBFC] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#6B8299] focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-transparent outline-none transition-all duration-300 ${errors.rankAndPosition ? 'border-red-500 ring-red-200' : 'border-[#DCEEEE] dark:border-[#1E3A4A]'} focus:shadow-md text-sm sm:text-base`}
                   required={formData.userType === 'Client'}
                   maxLength={100}
                 />
@@ -661,7 +661,7 @@ const SupportSection: FC = () => {
               </div>
               {/* Message Field */}
               <div className="sm:col-span-2 w-full">
-                <label htmlFor="message" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="message" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -671,7 +671,7 @@ const SupportSection: FC = () => {
                   placeholder="Your Message"
                   value={formData.message}
                   onChange={handleInputChange}
-                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 resize-none ${errors.message ? 'border-red-500 ring-red-200' : 'border-gray-300 dark:border-gray-600'} focus:shadow-md text-sm sm:text-base`}
+                  className={`w-full px-4 sm:px-6 py-2.5 sm:py-3 border rounded-lg bg-[#F7FBFC] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#6B8299] focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-transparent outline-none transition-all duration-300 resize-none ${errors.message ? 'border-red-500 ring-red-200' : 'border-[#DCEEEE] dark:border-[#1E3A4A]'} focus:shadow-md text-sm sm:text-base`}
                   required
                   maxLength={5000}
                 ></textarea>
@@ -683,13 +683,13 @@ const SupportSection: FC = () => {
               </div>
               {/* Image Field */}
               <div className="sm:col-span-2 w-full">
-                <label htmlFor="supportImage" className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="supportImage" className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Image (Optional)
                 </label>
                 <div
                   className={`relative flex flex-col items-center justify-center w-full h-40 rounded-lg border-2 ${isDragging
-                      ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/50'
-                      : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'
+                      ? 'border-[#2FD1C5] bg-[#2FD1C5]/10 dark:border-[#6EE7D8] dark:bg-[#0B1C2D]/60'
+                      : 'border-[#DCEEEE] dark:border-[#1E3A4A] bg-[#F7FBFC] dark:bg-[#0B1C2D]'
                     } transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer`}
                   onDragOver={handleDragOver}
                   onDragEnter={handleDragEnter}
@@ -699,7 +699,7 @@ const SupportSection: FC = () => {
                   {isUploadingImage ? (
                     <div className="flex items-center justify-center">
                       <svg
-                        className="animate-spin h-6 w-6 text-indigo-500 dark:text-indigo-400"
+                        className="animate-spin h-6 w-6 text-[#2FD1C5] dark:text-[#6EE7D8]"
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -718,7 +718,7 @@ const SupportSection: FC = () => {
                           d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                         ></path>
                       </svg>
-                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                      <span className="ml-2 text-sm text-[#475569] dark:text-[#9FB3C8]">
                         Uploading...
                       </span>
                     </div>
@@ -755,7 +755,7 @@ const SupportSection: FC = () => {
                   ) : (
                     <div className="text-center">
                       <svg
-                        className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500"
+                        className="mx-auto h-8 w-8 text-[#7B8A9A] dark:text-[#6B8299]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -769,13 +769,13 @@ const SupportSection: FC = () => {
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <p className="mt-1 text-sm text-[#7B8A9A] dark:text-[#6B8299]">
                         Drag and drop an image here, or
                       </p>
                       <button
                         type="button"
                         onClick={triggerFileInput}
-                        className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all duration-200 cursor-pointer"
+                        className="mt-2 inline-flex items-center px-4 py-2 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg shadow-sm text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] bg-[#F7FBFC] dark:bg-[#0B1C2D] hover:bg-[#EEF7F6] dark:hover:bg-[#102A3A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2FD1C5]/50 dark:focus:ring-[#6EE7D8]/50 transition-all duration-200 cursor-pointer"
                       >
                         Browse Files
                       </button>
@@ -790,7 +790,7 @@ const SupportSection: FC = () => {
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-2 text-xs text-[#7B8A9A] dark:text-[#6B8299]">
                   Upload an image (max 5MB, PNG/JPEG)
                 </p>
                 {errors.image && (
@@ -801,14 +801,14 @@ const SupportSection: FC = () => {
               </div>
               {/* User Type Checkboxes */}
               <div className="w-full">
-                <label className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   User Type <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {/* General User */}
                   <label className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${formData.userType === 'General'
-                      ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400'
+                      ? 'border-[#2FD1C5] bg-[#2FD1C5]/10 dark:border-[#6EE7D8] dark:bg-[#0B1C2D]/50'
+                      : 'border-[#DCEEEE] dark:border-[#1E3A4A] hover:border-[#2FD1C5]'
                     }`}>
                     <input
                       type="radio"
@@ -818,8 +818,8 @@ const SupportSection: FC = () => {
                       className="hidden"
                     />
                     <div className={`w-5 h-5 border-2 rounded-md flex items-center justify-center mr-3 transition-all ${formData.userType === 'General'
-                        ? 'bg-indigo-600 border-indigo-600'
-                        : 'border-gray-300 dark:border-gray-600'
+                        ? 'bg-[#1E5AA8] dark:bg-[#6EE7D8] border-[#1E5AA8] dark:border-[#6EE7D8]'
+                        : 'border-[#DCEEEE] dark:border-[#1E3A4A]'
                       }`}>
                       {formData.userType === 'General' && (
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -827,15 +827,15 @@ const SupportSection: FC = () => {
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-[#475569] dark:text-[#9FB3C8]">
                       General User
                     </span>
                   </label>
 
                   {/* Client */}
                   <label className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${formData.userType === 'Client'
-                      ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400'
+                      ? 'border-[#2FD1C5] bg-[#2FD1C5]/10 dark:border-[#6EE7D8] dark:bg-[#0B1C2D]/50'
+                      : 'border-[#DCEEEE] dark:border-[#1E3A4A] hover:border-[#2FD1C5]'
                     }`}>
                     <input
                       type="radio"
@@ -845,8 +845,8 @@ const SupportSection: FC = () => {
                       className="hidden"
                     />
                     <div className={`w-5 h-5 border-2 rounded-md flex items-center justify-center mr-3 transition-all ${formData.userType === 'Client'
-                        ? 'bg-indigo-600 border-indigo-600'
-                        : 'border-gray-300 dark:border-gray-600'
+                        ? 'bg-[#1E5AA8] dark:bg-[#6EE7D8] border-[#1E5AA8] dark:border-[#6EE7D8]'
+                        : 'border-[#DCEEEE] dark:border-[#1E3A4A]'
                       }`}>
                       {formData.userType === 'Client' && (
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -854,7 +854,7 @@ const SupportSection: FC = () => {
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-[#475569] dark:text-[#9FB3C8]">
                       Client
                     </span>
                   </label>
@@ -870,7 +870,7 @@ const SupportSection: FC = () => {
 
               {/* Rating Field */}
               <div className="sm:col-span-2 w-full space-y-2">
-                <label className="block text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Rate Our Support <span className="text-red-500">*</span>
                 </label>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
@@ -880,9 +880,9 @@ const SupportSection: FC = () => {
                       type="button"
                       onClick={() => handleRatingChange(rating)}
                       aria-label={`Rate ${rating} out of 5`}
-                      className={`p-2 sm:p-3 md:p-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:scale-105 ${formData.rating === rating
-                          ? 'bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500'
-                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      className={`p-2 sm:p-3 md:p-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/50 hover:scale-105 ${formData.rating === rating
+                          ? 'bg-[#2FD1C5]/10 dark:bg-[#0B1C2D] ring-2 ring-[#2FD1C5]'
+                          : 'bg-[#EEF7F6] dark:bg-[#0B1C2D] hover:bg-[#E2F1F1] dark:hover:bg-[#102A3A]'
                         }`}
                       tabIndex={0}
                       onKeyDown={(e) => {
@@ -892,7 +892,7 @@ const SupportSection: FC = () => {
                       }}
                     >
                       <svg
-                        className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 ${rating <= formData.rating ? 'fill-indigo-600' : 'text-gray-300 dark:text-gray-600'}`}
+                        className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 ${rating <= formData.rating ? 'fill-[#1E5AA8] dark:fill-[#6EE7D8]' : 'text-[#DCEEEE] dark:text-[#1E3A4A]'}`}
                         fill="currentColor"
                         viewBox="0 0 24 24"
                       >
@@ -900,7 +900,7 @@ const SupportSection: FC = () => {
                       </svg>
                     </button>
                   ))}
-                  <span className="ml-2 text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300 font-medium min-w-[40px]">{formData.rating}/5</span>
+                  <span className="ml-2 text-xs sm:text-sm md:text-base text-[#475569] dark:text-[#9FB3C8] font-medium min-w-[40px]">{formData.rating}/5</span>
                 </div>
                 {errors.rating && (
                   <p className="mt-1 text-xs text-red-500 dark:text-red-400 animate-error-in">
@@ -919,15 +919,15 @@ const SupportSection: FC = () => {
                     onChange={handleCheckboxChange}
                     className="hidden"
                   />
-                  <div className={`w-5 h-5 border-2 rounded-md flex items-center justify-center mr-3 transition-all duration-300 ${formData.termsAccepted ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-gray-600 group-hover:border-indigo-400'}`}>
+                  <div className={`w-5 h-5 border-2 rounded-md flex items-center justify-center mr-3 transition-all duration-300 ${formData.termsAccepted ? 'bg-[#1E5AA8] dark:bg-[#6EE7D8] border-[#1E5AA8] dark:border-[#6EE7D8]' : 'border-[#DCEEEE] dark:border-[#1E3A4A] group-hover:border-[#2FD1C5]'}`}>
                     {formData.termsAccepted && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-                    I agree to the <Link href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">Privacy Policy</Link> <span className="text-red-500">*</span>
+                  <span className="text-xs sm:text-sm text-[#475569] dark:text-[#9FB3C8] group-hover:text-[#1E5AA8] dark:group-hover:text-[#6EE7D8] transition-colors duration-300">
+                    I agree to the <Link href="/terms" className="text-[#1E5AA8] dark:text-[#6EE7D8] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#1E5AA8] dark:text-[#6EE7D8] hover:underline">Privacy Policy</Link> <span className="text-red-500">*</span>
                   </span>
                 </label>
                 {errors.termsAccepted && (
@@ -941,12 +941,12 @@ const SupportSection: FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || isUploadingImage}
-                  className="relative w-full px-4 py-2.5 sm:py-3 rounded-md transition-all duration-300 border-amber-500 dark:border-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:ring-2 hover:ring-amber-500 hover:ring-opacity-40 text-sm sm:text-base font-semibold text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="relative w-full px-4 py-2.5 sm:py-3 rounded-md transition-all duration-300 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] shadow-[0_12px_40px_rgba(47,209,197,0.35)] dark:shadow-[0_12px_40px_rgba(15,217,195,0.25)] hover:shadow-[0_16px_60px_rgba(47,209,197,0.45)] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/40 dark:focus:ring-[#6EE7D8]/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  <span className="absolute -inset-2 bg-amber-200 dark:bg-amber-900/40 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl" />
+                  <span className="absolute -inset-2 bg-[#2FD1C5]/30 dark:bg-[#0FD9C3]/20 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl" />
                   {isSubmitting || isUploadingImage ? (
                     <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-amber-500 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white/90" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>

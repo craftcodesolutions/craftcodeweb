@@ -26,13 +26,13 @@ interface PasswordStrength {
 
 // Loading Component
 const LoadingComponent = () => (
-  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+  <div className="mb-6 p-4 bg-[#E6F8F6] dark:bg-[#102A3A]/60 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg">
     <div className="flex items-center">
-      <svg className="animate-spin w-5 h-5 text-blue-400 mr-3" fill="none" viewBox="0 0 24 24">
+      <svg className="animate-spin w-5 h-5 text-[#2FD1C5] dark:text-[#6EE7D8] mr-3" fill="none" viewBox="0 0 24 24">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-      <div className="text-sm text-blue-700 dark:text-blue-400">
+      <div className="text-sm text-[#1E5AA8] dark:text-[#9FB3C8]">
         Validating reset token...
       </div>
     </div>
@@ -47,23 +47,23 @@ const NoTokenComponent = () => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
       </svg>
     </div>
-    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+    <h3 className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
       No Reset Token Provided
     </h3>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+    <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mb-4">
       A valid reset token is required to reset your password. Please use the link from your email.
     </p>
     <div className="space-y-3">
       <Link
         href="/forgot-password"
-        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-blue-600 hover:bg-blue-700 transform hover:scale-[1.02] active:scale-[0.98]"
+        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] transform hover:scale-[1.02] active:scale-[0.98]"
       >
         Request Reset Link
       </Link>
       <div>
         <Link
           href="/login"
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          className="text-sm text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
         >
           Back to Sign In
         </Link>
@@ -80,26 +80,26 @@ const InvalidTokenComponent = ({ tokenError }: { tokenError: string }) => (
         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
       </svg>
     </div>
-    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+    <h3 className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
       Invalid Reset Token
     </h3>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+    <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mb-2">
       {tokenError}
     </p>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+    <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mb-4">
       This reset link may have expired or already been used. Please request a new password reset.
     </p>
     <div className="space-y-3">
       <Link
         href="/forgot-password"
-        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-red-600 hover:bg-red-700 transform hover:scale-[1.02] active:scale-[0.98]"
+        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] transform hover:scale-[1.02] active:scale-[0.98]"
       >
         Request New Reset Link
       </Link>
       <div>
         <Link
           href="/login"
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          className="text-sm text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
         >
           Back to Sign In
         </Link>
@@ -116,23 +116,23 @@ const TokenUsedComponent = () => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
       </svg>
     </div>
-    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+    <h3 className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
       Reset Link Already Used
     </h3>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+    <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mb-4">
       This password reset link has already been used and is no longer valid. For security reasons, each reset link can only be used once.
     </p>
     <div className="space-y-3">
       <Link
         href="/forgot-password"
-        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-orange-600 hover:bg-orange-700 transform hover:scale-[1.02] active:scale-[0.98]"
+        className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] transform hover:scale-[1.02] active:scale-[0.98]"
       >
         Request New Reset Link
       </Link>
       <div>
         <Link
           href="/login"
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          className="text-sm text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
         >
           Back to Sign In
         </Link>
@@ -149,15 +149,15 @@ const SuccessComponent = ({ showAnimation }: { showAnimation: boolean }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
       </svg>
     </div>
-    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+    <h3 className="text-lg font-medium text-[#0F172A] dark:text-[#E6F1F5] mb-2">
       Password Reset Successful
     </h3>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+    <p className="text-sm text-[#475569] dark:text-[#9FB3C8] mb-4">
       Your password has been successfully reset. You can now sign in with your new password.
     </p>
     <Link
       href="/login"
-      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-blue-600 hover:bg-blue-700 transform hover:scale-[1.02] active:scale-[0.98]"
+      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] transform hover:scale-[1.02] active:scale-[0.98]"
     >
       Sign In Now
     </Link>
@@ -228,7 +228,7 @@ const ValidTokenComponent = ({
     <form onSubmit={onSubmit} className="space-y-6">
       {/* New Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
           New Password
         </label>
         <div className="relative">
@@ -236,14 +236,14 @@ const ValidTokenComponent = ({
             type={showPassword ? 'text' : 'password'}
             value={formData.password}
             onChange={(e) => onInputChange('password', e.target.value)}
-            className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-4 py-3 pr-12 border border-[#DCEEEE] dark:border-[#1E3A4A] rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors"
             placeholder="Enter your new password"
             required
           />
           <button
             type="button"
             onClick={onTogglePassword}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
           >
             {showPassword ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,18 +261,18 @@ const ValidTokenComponent = ({
         {formData.password && (
           <div className="mt-2">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Password strength:</span>
+              <span className="text-xs text-[#7B8A9A] dark:text-[#9FB3C8]">Password strength:</span>
               <span className={`text-xs font-medium ${getStrengthTextColor(passwordStrength.score)}`}>
                 {passwordStrength.feedback}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+            <div className="w-full bg-[#DCEEEE] rounded-full h-1.5 dark:bg-[#1E3A4A]">
               <div 
                 className={`h-1.5 rounded-full transition-all duration-300 ${getStrengthColor(passwordStrength.score)}`}
                 style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
               ></div>
             </div>
-            <div className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+            <div className="mt-1 text-xs text-[#7B8A9A] dark:text-[#9FB3C8]">
               <p>• At least 8 characters</p>
               <p>• Include uppercase, lowercase, numbers, and symbols</p>
             </div>
@@ -281,7 +281,7 @@ const ValidTokenComponent = ({
       </div>
       {/* Confirm Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-[#475569] dark:text-[#9FB3C8] mb-2">
           Confirm Password
         </label>
         <div className="relative">
@@ -289,10 +289,10 @@ const ValidTokenComponent = ({
             type={showConfirmPassword ? 'text' : 'password'}
             value={formData.confirmPassword}
             onChange={(e) => onInputChange('confirmPassword', e.target.value)}
-            className={`w-full px-4 py-3 pr-12 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+            className={`w-full px-4 py-3 pr-12 border rounded-lg bg-[#FFFFFF] dark:bg-[#0B1C2D] text-[#0F172A] dark:text-[#E6F1F5] placeholder-[#7B8A9A] dark:placeholder-[#9FB3C8] focus:ring-2 focus:ring-[#2FD1C5] focus:border-transparent transition-colors ${
               formData.confirmPassword && formData.password === formData.confirmPassword
-                ? 'border-green-300 dark:border-green-600'
-                : 'border-gray-300 dark:border-gray-600'
+                ? 'border-[#2FD1C5] dark:border-[#0FD9C3]'
+                : 'border-[#DCEEEE] dark:border-[#1E3A4A]'
             }`}
             placeholder="Confirm your new password"
             required
@@ -300,7 +300,7 @@ const ValidTokenComponent = ({
           <button
             type="button"
             onClick={onToggleConfirmPassword}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7B8A9A] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8]"
           >
             {showConfirmPassword ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,10 +319,10 @@ const ValidTokenComponent = ({
           <div className="mt-1 flex items-center">
             {formData.password === formData.confirmPassword ? (
               <>
-                <svg className="w-4 h-4 text-green-600 dark:text-green-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-[#2FD1C5] dark:text-[#6EE7D8] mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                <span className="text-xs text-green-600 dark:text-green-400">Passwords match</span>
+                <span className="text-xs text-[#2FD1C5] dark:text-[#6EE7D8]">Passwords match</span>
               </>
             ) : (
               <>
@@ -339,7 +339,7 @@ const ValidTokenComponent = ({
       <button
         type="submit"
         disabled={isLoading || !formData.password || !formData.confirmPassword || formData.password !== formData.confirmPassword || passwordStrength.score < 3}
-        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] hover:from-[#2FD1C5] hover:to-[#1E5AA8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2FD1C5] focus:ring-offset-[#F7FBFC] dark:focus:ring-offset-[#050B14] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isLoading ? (
           <>
@@ -547,16 +547,16 @@ export default function ResetPassword() {
     if (score <= 1) return 'bg-red-500';
     if (score === 2) return 'bg-orange-500';
     if (score === 3) return 'bg-yellow-500';
-    if (score === 4) return 'bg-blue-500';
-    return 'bg-green-500';
+    if (score === 4) return 'bg-[#1E5AA8]';
+    return 'bg-[#2FD1C5]';
   };
 
   const getStrengthTextColor = (score: number) => {
     if (score <= 1) return 'text-red-600 dark:text-red-400';
     if (score === 2) return 'text-orange-600 dark:text-orange-400';
     if (score === 3) return 'text-yellow-600 dark:text-yellow-400';
-    if (score === 4) return 'text-blue-600 dark:text-blue-400';
-    return 'text-green-600 dark:text-green-400';
+    if (score === 4) return 'text-[#1E5AA8] dark:text-[#6EE7D8]';
+    return 'text-[#2FD1C5] dark:text-[#6EE7D8]';
   };
 
   // Render different components based on page state
@@ -596,7 +596,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-[#FFFFFF] to-[#EEF7F6] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
       <div className="flex min-h-screen">
         {/* Left Side - Form */}
         <div className="flex w-full lg:w-1/2">
@@ -604,7 +604,7 @@ export default function ResetPassword() {
             <div className="mb-8">
               <Link
                 href="/login"
-                className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors mb-6"
+                className="inline-flex items-center text-sm text-[#475569] dark:text-[#9FB3C8] hover:text-[#1E5AA8] dark:hover:text-[#6EE7D8] transition-colors mb-6"
               >
                 <svg
                   className="w-4 h-4 mr-2"
@@ -622,10 +622,10 @@ export default function ResetPassword() {
                 Back to Sign In
               </Link>
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-3xl font-bold text-[#0F172A] dark:text-[#E6F1F5] mb-2">
                   Reset Password
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-[#475569] dark:text-[#9FB3C8]">
                   Enter your new password below.
                 </p>
               </div>
@@ -636,11 +636,11 @@ export default function ResetPassword() {
             {/* Footer - only show for non-error states */}
             {pageState !== 'used' && pageState !== 'invalid' && pageState !== 'no-token' && pageState !== 'success' && (
               <div className="mt-8 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-[#475569] dark:text-[#9FB3C8]">
                   Remember your password?{' '}
                   <Link
                     href="/login"
-                    className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                    className="font-medium text-[#1E5AA8] dark:text-[#6EE7D8] hover:text-[#2FD1C5] dark:hover:text-[#0FD9C3]"
                   >
                     Sign In
                   </Link>
@@ -650,7 +650,7 @@ export default function ResetPassword() {
           </div>
         </div>
         {/* Right Side - Hero */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0B1C2D] via-[#1E5AA8] to-[#0A2A66] relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0" style={{
@@ -666,7 +666,7 @@ export default function ResetPassword() {
                   </svg>
                 </div>
                 <h2 className="text-3xl font-bold mb-4">Reset your password</h2>
-                <p className="text-blue-100 text-lg">
+                <p className="text-[#9FB3C8] text-lg">
                   Enter a new password to regain access to your account securely.
                 </p>
               </div>
@@ -677,7 +677,7 @@ export default function ResetPassword() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-blue-100">Strong password required</span>
+                  <span className="text-[#E6F1F5]">Strong password required</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-4 backdrop-blur-sm">
@@ -685,7 +685,7 @@ export default function ResetPassword() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-blue-100">Instant access after reset</span>
+                  <span className="text-[#E6F1F5]">Instant access after reset</span>
                 </div>
               </div>
             </div>

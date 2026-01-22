@@ -81,21 +81,21 @@ const FeaturedSection = () => {
           <span
             className="absolute top-0 left-1/2 -translate-x-1/2 text-[24px] sm:text-[40px] lg:text-[95px] font-extrabold leading-none opacity-20 dark:opacity-80"
             style={{
-              background: 'linear-gradient(180deg, rgba(74, 108, 247, 0.4) 0%, rgba(74, 108, 247, 0) 100%)',
+              background: 'linear-gradient(180deg, rgba(47, 209, 197, 0.35) 0%, rgba(47, 209, 197, 0) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               color: 'transparent',
-              ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#f3f4f6', color: '#f3f4f6', background: 'none' } : {})
+              ...(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? { WebkitTextFillColor: '#E6F1F5', color: '#E6F1F5', background: 'none' } : {})
             }}
           >
             FEATURES
           </span>
 
-          <h2 className="font-heading text-dark mb-2 sm:mb-4 text-xl sm:text-2xl md:text-4xl lg:text-[50px] md:leading-[60px] dark:text-gray-100">
+          <h2 className="font-heading text-[#0F172A] mb-2 sm:mb-4 text-xl sm:text-2xl md:text-4xl lg:text-[50px] md:leading-[60px] dark:text-[#E6F1F5]">
             Our Unique & Awesome Core Features
           </h2>
-          <p className="text-dark-text text-xs sm:text-base md:text-lg">
+          <p className="text-[#475569] dark:text-[#9FB3C8] text-xs sm:text-base md:text-lg">
             Discover powerful features: intuitive design, seamless integration, robust security, and scalable solutions to elevate your business with cutting-edge technology.
           </p>
         </div>
@@ -109,13 +109,13 @@ const FeaturedSection = () => {
               style={{ animationDelay: feature.delay }}
             >
               <div className="group mx-auto mb-6 sm:mb-8 md:mb-16 max-w-[98vw] sm:max-w-[380px] text-center">
-                <div className="bg-primary/5 text-primary mx-auto mb-3 sm:mb-6 flex h-[48px] w-[48px] sm:h-[70px] sm:w-[70px] md:h-[90px] md:w-[90px] items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-blue-200 dark:bg-white/5 dark:text-white dark:group-hover:bg-blue-700">
+                <div className="bg-[#EEF7F6] text-[#1E5AA8] mx-auto mb-3 sm:mb-6 flex h-[48px] w-[48px] sm:h-[70px] sm:w-[70px] md:h-[90px] md:w-[90px] items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-[#DCEEEE] dark:bg-[#102A3A] dark:text-[#6EE7D8] dark:group-hover:bg-[#1E3A4A]">
                   {feature.icon}
                 </div>
-                <h3 className="font-heading text-dark mb-1 sm:mb-2 md:mb-5 text-base sm:text-xl md:text-2xl font-medium dark:text-white">
+                <h3 className="font-heading text-[#0F172A] dark:text-[#E6F1F5] mb-1 sm:mb-2 md:mb-5 text-base sm:text-xl md:text-2xl font-medium">
                   {feature.title}
                 </h3>
-                <p className="text-dark-text text-xs sm:text-base md:text-lg">
+                <p className="text-[#475569] dark:text-[#9FB3C8] text-xs sm:text-base md:text-lg">
                   {feature.description}
                 </p>
               </div>

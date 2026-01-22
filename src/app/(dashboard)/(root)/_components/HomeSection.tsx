@@ -114,27 +114,27 @@ function HomeSection() {
                     <div className="mb-10 flex w-full justify-center px-2 sm:px-3 lg:mb-0 lg:w-1/2 lg:justify-start">
                         <div className="mx-auto max-w-[95vw] sm:max-w-[530px] text-center lg:text-left">
                             <span
-                                className="bg-primary/10 font-heading text-primary mb-6 sm:mb-8 inline-block rounded-full px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-lg shadow-sm dark:bg-white/10 dark:text-white transition-all duration-300"
+                                className="bg-[#2FD1C5]/15 font-heading text-[#1E5AA8] mb-6 sm:mb-8 inline-block rounded-full px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-lg shadow-sm dark:bg-[#6EE7D8]/10 dark:text-[#E6F1F5] transition-all duration-300"
                                 data-aos="fade-up"
                                 data-aos-delay="200"
                             >
-                                <span className="bg-primary mr-2 inline-block h-2 w-2 rounded-full" />
+                                <span className="bg-[#2FD1C5] dark:bg-[#6EE7D8] mr-2 inline-block h-2 w-2 rounded-full" />
                                 Your Dream, Our Priority!!
                             </span>
 
                             <h1
-                                className="font-heading mb-4 sm:mb-6 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold md:leading-[56px] lg:leading-[68px] dark:text-gray-100 transition-all duration-300"
+                                className="font-heading mb-4 sm:mb-6 text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold md:leading-[56px] lg:leading-[68px] text-[#0F172A] dark:text-[#E6F1F5] transition-all duration-300"
                                 data-aos="fade-up"
                                 data-aos-delay="300"
                             >
                                 Digital Solutions for <br /> Your{' '}
-                                <span className="txt-type underline decoration-primary decoration-4 underline-offset-4 animate-pulse" data-wait="3000">
+                                <span className="txt-type underline decoration-[#2FD1C5] dark:decoration-[#6EE7D8] decoration-4 underline-offset-4 animate-pulse" data-wait="3000">
                                     {typedText}
                                 </span>
                             </h1>
 
                             <p
-                                className="text-dark-text mb-8 sm:mb-10 text-base sm:text-lg leading-relaxed dark:text-gray-300 transition-all duration-300"
+                                className="text-[#475569] mb-8 sm:mb-10 text-base sm:text-lg leading-relaxed dark:text-[#9FB3C8] transition-all duration-300"
                                 data-aos="fade-up"
                                 data-aos-delay="400"
                             >
@@ -148,7 +148,7 @@ function HomeSection() {
                             >
                                 <button
                                     onClick={handleWhatsAppClick}
-                                    className="group bg-blue-400 cursor-pointer hover:bg-blue-500 text-white font-heading inline-flex items-center rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                    className="group cursor-pointer text-white font-heading inline-flex items-center rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-[0_12px_40px_rgba(47,209,197,0.35)] dark:shadow-[0_12px_40px_rgba(15,217,195,0.25)] bg-gradient-to-r from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] hover:shadow-[0_16px_60px_rgba(47,209,197,0.45)] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/50 dark:focus:ring-[#6EE7D8]/50"
                                 >
                                     Let&apos;s Talk
                                     <span className="pl-2 sm:pl-3">
@@ -197,7 +197,7 @@ function HomeSection() {
                                     className="object-cover rounded-lg"
                                     style={{ width: '100%', height: 'auto' }}
                                 />
-                                <div className="border-primary/10 bg-primary/5 absolute -top-4 sm:-top-6 -right-4 sm:-right-6 -z-10 h-full w-full border backdrop-blur-[6px] dark:border-white/10 dark:bg-white/10 rounded-lg" />
+                                <div className="border-[#2FD1C5]/20 bg-[#2FD1C5]/10 absolute -top-4 sm:-top-6 -right-4 sm:-right-6 -z-10 h-full w-full border backdrop-blur-[6px] dark:border-[#6EE7D8]/15 dark:bg-[#6EE7D8]/10 rounded-lg" />
                             </div>
                             <div className="absolute bottom-0 left-0">
                                 <svg

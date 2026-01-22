@@ -267,6 +267,12 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
 
   return (
     <div className={`relative ${className}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
+      <div className="relative z-10">
       {/* Main Select Button */}
       <div className="relative" ref={dropdownRef}>
         <div className="relative">
@@ -276,13 +282,13 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
             disabled={disabled}
             className={`
               w-full flex items-center justify-between ${config.button}
-              bg-gradient-to-r from-slate-800/80 to-slate-700/80 
-              border border-white/10 rounded-xl text-white 
-              hover:border-white/20 hover:from-slate-700/80 hover:to-slate-600/80
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/50
+              bg-gradient-to-r from-[#0B1C2D]/90 to-[#102A3A]/90 
+              border border-[#1E3A4A] rounded-xl text-white 
+              hover:border-[#2FD1C5]/40 hover:from-[#0B1C2D]/80 hover:to-[#102A3A]/80
+              focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-[#2FD1C5]/50
               transition-all duration-300 backdrop-blur-sm
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              ${isOpen ? 'ring-2 ring-blue-500/50 border-blue-400/50' : ''}
+              ${isOpen ? 'ring-2 ring-[#2FD1C5]/50 border-[#2FD1C5]/50' : ''}
               group
             `}
           >
@@ -306,17 +312,17 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
               <div className="flex-1 text-left">
                 <span className={`
                   block truncate font-medium
-                  ${selectedAdmins.length > 0 ? 'text-white' : 'text-gray-300'}
+                  ${selectedAdmins.length > 0 ? 'text-white' : 'text-[#9FB3C8]'}
                 `}>
                   {getButtonText()}
                 </span>
                 {showSelectedCount && selectedAdmins.length > 0 && (
                   <div className="space-y-1">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-[#7B8A9A]">
                       {multiple ? `${selectedAdmins.length} of ${admins.length} selected` : 'Selected'}
                     </span>
                     {selectedAdmins.length > 3 && (
-                      <div className="text-xs text-yellow-300 truncate" title={getSelectedAdminNames()}>
+                      <div className="text-xs text-[#6EE7D8] truncate" title={getSelectedAdminNames()}>
                         {getSelectedAdminNames().length > 40 
                           ? `${getSelectedAdminNames().substring(0, 40)}...` 
                           : getSelectedAdminNames()}
@@ -331,8 +337,8 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
               <ChevronDown 
                 size={config.icon} 
                 className={`
-                  text-gray-400 transition-all duration-300
-                  ${isOpen ? 'rotate-180 text-blue-400' : 'group-hover:text-gray-300'}
+                  text-[#7B8A9A] transition-all duration-300
+                  ${isOpen ? 'rotate-180 text-[#6EE7D8]' : 'group-hover:text-[#E6F1F5]'}
                 `} 
               />
             </div>
@@ -346,35 +352,35 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                 e.stopPropagation();
                 clearAll();
               }}
-              className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-red-500/20 rounded-full transition-colors duration-200 group/clear z-10"
-              disabled={disabled}
-              title="Clear all selections"
-            >
-              <X size={config.selectedIcon} className="text-gray-400 group-hover/clear:text-red-400" />
-            </button>
-          )}
+            className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-red-500/20 rounded-full transition-colors duration-200 group/clear z-10"
+            disabled={disabled}
+            title="Clear all selections"
+          >
+            <X size={config.selectedIcon} className="text-[#7B8A9A] group-hover/clear:text-red-400" />
+          </button>
+        )}
         </div>
 
         {/* Dropdown Menu */}
         {isOpen && (
           <div className={`
             absolute top-full left-0 right-0 mt-2 
-            bg-slate-800/95 backdrop-blur-xl border border-white/10 
+            bg-[#0B1C2D]/95 backdrop-blur-xl border border-[#1E3A4A] 
             rounded-xl shadow-2xl z-50 ${config.dropdown} overflow-hidden
             animate-in slide-in-from-top-2 duration-200
           `}>
             {/* Search Input */}
             {allowSearch && (
-              <div className="p-4 border-b border-white/10">
+              <div className="p-4 border-b border-[#1E3A4A]">
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7B8A9A]" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     placeholder="Search admin users..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/50 transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-2 bg-[#102A3A]/60 border border-[#1E3A4A] rounded-lg text-white placeholder-[#6B8299] focus:outline-none focus:ring-2 focus:ring-[#2FD1C5]/50 focus:border-[#2FD1C5]/50 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -384,8 +390,8 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
             <div className="max-h-64 overflow-y-auto">
               {loading ? (
                 <div className="p-6 text-center">
-                  <Loader2 size={24} className="mx-auto mb-2 animate-spin text-blue-400" />
-                  <span className="text-sm text-gray-400">Loading admin users...</span>
+                  <Loader2 size={24} className="mx-auto mb-2 animate-spin text-[#6EE7D8]" />
+                  <span className="text-sm text-[#7B8A9A]">Loading admin users...</span>
                 </div>
               ) : error ? (
                 <div className="p-6 text-center text-red-400">
@@ -399,7 +405,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                   </button>
                 </div>
               ) : availableAdmins.length === 0 ? (
-                <div className="p-6 text-center text-gray-400">
+                <div className="p-6 text-center text-[#7B8A9A]">
                   <UserPlus size={24} className="mx-auto mb-2" />
                   <span className="text-sm">
                     {searchTerm ? 'No admin users found matching your search' : 'No admin users available'}
@@ -439,7 +445,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                         </div>
                         <Crown size={12} className="absolute -top-1 -right-1 text-yellow-400 drop-shadow-sm" />
                         {!admin.status && (
-                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-slate-800" />
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-[#0B1C2D]" />
                         )}
                       </div>
 
@@ -458,11 +464,11 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                             </span>
                           )}
                         </div>
-                        <span className="text-gray-400 text-xs truncate block">
+                        <span className="text-[#7B8A9A] text-xs truncate block">
                           {admin.email || 'No email'}
                         </span>
                         {admin.bio && (
-                          <span className="text-gray-500 text-xs truncate block mt-1">
+                          <span className="text-[#6B8299] text-xs truncate block mt-1">
                             {admin.bio}
                           </span>
                         )}
@@ -470,11 +476,11 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
 
                       {/* Selection Indicator */}
                       <div className="flex-shrink-0">
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-400 flex items-center justify-center">
-                          <div className="w-2 h-2 bg-blue-400 rounded-full opacity-0 scale-0 transition-all duration-200" />
-                        </div>
+                      <div className="w-5 h-5 rounded-full border-2 border-[#2FD1C5]/60 flex items-center justify-center">
+                        <div className="w-2 h-2 bg-[#2FD1C5] rounded-full opacity-0 scale-0 transition-all duration-200" />
                       </div>
-                    </button>
+                    </div>
+                  </button>
                   ))}
                 </div>
               )}
@@ -492,7 +498,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
               Selected Admin Participants
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-[#7B8A9A]">
                 {selectedAdminObjects.length} of {admins.length}
               </span>
               {maxSelections && (
@@ -504,8 +510,8 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
           </div>
           
           {/* Names Summary */}
-          <div className="bg-slate-700/20 border border-yellow-400/10 rounded-lg p-3">
-            <div className="text-xs font-medium text-gray-300 mb-1">Selected Admin Names:</div>
+          <div className="bg-[#0B1C2D]/50 border border-[#1E3A4A] rounded-lg p-3">
+            <div className="text-xs font-medium text-[#9FB3C8] mb-1">Selected Admin Names:</div>
             <div className="text-sm text-white leading-relaxed">
               {getSelectedAdminNames()}
             </div>
@@ -515,7 +521,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
             {selectedAdminObjects.map((admin) => (
               <div
                 key={admin._id}
-                className="flex items-center gap-3 p-2 bg-gradient-to-r from-slate-700/30 to-slate-600/30 rounded-lg border border-yellow-400/10 hover:border-yellow-400/20 transition-all duration-200"
+                className="flex items-center gap-3 p-2 bg-gradient-to-r from-[#0B1C2D]/60 to-[#102A3A]/60 rounded-lg border border-[#1E3A4A] hover:border-[#2FD1C5]/40 transition-all duration-200"
               >
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
@@ -546,7 +552,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                     </span>
                     <Crown size={12} className="text-yellow-400" />
                   </div>
-                  <span className="text-gray-400 text-xs truncate">
+                  <span className="text-[#7B8A9A] text-xs truncate">
                     {admin.email || 'No email'}
                   </span>
                 </div>
@@ -558,13 +564,14 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                   disabled={disabled}
                   className="p-1 hover:bg-red-500/20 rounded-full transition-colors duration-200 group/remove flex-shrink-0"
                 >
-                  <X size={config.selectedIcon} className="text-gray-400 group-hover/remove:text-red-400" />
+                  <X size={config.selectedIcon} className="text-[#7B8A9A] group-hover/remove:text-red-400" />
                 </button>
               </div>
             ))}
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
