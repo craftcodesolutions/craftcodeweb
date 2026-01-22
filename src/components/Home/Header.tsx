@@ -425,7 +425,7 @@ function Header() {
                 <span className="text-white font-semibold">CC</span>
               ) : (
                 <Image
-                  src="/logo.PNG"
+                  src="/logo.png"
                   alt="CraftCode Logo"
                   width={44}
                   height={44}
