@@ -89,7 +89,7 @@ export const EcommerceMetrics = () => {
           <div className="flex items-end justify-between mt-5">
             <div>
               <span className="text-sm text-gray-600 dark:text-gray-300">
-                Customers
+                Users
               </span>
               <h4 className="mt-2 text-xl font-bold text-gray-900 dark:text-white">
                 Loading...

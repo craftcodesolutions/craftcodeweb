@@ -78,7 +78,14 @@ function GlobalMessageInput() {
   };
 
   return (
-    <div className="p-3 sm:p-4">
+    <div className="relative p-3 sm:p-4 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none opacity-25">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+      </div>
+      <div className="relative z-10">
       {imagePreview && (
         <div className="mb-2 sm:mb-3 flex items-center">
           <div className="relative">
@@ -152,6 +159,7 @@ function GlobalMessageInput() {
           <SendIcon className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
         </button>
       </form>
+      </div>
     </div>
   );
 }

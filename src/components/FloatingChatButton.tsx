@@ -33,14 +33,20 @@ function FloatingChatButton() {
             isOpen ? 'scale-95 opacity-75' : 'scale-100 opacity-100 hover:scale-105'
           }`}
         >
+          <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none opacity-40">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#2FD1C5]/60 to-transparent"></div>
+          </div>
           {/* Elegant multi-layer glow */}
           <div className="absolute inset-0 rounded-full pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-green-200/10 to-transparent rounded-full blur-md opacity-20"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#6EE7D8] to-[#1E5AA8] rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-[#2FD1C5]/20 to-transparent rounded-full blur-md opacity-20"></div>
           </div>
 
           {/* Main button circle */}
-          <div className="relative w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 via-emerald-500 to-emerald-700 rounded-md shadow-2xl flex items-center justify-center border-2 border-green-400/40 group-hover:border-green-400/60 transition-all duration-300">
+          <div className="relative w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] rounded-md shadow-2xl flex items-center justify-center border-2 border-[#2FD1C5]/50 dark:border-[#6EE7D8]/40 group-hover:border-[#2FD1C5]/70 dark:group-hover:border-[#6EE7D8]/60 transition-all duration-300">
             {/* Glassy background */}
             <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-md"></div>
 
@@ -48,9 +54,9 @@ function FloatingChatButton() {
             <div className="relative flex items-center justify-center">
               <div className="relative flex items-center justify-center">
                 {/* Main chat icon replaced with Send (paper plane) icon */}
-                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700 drop-shadow-lg" />
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white drop-shadow-lg" />
                 {/* Users icon for group chat */}
-                <Users className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-green-600 absolute -bottom-0.5 -left-0.5" />
+                <Users className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-white/80 absolute -bottom-0.5 -left-0.5" />
               </div>
             </div>
 
@@ -65,7 +71,7 @@ function FloatingChatButton() {
 
             {/* Pulse animation when closed */}
             {!isOpen && (
-              <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-20"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-[#2FD1C5]/70 dark:border-[#6EE7D8]/60 animate-ping opacity-20"></div>
             )}
           </div>
 

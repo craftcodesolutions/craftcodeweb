@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="relative flex flex-col min-h-screen text-[#0F172A] dark:text-[#E6F1F5] transition-colors duration-500 overflow-hidden">
+    <div className="relative flex flex-col min-h-screen text-[#0F172A] dark:text-[#E6F1F5] transition-colors duration-500 overflow-x-hidden overflow-y-visible">
       <div className="absolute inset-0 bg-gradient-to-br from-[#F7FBFC] via-[#EEF7F6] to-[#F7FBFC] dark:from-[#050B14] dark:via-[#0B1C2D] dark:to-[#050B14]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(110,231,216,0.35),transparent_55%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_85%,rgba(30,90,168,0.25),transparent_55%)]"></div>
