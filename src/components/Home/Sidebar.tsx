@@ -30,13 +30,13 @@ function RightSidebar({ variant = 'default' }: RightSidebarProps) {
   // Main navigation links
   const navLinks = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/team', label: 'Team', icon: Users },
+    // { path: '/team', label: 'Team', icon: Users },
     { path: '/projects', label: 'Projects', icon: Archive },
-    { path: '/conferance', label: 'Conference', icon: Calendar },
-    { path: '/blog', label: 'Blog', icon: FileText },
+    // { path: '/conferance', label: 'Conference', icon: Calendar },
+    // { path: '/blog', label: 'Blog', icon: FileText },
     { path: '/faqs', label: 'FAQs', icon: HelpCircle },
     { path: '/contact', label: 'Contact', icon: Phone },
-    { path: '/support', label: 'Support', icon: MessageSquare },
+    // { path: '/support', label: 'Support', icon: MessageSquare },
   ];
 
   const storedSidebarExpanded = typeof window !== 'undefined' ? localStorage.getItem('right-sidebar-expanded') : null;

@@ -691,12 +691,10 @@ function Header() {
                 ) : (
                   <Link
                     href="/login"
-                    className="flex items-center justify-center w-10 h-10 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                    className="flex items-center justify-center px-4 py-2 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                     aria-label="Sign in"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    Get Started
                   </Link>
                 )}
               </div>
@@ -715,12 +713,10 @@ function Header() {
                 ) : (
                   <Link
                     href="/login"
-                    className="flex items-center justify-center w-9 h-9 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                    className="flex items-center justify-center px-3 py-1 h-9 rounded-sm bg-gradient-to-br from-[#6EE7D8] via-[#2FD1C5] to-[#1E5AA8] dark:from-[#0FD9C3] dark:via-[#0B8ED8] dark:to-[#0A2A66] text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer text-xs"
                     aria-label="Sign in"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    Get Started
                   </Link>
                 )}
                 {/* Your existing RightSidebar (hamburger) */}
