@@ -6,11 +6,11 @@ import {
   Linkedin,
 
   Sparkles,
-  Code2,
-  Shield,
-  Rocket,
+  // Code2,
+  // Shield,
+  // Rocket,
   MessageCircle,
-  FileText
+  // FileText
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,7 +68,7 @@ function Footer() {
           {/* Essential Links Only */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             {/* Conference */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <Link
                 href="/conferance"
                 className="block p-4 bg-gradient-to-br from-[#FFFFFF]/90 via-[#EEF7F6]/85 to-[#F7FBFC]/90 dark:from-[#0B1C2D]/80 dark:via-[#102A3A]/80 dark:to-[#0B1C2D]/80 backdrop-blur-sm border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/70 rounded-xl transition-all duration-300 hover:scale-105 hover:border-[#2FD1C5]/60 dark:hover:border-[#0FD9C3]/60 hover:shadow-[0_12px_35px_rgba(47,209,197,0.18)] dark:hover:shadow-[0_16px_40px_rgba(15,217,195,0.18)]"
@@ -78,10 +78,10 @@ function Footer() {
                 </div>
                 <h3 className="text-[#0F172A] dark:text-[#E6F1F5] font-semibold text-sm">Conference</h3>
               </Link>
-            </div>
+            </div> */}
 
             {/* Support */}
-            <div className="text-center">
+           {/*  <div className="text-center">
               <Link
                 href="/support"
                 className="block p-4 bg-gradient-to-br from-[#FFFFFF]/90 via-[#EEF7F6]/85 to-[#F7FBFC]/90 dark:from-[#0B1C2D]/80 dark:via-[#102A3A]/80 dark:to-[#0B1C2D]/80 backdrop-blur-sm border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/70 rounded-xl transition-all duration-300 hover:scale-105 hover:border-[#2FD1C5]/60 dark:hover:border-[#0FD9C3]/60 hover:shadow-[0_12px_35px_rgba(47,209,197,0.18)] dark:hover:shadow-[0_16px_40px_rgba(15,217,195,0.18)]"
@@ -91,10 +91,10 @@ function Footer() {
                 </div>
                 <h3 className="text-[#0F172A] dark:text-[#E6F1F5] font-semibold text-sm">Support</h3>
               </Link>
-            </div>
+            </div> */}
 
             {/* Privacy Policy */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <Link
                 href="/privacy-policy"
                 className="block p-4 bg-gradient-to-br from-[#FFFFFF]/90 via-[#EEF7F6]/85 to-[#F7FBFC]/90 dark:from-[#0B1C2D]/80 dark:via-[#102A3A]/80 dark:to-[#0B1C2D]/80 backdrop-blur-sm border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/70 rounded-xl transition-all duration-300 hover:scale-105 hover:border-[#2FD1C5]/60 dark:hover:border-[#0FD9C3]/60 hover:shadow-[0_12px_35px_rgba(47,209,197,0.18)] dark:hover:shadow-[0_16px_40px_rgba(15,217,195,0.18)]"
@@ -104,10 +104,10 @@ function Footer() {
                 </div>
                 <h3 className="text-[#0F172A] dark:text-[#E6F1F5] font-semibold text-sm">Privacy Policy</h3>
               </Link>
-            </div>
+            </div> */}
 
             {/* Terms */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <Link
                 href="/terms"
                 className="block p-4 bg-gradient-to-br from-[#FFFFFF]/90 via-[#EEF7F6]/85 to-[#F7FBFC]/90 dark:from-[#0B1C2D]/80 dark:via-[#102A3A]/80 dark:to-[#0B1C2D]/80 backdrop-blur-sm border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/70 rounded-xl transition-all duration-300 hover:scale-105 hover:border-[#2FD1C5]/60 dark:hover:border-[#0FD9C3]/60 hover:shadow-[0_12px_35px_rgba(47,209,197,0.18)] dark:hover:shadow-[0_16px_40px_rgba(15,217,195,0.18)]"
@@ -117,10 +117,10 @@ function Footer() {
                 </div>
                 <h3 className="text-[#0F172A] dark:text-[#E6F1F5] font-semibold text-sm">Terms</h3>
               </Link>
-            </div>
+            </div> */}
 
             {/* Security */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <Link
                 href="/security"
                 className="block p-4 bg-gradient-to-br from-[#FFFFFF]/90 via-[#EEF7F6]/85 to-[#F7FBFC]/90 dark:from-[#0B1C2D]/80 dark:via-[#102A3A]/80 dark:to-[#0B1C2D]/80 backdrop-blur-sm border border-[#DCEEEE]/80 dark:border-[#1E3A4A]/70 rounded-xl transition-all duration-300 hover:scale-105 hover:border-[#2FD1C5]/60 dark:hover:border-[#0FD9C3]/60 hover:shadow-[0_12px_35px_rgba(47,209,197,0.18)] dark:hover:shadow-[0_16px_40px_rgba(15,217,195,0.18)]"
@@ -130,7 +130,7 @@ function Footer() {
                 </div>
                 <h3 className="text-[#0F172A] dark:text-[#E6F1F5] font-semibold text-sm">Security</h3>
               </Link>
-            </div>
+            </div> */}
           </div>
 
         </div>

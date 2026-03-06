@@ -639,10 +639,10 @@ function Header() {
             <div className="hidden lg:flex items-center gap-2">
               {[
                 { href: '/', label: 'Home' },
-                { href: '/team', label: 'Team' },
+                // { href: '/team', label: 'Team' },
                 { href: '/projects', label: 'Projects' },
-                { href: '/conferance', label: 'Conferance' },
-                { href: '/blog', label: 'Insights' },
+                // { href: '/conferance', label: 'Conferance' },
+                // { href: '/blog', label: 'Insights' },
                 { href: '/faqs', label: 'FAQs' },
                 { href: '/contact', label: 'Contact' },
               ].map(({ href, label }) => (
