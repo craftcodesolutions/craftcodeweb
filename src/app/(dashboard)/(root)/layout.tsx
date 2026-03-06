@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '@/components/Home/Header';
 import Footer from '@/components/Home/Footer';
-import FloatingChatButton from '@/components/FloatingChatButton';
+// import FloatingChatButton from '@/components/FloatingChatButton';
 import { Metadata } from 'next';
 
 
@@ -54,7 +54,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
       <Header />
       <main className="relative flex-1 w-full px-4 sm:px-6 lg:px-8 pt-20">
         {children}
-        <FloatingChatButton />
+        {/* <FloatingChatButton /> */}
       </main>
       <Footer />
     </div>
